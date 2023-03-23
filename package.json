@@ -1,0 +1,19 @@
+{
+  "name": "application-name",
+  "version": "0.1.0",
+  "scripts": {
+    "commitmsg": "validate-commit-msg",
+    "commit": "git-cz",
+    "changelog": "conventional-changelog -p angular -i CHANGELOG.md -s -r 0"
+  },
+  "config": {
+    "commitizen": {
+      "path": "node_modules/cz-customizable"
+    }
+  },
+  "devDependencies": {
+    "cz-customizable": "^7.0.0",
+    "husky": "^0.13.1",
+    "validate-commit-msg": "^2.11.1"
+  }
+}
