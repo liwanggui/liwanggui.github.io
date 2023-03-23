@@ -46,7 +46,7 @@ hasCJKLanguage = true
 
 [params]
   #  LoveIt 主题版本
-  version = "0.2.X"
+  version = "0.3.X"
   # 网站描述
   description = "_浅行"
   # 网站关键词
