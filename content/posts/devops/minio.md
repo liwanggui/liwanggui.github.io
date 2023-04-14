@@ -88,12 +88,16 @@ MINIO_VOLUMES="/mnt/data"
 # Uncomment the following line and replace the value with the correct hostname for the local machine.
 # 配置 API 域名
 #MINIO_SERVER_URL="http://minio.example.net"
+# 控制台域名
+# MINIO_BROWSER_REDIRECT_URL="http://console.minio.example.net"
 ```
 
 - `MINIO_ROOT_USER`: 管理用户名
 - `MINIO_ROOT_PASSWORD`: 管理用户密码，长度最小8位
 - `MINIO_ADDRESS`: 指定 API 监听地址和端口
 - `MINIO_CONSOLE_ADDRESS`: 指定控制台监听地址和端口
+
+> `提示:` Minio 环境变量配置清单可以参考:  https://min.io/docs/minio/linux/reference/minio-server/minio-server.html#environment-variables
 
 *准备数据目录*
 
@@ -114,7 +118,7 @@ systemctl enable minio.service
 
 {{< image src="/images/minio/3af4d53d-4e4c-426b-891f-16211b23141e.png" caption="创建存储桶 (`wglee`)" >}}
 
-2. 存储桶开启匿名访问, 开启后可以直接通过 http://<api-address>:<port>/<buckets-name>/<filename> 访问存储桶中的文件
+2. 存储桶开启匿名访问, 开启后可以直接通过 `http://<api-address>:<port>/<buckets-name>/<filename>` 访问存储桶中的文件
 
 {{< image src="/images/minio/65ef5ad7-a990-4683-bbac-e1a614a49da1.png" caption="存储桶开启匿名访问 (`wglee`)" >}}
 
