@@ -1,5 +1,5 @@
 ---
-title: "OpenVN 服务端配置"
+title: "OpenVPN 服务端配置"
 date: 2022-11-18T16:20:00+08:00
 draft: false
 categories: 
@@ -11,7 +11,7 @@ tags:
 
 ## 服务端开启一个证书或账户多人同时登录
 
-修改 openVPN 配置文件 server.conf ， 内容如下
+修改 `openVPN` 配置文件 `server.conf` ， 内容如下
 
 ```
 port 1194
@@ -54,6 +54,6 @@ client-config-dir /etc/openvpn/client
 ifconfig-push 10.8.0.21 255.255.255.0
 ```
 
-> 说明:  ifconfig-push 接分配给客户端的 IP 地址和子网掩码
+> 说明:  `ifconfig-push` 接分配给客户端的 IP 地址和子网掩码
 
 > 注意: 添加客户端配置不需要重启服务
