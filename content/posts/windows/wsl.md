@@ -8,6 +8,8 @@ tags:
 - wsl
 ---
 
+## 开机启动并开启 SSH 服务
+
 安装 openssh 服务，提供 ssh 远程连接
 
 ```bash
@@ -45,5 +47,11 @@ cat $tempfile > /mnt/c/Windows/System32/drivers/etc/hosts
 
 ```vbs
 Set ws = CreateObject("Wscript.Shell")
-ws.run "wsl -u root /etc/init.wsl", vbhide
+ws.run "wsl -d Ubuntu-22.04 -u root /etc/init.wsl", vbhide
 ```
+
+> 注意: `-d` 参数为你安装的 `linux` 发行版名称，使用 `wsl -l` 查看
+
+## 故障问题
+
+安装旧版本的 Proxifier 程序会导致 wsl 无法启动，只需要安装 Proxifier 4.x 及以上版本即可解决
