@@ -6,6 +6,7 @@ categories:
 - devops
 - ubuntu
 tags:
+- ubuntu
 - netplan
 ---
 
@@ -81,15 +82,15 @@ network:
         - 10.10.10.2/24
       gateway4: 10.10.10.1
       nameservers:
-          search: 
-          - mydomain
-          - otherdomain
-          addresses: 
-          - 10.10.10.1
-          - 1.1.1.1
+        search: 
+        - mydomain
+        - otherdomain
+        addresses: 
+        - 10.10.10.1
+        - 1.1.1.1
 ```
 
-然后可以使用netplan命令应用该配置。
+然后可以使用 netplan 命令应用该配置。
 
 ```bash
 sudo netplan apply
@@ -144,3 +145,26 @@ network:
 
 如果找不到匹配项，则DNS服务器将提供notfound的结果，并且DNS查询将失败。
 
+## 静态路由
+
+例如，如果你要添加到目标为 `192.168.1.0/24` 的网络，网关为 `192.168.0.2` 的路由，可以将以下行添加到配置文件中：
+
+```yaml
+network:
+  version: 2
+  renderer: networkd
+  ethernets:
+    enp0s25:
+      addresses:
+        - 192.168.0.100/24
+      nameservers:
+          search: [example.com, sales.example.com, dev.example.com]
+          addresses: [1.1.1.1, 8.8.8.8, 4.4.4.4]
+      routes:
+        - to: default
+          via: 192.168.0.1
+        - to: 192.168.1.0/24
+          via: 192.168.0.2
+```
+
+> 注意: 临时静态路由可以使用 `ip route` 命令添加删除
