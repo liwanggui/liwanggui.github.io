@@ -1,5 +1,5 @@
 ---
-title: "Geoserver 启用 SSL 无法登录问题"
+title: "GeoServer 启用 SSL 无法登录问题"
 date: 2023-07-27T09:55:20+08:00
 draft: false
 categories: 

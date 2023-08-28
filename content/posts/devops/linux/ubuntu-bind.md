@@ -6,6 +6,7 @@ categories:
 - devops
 - ubuntu
 tags:
+- ubuntu
 - bind
 - dns
 ---
