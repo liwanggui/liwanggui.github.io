@@ -295,7 +295,7 @@ hasCJKLanguage = true
       Renren = false
       Myspace = true
       Blogger = true
-      Baidu = false
+      Baidu = true
       Odnoklassniki = false
       Evernote = true
       Skype = false
@@ -306,21 +306,30 @@ hasCJKLanguage = true
       enable = true
       # twikoo 评论系统设置
       [params.page.comment.twikoo]
-        enable = true
+        enable = false
         envId = "https://talk.wglee.org/"
         region = ""
         path = ""
         visitor = true
         commentCount = true
 
-      # Gitalk 评论系统设置
-      [params.page.comment.gitalk]
-        enable = false
-        owner = "liwanggui"
-        repo = "liwanggui.github.io"
-        clientId = "b58d40d83e8ed764cd68"
-        clientSecret = "692c18c18161da09204436725074fc7c8c218975"
-        #proxy = "https://netnr-proxy.cloudno.de/https://github.com/login/oauth/access_token"
+      # giscus 评论系统设置 https://giscus.app/zh-CN
+      [params.page.comment.giscus]
+        enable = true
+        # owner/repo
+        dataRepo = "liwanggui/liwanggui.github.io"
+        dataRepoId = "MDEwOlJlcG9zaXRvcnkzMzA5MjUxMjM="
+        dataCategory = "Announcements"
+        dataCategoryId = "DIC_kwDOE7mEQ84CY9pq"
+        dataMapping = "pathname"
+        dataReactionsEnabled = "1"
+        dataEmitMetadata = "1"
+        dataInputPosition = "top"
+        lightTheme = "light"
+        darkTheme = "dark"
+        dataLang = "zh-CN"
+        dataLoading = "lazy"
+        #crossorigin = "anonymous"
       
     #  第三方库配置
     [params.page.library]
