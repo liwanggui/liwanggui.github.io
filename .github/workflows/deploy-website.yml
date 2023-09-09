@@ -1,0 +1,44 @@
+name: Deploy WebSite to GitHub Pages
+
+run-name: ${{ github.actor }} Deploy WebSite to GitHub Pages 🚀
+
+on: 
+  push:
+  workflow_dispatch:
+  schedule: # Runs everyday at 8:00 AM
+    - cron: '0 0 * * *'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v4.0.0
+        with:
+          submodules: true
+          fetch-depth: 0
+
+      - name: Hugo setup
+        # You may pin to the exact commit or the version.
+        # uses: peaceiris/actions-hugo@16361eb4acea8698b220b76c0d4e84e1fd22c61d
+        uses: peaceiris/actions-hugo@v2.6.0
+        with:
+          hugo-version: 0.101.0
+          extended: true
+
+      - name: Build ${{ github.repository }}
+        run: |
+          hugo --minify
+# rm -f public/CNAME
+
+      - name: Deploy WebSite
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          deploy_key: ${{ secrets.ACTIONS_DEPLOY_KEY }}
+          # publish_dir: public
+          cname: liwanggui.com
+          force_orphan: true
+          user_name: "Github Action"
+          user_email: "action@github.com"
+          commit_message: ${{ github.event.head_commit.message }}
+
