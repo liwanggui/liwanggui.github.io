@@ -5,8 +5,8 @@ run-name: ${{ github.actor }} Deploy WebSite to GitHub Pages 🚀
 on: 
   push:
   workflow_dispatch:
-  schedule: # Runs everyday at 8:00 AM
-    - cron: '0 0 * * *'
+  #schedule: # Runs everyday at 8:00 AM
+  #  - cron: '0 0 * * *'
 
 jobs:
   build:
@@ -29,7 +29,8 @@ jobs:
       - name: Build ${{ github.repository }}
         run: |
           hugo --minify
-# rm -f public/CNAME
+
+          # rm -f public/CNAME
 
       - name: Deploy WebSite
         uses: peaceiris/actions-gh-pages@v3
@@ -41,4 +42,15 @@ jobs:
           user_name: "Github Action"
           user_email: "action@github.com"
           commit_message: ${{ github.event.head_commit.message }}
+
+      - name: Setup Ossutil
+        uses: manyuanrong/setup-ossutil@v3.0
+        with:
+          endpoint: ${{ secrets.ACTIONS_ALIYUN_ENDPOINT }}
+          access-key-id: ${{ secrets.ACTIONS_ALIYUN_ACCESS_KEY_ID }}
+          access-key-secret: ${{ secrets.ACTIONS_ALIYUN_ACCESS_KEY_SECRET }}
+
+      - name: Upload to Aliyun OSS 
+        run: ossutil sync -f --delete public/ oss://liwanggui/
+
 
