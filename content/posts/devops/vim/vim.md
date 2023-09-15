@@ -26,6 +26,14 @@ set tabstop=4
 :%retab!
 ```
 
+## 取消自动缩进
+
+```vim
+set pastetoggle=<F11>
+```
+
+按 `F11` 将禁用自动缩进功能
+
 ## 为 Shell 脚本定制开头片断
 
 ```vim
@@ -59,6 +67,7 @@ set ignorecase
 set cursorline
 set autoindent
 set paste
+set pastetoggle=<F11>
 
 autocmd BufNewFile *.sh exec ":call SetTitle()"
 func SetTitle()
