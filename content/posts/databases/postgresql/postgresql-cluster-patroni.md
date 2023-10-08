@@ -376,3 +376,8 @@ systemctl enable patroni.service
 | pg3    | 192.168.142.13 | Sync Standby | streaming |  2 |         0 |
 +--------+----------------+--------------+-----------+----+-----------+
 ```
+
+
+> 参考: 
+> - https://blog.51cto.com/u_13963746/5394725
+> - https://www.modb.pro/db/73762
