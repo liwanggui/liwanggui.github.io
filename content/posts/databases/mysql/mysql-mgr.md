@@ -654,3 +654,57 @@ mysql> select * from performance_schema.replication_group_members;
 ```
 
 > 提示: 可以使用 `MySQL Router` 实现读写分离、读负载均衡，以及故障自动转移， 参考： https://greatsql.cn/docs/8032/user-manual/8-mgr/5-mgr-readwrite-split.html
+
+## 7. 部署 MGR 集群配置项
+
+### group_replication_start_on_boot 
+
+初始配置 MGR 集群时 `group_replication_start_on_boot` 值，需要配置为 `OFF`, 配置完成后可以改为 `ON`
+
+### group_replication_bootstrap_group
+
+MGR 集群中只能有一个引导节点，只需在主节点配置 `group_replication_bootstrap_group = ON`
+
+> 注意: 当集群发生故障转移后，旧的主节点启动时需要将值改为 `OFF`
+
+### group_replication_recovery_get_public_key
+
+错误信息如下：
+
+```
+Authentication plugin 'caching_sha2_password' reported error: Authentication requires secure connection. Error_code: MY-002061
+```
+
+这是由于 `mysql8.0` 之后加密规则变成 `caching_sha2_password`，所以使用 MGR 方式复制时，需要打开公钥访问
+
+添加 `group_replication_recovery_get_public_key = ON` 配置项即可解决
+
+在从节点上执行下面命令，为了重启后还有效需要写入配置中文件中 (`my.cnf`)
+
+```bash
+mysql> STOP GROUP_REPLICATION;
+mysql> SET GLOBAL group_replication_recovery_get_public_key=ON;
+mysql> START GROUP_REPLICATION;
+```
+
+除了以上的方法，也可以将 MGR 集群用户密码加密插件改为: `mysql_native_password`
+
+```sql
+set session sql_log_bin=0;
+alter user repl@'%' IDENTIFIED WITH mysql_native_password by 'repl';
+set session sql_log_bin=1;
+```
+
+对于新创建的用户,执行以下命令
+
+```sql
+create user repl@'%' IDENTIFIED WITH mysql_native_password by 'repl';
+```
+
+### group_replication_ip_whitelist
+
+组复制的 IP 白名单，如果 MGR 节点不在同一个子网段下需要显式指定 MGR 组内成员地址，例如:
+
+```bash
+group_replication_ip_whitelist = "10.10.1.24,10.10.2.4,10.10.2.3" # or 10.10.0.0/16
+```
