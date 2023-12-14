@@ -659,13 +659,11 @@ mysql> select * from performance_schema.replication_group_members;
 
 ### group_replication_start_on_boot 
 
-初始配置 MGR 集群时 `group_replication_start_on_boot` 值，需要配置为 `OFF`, 配置完成后可以改为 `ON`
+初始配置 MGR 集群时 `group_replication_start_on_boot` 值，需要配置为 `OFF`
 
 ### group_replication_bootstrap_group
 
-MGR 集群中只能有一个引导节点，只需在主节点配置 `group_replication_bootstrap_group = ON`
-
-> 注意: 当集群发生故障转移后，旧的主节点启动时需要将值改为 `OFF`
+MGR 集群启动时需要一个引导节点，第一个节点先配置 `group_replication_bootstrap_group = ON`，第一个节点启动完毕后，记得重置选项 `group_replication_bootstrap_group=OFF`，避免在后续的操作中导致MGR集群分裂。
 
 ### group_replication_recovery_get_public_key
 
@@ -708,3 +706,68 @@ create user repl@'%' IDENTIFIED WITH mysql_native_password by 'repl';
 ```bash
 group_replication_ip_whitelist = "10.10.1.24,10.10.2.4,10.10.2.3" # or 10.10.0.0/16
 ```
+
+### 重启 MGR 集群
+
+正常情况下，MGR 集群中的 `Primary` 节点退出时，剩下的节点会自动选出新的 `Primary` 节点。
+当最后一个节点也退出时，相当于整个MGR集群都关闭了。
+这时候任何一个节点启动MGR服务后，都不会自动成为 `Primary` 节点，需要在启动MGR服务前，先设置 `group_replication_bootstrap_group=ON`，使其成为引导节点，再启动 MGR 服务，它才会成为 `Primary` 节点，后续启动的其他节点也才能正常加入集群。
+可自行测试，这里不再做演示。
+
+> P.S，第一个节点启动完毕后，记得重置选项 `group_replication_bootstrap_group=OFF`，避免在后续的操作中导致 MGR 集群分裂。
+
+如果是用 `MySQL Shell for GreatSQL` 重启 MGR 集群，调用 json: `rebootClusterFromCompleteOutage()` , python `reboot_cluster_from_complete_outage()` 函数即可，它会自动判断各节点的状态，选择其中一个作为 `Primary` 节点，然后拉起各节点上的 MGR 服务，完成MGR集群重启。
+
+可以参考这篇文章：[万答#12，MGR 整个集群挂掉后，如何才能自动选主，不用手动干预](https://mp.weixin.qq.com/s/07o1poO44zwQIvaJNKEoPA)
+
+**使用 `MySQL Shell for GreatSQL` 重启(启动) MGR 集群**
+
+当 MGR 集群挂掉后，先启动 greatsql 实例，然后再使用 `MySQL Shell for GreatSQL` 恢复 MGR 集群
+
+```bash
+# 连接其中一个节点
+/usr/local/mysqlsh/bin/mysqlsh --uri mgr@10.10.1.24
+# 执行：dba.reboot_cluster_from_complete_outage() 恢复 MGR 集群
+MySQL localhost  Py > dba.reboot_cluster_from_complete_outage()
+Restoring the default cluster from complete outage...
+
+The instance '10.10.2.4:3306' was part of the cluster configuration.
+Would you like to rejoin it to the cluster? [y/N]: y
+
+The instance '10.10.2.3:3306' was part of the cluster configuration.
+Would you like to rejoin it to the cluster? [y/N]: y
+
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+
+# 错误信息提示我们当前节点上没有最新的数据，不能直接启动 MGR，错误信息中还提供了该去哪个节点启动的建议，所以我们改成在 10.10.2.3:3306 节点上执行拉起 MGR：
+RuntimeError: Dba.reboot_cluster_from_complete_outage: The active session instance (10.10.1.24:3306) isn't the most updated in comparison with the ONLINE instances of the Cluster's metadata. Please use the most up to date instance: '10.10.2.3:3306'.
+
+# 连接 10.10.2.3:3306 节点
+/usr/local/mysqlsh/bin/mysqlsh --uri mgr@10.10.2.3
+
+MySQL localhost  Py > dba.reboot_cluster_from_complete_outage()
+Restoring the default cluster from complete outage...
+
+The instance '10.10.1.24:3306' was part of the cluster configuration.
+Would you like to rejoin it to the cluster? [y/N]: y
+
+The instance '10.10.2.4:3306' was part of the cluster configuration.
+Would you like to rejoin it to the cluster? [y/N]: y
+
+10.10.2.3:3306 was restored.
+Rejoining '10.10.1.24:3306' to the cluster.
+Rejoining instance '10.10.1.24:3306' to cluster 'MGR1'...
+The instance '10.10.1.24:3306' was successfully rejoined to the cluster.
+
+Rejoining '10.10.2.4:3306' to the cluster.
+Rejoining instance '10.10.2.4:3306' to cluster 'MGR1'...
+The instance '10.10.2.4:3306' was successfully rejoined to the cluster.
+
+The cluster was successfully rebooted.
+
+<Cluster:MGR1>
+```
+
+可以看到，MGR 集群已经被正常启动了
+
