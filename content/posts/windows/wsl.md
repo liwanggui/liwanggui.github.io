@@ -19,7 +19,7 @@ tags:
 systemd=true
 ```
 
-> 官方文档: 
+> 官方文档: https://learn.microsoft.com/zh-cn/windows/wsl/wsl-config
 
 ## 开机启动并开启 SSH 服务
 
@@ -64,6 +64,10 @@ ws.run "wsl -d Ubuntu-22.04 -u root /etc/init.wsl", vbhide
 ```
 
 > 注意: `-d` 参数为你安装的 `linux` 发行版名称，使用 `wsl -l` 查看
+
+> 注意: 如何启用了 `systemd` , 就不用启动时执行 `init.wsl` 脚本 <br />
+> 1. 直接通过 `systemd` 配置自启 
+> 2. 也可以通过 `wsl.conf` 配置自启
 
 ## 故障问题
 
