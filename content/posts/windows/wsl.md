@@ -8,6 +8,19 @@ tags:
 - wsl
 ---
 
+## wsl 启用 systemd
+
+许多 Linux 发行版（包括 Ubuntu）默认运行 “systemd”，WSL 最近添加了对此系统/服务管理器的支持，因此 WSL 更类似于在裸机上使用你最爱的 `Linux` 发行版。 需要 `WSL` 的 `0.67.6+` 版本才能启用 `systemd`。 使用命令 `wsl --version` 检查 WSL 版本
+
+若要启用 `systemd`，请使用 `sudo` 通过管理员权限在文本编辑器中打开 `wsl.conf` 文件，并将以下行添加到 `/etc/wsl.conf`：
+
+```ini
+[boot]
+systemd=true
+```
+
+> 官方文档: 
+
 ## 开机启动并开启 SSH 服务
 
 安装 openssh 服务，提供 ssh 远程连接
