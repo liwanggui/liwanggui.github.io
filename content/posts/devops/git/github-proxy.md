@@ -4,6 +4,7 @@ date: 2024-01-26T11:22:32+08:00
 draft: false
 categories: 
 - devops
+- git
 tags:
 - git
 - github
@@ -17,7 +18,8 @@ tags:
 
 网上免费的 GitHub 代理站点: 
 - https://ghproxy.org/
-- https://hub.fgit.cf 
+- https://mirror.ghproxy.com/
+- https://hub.fgit.cf
 
 > hub.fgit.cf 使用文档 https://doc.fastgit.org/zh-cn/guide.html
 
