@@ -76,26 +76,40 @@ $ git config --global http.https://github.com.proxy socks5://127.0.0.1:7890
 
 当有跳板服务器（可以正常访问 Github）或代理时，可以通过配置 `SSH Proxy` 实现加速, 配置文件 `~/.ssh/config`
 
-1. 使用跳板服务器
+1. 在 HTTPS 端口使用 SSH
+
+有时，防火墙会完全拒绝允许 SSH 连接。 可以尝试使用通过 HTTPS 端口建立的 SSH 连接克隆。 大多数防火墙规则应允许此操作，但代理服务器可能会干扰。
 
 ```bash
 Host github.com
-  Hostname ssh.github.com
-  IdentityFile ~/.ssh/id_rsa
-  User git
-  Port 443
-  ProxyCommand ssh -l root -p 22 jumpserver.example.com -W %h:%p
+    Hostname ssh.github.com
+    Port 443
+    User git
+    IdentityFile ~/.ssh/id_rsa
 ```
 
-2. 使用代理服务器
+> 注意：端口 443 的主机名为 ssh.github.com，而不是 github.com
+
+2. 使用跳板服务器
 
 ```bash
 Host github.com
-  Hostname ssh.github.com
-  IdentityFile ~/.ssh/id_rsa
-  User git
-  Port 443
-  ProxyCommand nc -v -x 127.0.0.1:7890 %h %p
+    Hostname github.com
+    IdentityFile ~/.ssh/id_rsa
+    User git
+    Port 22
+    ProxyCommand ssh -l root -p 22 jumpserver.server.addr -W %h:%p
+```
+
+3. 使用代理服务器
+
+```bash
+Host github.com
+    Hostname github.com
+    IdentityFile ~/.ssh/id_rsa
+    User git
+    Port 22
+    ProxyCommand nc -v --proxy-type socks5 --proxy 127.0.0.1:7890 %h %p
 ```
 
 > 文档参考: https://hellodk.cn/post/975
