@@ -1,12 +1,10 @@
 ---
-title: Ubuntu Server 网络文件系统（NFS）
+title: 网络文件系统（NFS）
 date: "2021-04-24T11:04:36+08:00"
 draft: false
 categories:
 - devops
-- ubuntu
 tags:
-- ubuntu
 - nfs
 ---
 
@@ -23,13 +21,21 @@ NFS 可以提供的一些最显著的好处是：
 在终端提示下输入以下命令以安装 NFS 服务器：
 
 ```bash
+# ubuntu
 sudo apt install nfs-kernel-server
+
+# centos
+sudo yum install nfs-utils
 ```
 
 要启动 NFS 服务器，您可以在终端提示下运行以下命令：
 
 ```bash
+# ubuntu
 sudo systemctl start nfs-kernel-server.service
+
+# centos
+sudo systemctl start nfs-server.service
 ```
 
 ## 配置
@@ -38,20 +44,46 @@ sudo systemctl start nfs-kernel-server.service
 
 ```
 /srv     *(ro,sync,subtree_check)
-/home    *.hostname.com(rw,sync,no_subtree_check)
-/scratch *(rw,async,no_subtree_check,no_root_squash,noexec)
+/scratch *(rw,sync,no_subtree_check,no_all_squash,no_root_squash,insecure)
 ```
 
-确保已创建您添加的任何自定义安装点（`/srv` 和`/home` 将存在）：
+**参数解释:**
+
+- `ro` 该主机对该共享目录有只读权限
+- `rw` 该主机对该共享目录有读写权限
+- `root_squash` 客户机用root用户访问该共享文件夹时，将root用户映射成匿名用户
+- `no_root_squash` 将客户端使用的是root用户时，则映射到FNS服务器的用户依然为root用户。
+- `all_squash` 客户机上的任何用户访问该共享目录时都映射成匿名用户
+- `anonuid` 将客户机上的用户映射成指定的本地用户ID的用户
+- `anongid` 将客户机上的用户映射成属于指定的本地用户组ID
+- `sync` 资料同步写入到内存与硬盘中
+- `async` 资料会先暂存于内存中，而非直接写入硬盘
+- `secure` NFS客户端必须使用NFS保留端口（通常是1024以下的端口），默认选项。
+- `insecure` 允许NFS客户端不使用NFS保留端口（通常是1024以上的端口）
+
+确保已创建您添加的任何自定义安装点（`/srv` 和 `/scratch` 将存在）：
 
 ```bash
-sudo mkdir /scratch
+sudo mkdir /srv /scratch
 ```
+
+> 注意: 为了让客户机对目录有可读可写权限，给目录赋于 777 权限
 
 重载 NFS 配置文件
 
 ```bash
-sudo exportfs -a
+sudo exportfs -r
+```
+
+NFS 常用命令
+
+```bash
+exportfs -v             #查看详细的 NFS 信息
+exportfs -r             #重读配置文件
+showmount -e            #查看本机发布的 NFS 共享目录
+showmount -e +IP        #查看 IP 地址发布的 NFS 共享目录
+showmount -a +IP        #查看有哪些 NFS 客户端挂载了 NFS 服务器上的共享目录
+rpcinfo -p localhost    #查看rpc注册的端口信息
 ```
 
 您可以用具体的主机名替换 `*`。 使主机名声明尽可能具体。
@@ -67,7 +99,11 @@ NFS 有许多可选设置，用于调整性能、加强安全性或提供便利�
 要启用客户端系统的 NFS 支持，请在终端提示下输入以下命令：
 
 ```bash
+# ubuntu
 sudo apt install nfs-common
+
+# centos
+sudo yum install nfs-utils
 ```
 
 使用 `mount` 命令从另一台机器上挂载共享的 NFS 目录，在终端提示处键入类似于以下命令行：
@@ -86,5 +122,15 @@ sudo mount example.hostname.com:/srv /opt/example
 `/etc/fstab` 配置如下
 
 ```
-example.hostname.com:/srv /opt/example nfs rsize=8192,wsize=8192,timeo=14,intr
+example.hostname.com:/srv /opt/example nfs nolock,proto=tcp,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,_netdev,noresvport 0 0
 ```
+
+**挂载命令参数说明:**
+
+- `proto`: 指定使用的协议，默认为 udp
+- `rsize`：定义数据块的大小，用于客户端与文件系统之间读取数据。建议值：1048576
+- `wsize`：定义数据块的大小，用于客户端与文件系统之间写入数据。建议值：1048576
+- `timeo`：指定时长，单位为0.1秒，即NFS客户端在重试向文件系统发送请求之前等待响应的时间。建议值：600（60秒）
+- `retrans`：NFS客户端重试请求的次数。建议值：2。
+- `noresvport`：在网络重连时使用新的TCP端口，保障在网络发生故障恢复时不会中断连接。建议启用该参数。
+- `_netdev`: 防止客户端在网络就绪之前开始挂载文件系统。
