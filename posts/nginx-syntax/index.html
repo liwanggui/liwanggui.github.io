@@ -1,0 +1,174 @@
+<!doctype html><html lang=zh-cn><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><meta name=robots content="noodp"><title>nginx - 常用指令语法 - _浅行</title><meta name=Description content="_浅行"><meta property="og:title" content="nginx - 常用指令语法"><meta property="og:description" content="域名重定向当用户访问 http://liwanggui.com 时 url 重定向至 https://liwanggui.com， 实现 http -> https 重定向，实现方式有两种： 通过 rewrite 模块的 permanent 参数实现永久重"><meta property="og:type" content="article"><meta property="og:url" content="https://liwanggui.com/posts/nginx-syntax/"><meta property="og:image" content="https://liwanggui.com/logo.png"><meta property="article:section" content="posts"><meta property="article:published_time" content="2021-04-01T16:26:44+08:00"><meta property="article:modified_time" content="2021-04-01T16:26:44+08:00"><meta name=twitter:card content="summary_large_image"><meta name=twitter:image content="https://liwanggui.com/logo.png"><meta name=twitter:title content="nginx - 常用指令语法"><meta name=twitter:description content="域名重定向当用户访问 http://liwanggui.com 时 url 重定向至 https://liwanggui.com， 实现 http -> https 重定向，实现方式有两种： 通过 rewrite 模块的 permanent 参数实现永久重"><meta name=application-name content="LoveIt"><meta name=apple-mobile-web-app-title content="LoveIt"><meta name=theme-color content="#f8f8f8"><meta name=msapplication-TileColor content="#da532c"><link rel=canonical href=https://liwanggui.com/posts/nginx-syntax/><link rel=prev href=https://liwanggui.com/posts/yum-repo/><link rel=next href=https://liwanggui.com/posts/nginx-alias-root/><link rel=stylesheet href=/lib/normalize/normalize.min.css><link rel=stylesheet href=/css/color.css><link rel=stylesheet href=/css/style.min.css><link rel=preload as=style onload='this.onload=null,this.rel="stylesheet"' href=/lib/fontawesome-free/all.min.css><noscript><link rel=stylesheet href=/lib/fontawesome-free/all.min.css></noscript><link rel=preload as=style onload='this.onload=null,this.rel="stylesheet"' href=/lib/animate/animate.min.css><noscript><link rel=stylesheet href=/lib/animate/animate.min.css></noscript><script type=application/ld+json>{"@context":"http://schema.org","@type":"BlogPosting","headline":"nginx - 常用指令语法","inLanguage":"zh-CN","mainEntityOfPage":{"@type":"WebPage","@id":"https:\/\/liwanggui.com\/posts\/nginx-syntax\/"},"genre":"posts","keywords":"nginx","wordcount":2313,"url":"https:\/\/liwanggui.com\/posts\/nginx-syntax\/","datePublished":"2021-04-01T16:26:44+08:00","dateModified":"2021-04-01T16:26:44+08:00","publisher":{"@type":"Organization","name":""},"author":{"@type":"Person","name":"李王贵"},"description":""}</script><script src=//instant.page/5.1.1 defer type=module integrity=sha384-MWfCL6g1OTGsbSwfuMHc8+8J2u71/LA8dzlIN3ycajckxuZZmF+DNjdm7O6H3PSq></script></head><body header-desktop=fixed header-mobile=auto><script type=text/javascript>function setTheme(e){document.body.setAttribute("theme",e),document.documentElement.style.setProperty("color-scheme",e==="light"?"light":"dark")}function saveTheme(e){window.localStorage&&localStorage.setItem("theme",e)}function getMeta(e){const t=document.getElementsByTagName("meta");for(let n=0;n<t.length;n++)if(t[n].getAttribute("name")===e)return t[n];return""}if(window.localStorage&&localStorage.getItem("theme")){let e=localStorage.getItem("theme");e==="light"||e==="dark"||e==="black"?setTheme(e):setTheme(window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light")}else"auto"==="light"||"auto"==="dark"||"auto"==="black"?(setTheme("auto"),saveTheme("auto")):(saveTheme("auto"),setTheme(window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"));let metaColors={light:"#f8f8f8",dark:"#252627",black:"#000000"};getMeta("theme-color").content=metaColors[document.body.getAttribute("theme")]</script><div id=back-to-top></div><div id=mask></div><div class=wrapper><header class=desktop id=header-desktop><div class=header-wrapper><div class=header-title><a href=/ title=_浅行><span class=header-title-pre><i class='far fa-kiss-wink-heart fa-fw'></i></span>_浅行</a></div><div class=menu><div class=menu-inner><a class=menu-item href=/posts/ title=文章列表>文章 </a><a class=menu-item href=/tags/ title=标签云>标签 </a><a class=menu-item href=/categories/ title=分类>分类 </a><a class=menu-item href=https://cook.liwanggui.com/ title=程序员做饭指南 rel="noopener noreferrer" target=_blank>烹饪 </a><a class=menu-item href=/about/index.html title=关于>关于 </a><span class="menu-item delimiter"></span><span class="menu-item search" id=search-desktop>
+<input type=text placeholder=搜索文章标题或内容... id=search-input-desktop>
+<a href=# class="search-button search-toggle" id=search-toggle-desktop title=搜索><i class="fas fa-search fa-fw"></i></a>
+<a href=# class="search-button search-clear" id=search-clear-desktop title=清空><i class="fas fa-times-circle fa-fw"></i></a>
+<span class="search-button search-loading" id=search-loading-desktop><i class="fas fa-spinner fa-fw fa-spin"></i></span>
+</span><a href=# class="menu-item theme-switch" title=切换主题><i class="fas fa-adjust fa-fw"></i></a></div></div></div></header><header class=mobile id=header-mobile><div class=header-container><div class=header-wrapper><div class=header-title><a href=/ title=_浅行><span class=header-title-pre><i class='far fa-kiss-wink-heart fa-fw'></i></span>_浅行</a></div><div class=menu-toggle id=menu-toggle-mobile><span></span><span></span><span></span></div></div><div class=menu id=menu-mobile><div class=search-wrapper><div class="search mobile" id=search-mobile><input type=text placeholder=搜索文章标题或内容... id=search-input-mobile>
+<a href=# class="search-button search-toggle" id=search-toggle-mobile title=搜索><i class="fas fa-search fa-fw"></i></a>
+<a href=# class="search-button search-clear" id=search-clear-mobile title=清空><i class="fas fa-times-circle fa-fw"></i></a>
+<span class="search-button search-loading" id=search-loading-mobile><i class="fas fa-spinner fa-fw fa-spin"></i></span></div><a href=# class=search-cancel id=search-cancel-mobile>取消</a></div><a class=menu-item href=/posts/ title=文章列表>文章</a><a class=menu-item href=/tags/ title=标签云>标签</a><a class=menu-item href=/categories/ title=分类>分类</a><a class=menu-item href=https://cook.liwanggui.com/ title=程序员做饭指南 rel="noopener noreferrer" target=_blank>烹饪</a><a class=menu-item href=/about/index.html title=关于>关于</a><a href=# class="menu-item theme-switch" title=切换主题>
+<i class="fas fa-adjust fa-fw"></i></a></div></div></header><div class="search-dropdown desktop"><div id=search-dropdown-desktop></div></div><div class="search-dropdown mobile"><div id=search-dropdown-mobile></div></div><main class=main><div class=container><div class=toc id=toc-auto><h2 class=toc-title>目录</h2><div class=toc-content id=toc-content-auto><nav id=TableOfContents><ul><li><a href=#域名重定向>域名重定向</a></li><li><a href=#多域名跳转应用实例>多域名跳转应用实例</a></li><li><a href=#nginx-常用指令>nginx 常用指令</a><ul><li><a href=#if-命令>if 命令</a></li><li><a href=#rewrite-命令>rewrite 命令</a></li><li><a href=#set-命令>set 命令</a></li><li><a href=#break-命令>break 命令</a></li></ul></li></ul></nav></div></div><script>document.getElementsByTagName("main")[0].setAttribute("pageStyle","normal")</script><script>document.getElementsByTagName("main")[0].setAttribute("autoTOC","true")</script><article class="page single"><h1 class="single-title animate__animated animate__flipInX">nginx - 常用指令语法</h1><div class=post-meta><div class=post-meta-line><span class=post-author><i class="author fas fa-user-circle fa-fw"></i><a href=/about/ title=Author rel=author class=author>李王贵</a>
+</span>&nbsp;<span class=post-category>收录于 </span>&nbsp;<span class=post-category>类别 <a href=/categories/devops/><i class="far fa-folder fa-fw"></i>devops</a>&nbsp;<a href=/categories/nginx/><i class="far fa-folder fa-fw"></i>nginx</a></span></div><div class=post-meta-line><i class="far fa-calendar-alt fa-fw"></i>&nbsp;<time datetime=2021-04-01>2021-04-01</time>&nbsp;<i class="far fa-edit fa-fw"></i>&nbsp;<time datetime=2021-04-01>2021-04-01</time>&nbsp;<i class="fas fa-pencil-alt fa-fw"></i>&nbsp;约 2313 字&nbsp;
+<i class="far fa-clock fa-fw"></i>&nbsp;预计阅读 5 分钟&nbsp;</div></div><div class="details toc" id=toc-static kept><div class="details-summary toc-title"><span>目录</span>
+<span><i class="details-icon fas fa-angle-right"></i></span></div><div class="details-content toc-content" id=toc-content-static><nav id=TableOfContents><ul><li><a href=#域名重定向>域名重定向</a></li><li><a href=#多域名跳转应用实例>多域名跳转应用实例</a></li><li><a href=#nginx-常用指令>nginx 常用指令</a><ul><li><a href=#if-命令>if 命令</a></li><li><a href=#rewrite-命令>rewrite 命令</a></li><li><a href=#set-命令>set 命令</a></li><li><a href=#break-命令>break 命令</a></li></ul></li></ul></nav></div></div><div class=content id=content><h2 id=域名重定向 class=headerLink><a href=#%e5%9f%9f%e5%90%8d%e9%87%8d%e5%ae%9a%e5%90%91 class=header-mark></a>域名重定向</h2><p>当用户访问 <code>http://liwanggui.com</code> 时 url 重定向至 <code>https://liwanggui.com</code>， 实现 http -> https 重定向，实现方式有两种：</p><ol><li>通过 <code>rewrite</code> 模块的 <code>permanent</code> 参数实现永久重定向的 <code>http</code> 状态 <code>301</code></li><li>通过 <code>return</code> 指令实现 <code>（推荐）</code></li></ol><p><em>rewrite 实现</em></p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span><span class=lnt>7
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>server <span class=o>{</span>
+</span></span><span class=line><span class=cl>    listen 80<span class=p>;</span>
+</span></span><span class=line><span class=cl>    server_name liwanggui.com<span class=p>;</span>
+</span></span><span class=line><span class=cl>    access_log off<span class=p>;</span>
+</span></span><span class=line><span class=cl>    rewrite ^/<span class=o>(</span>.*<span class=o>)</span>$ https://<span class=nv>$host</span>/<span class=nv>$1</span> permanent<span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=c1># 匹配以斜杠开头之后的所有字符 $1 表示小括号内匹配的字符  permanent 表示永久301跳转</span>
+</span></span><span class=line><span class=cl><span class=o>}</span>
+</span></span></code></pre></td></tr></table></div></div><p><em>return 实现: 推荐做法</em></p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>server <span class=o>{</span>
+</span></span><span class=line><span class=cl>    listen 80<span class=p>;</span>
+</span></span><span class=line><span class=cl>    server_name liwanggui.com<span class=p>;</span>
+</span></span><span class=line><span class=cl>    access_log off<span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=m>301</span> https://<span class=nv>$host$request_uri</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=o>}</span>
+</span></span></code></pre></td></tr></table></div></div><ul><li><code>$host</code>: 表示 HTTP 请求头中的 Host 值</li><li><code>$request_uri</code>: 表示 HTTP 请求 uri</li></ul><h2 id=多域名跳转应用实例 class=headerLink><a href=#%e5%a4%9a%e5%9f%9f%e5%90%8d%e8%b7%b3%e8%bd%ac%e5%ba%94%e7%94%a8%e5%ae%9e%e4%be%8b class=header-mark></a>多域名跳转应用实例</h2><p>使用 <code>nginx</code> 做反向代理，当用户访问 <code>www.liwanggui.com</code> 时就代理到 <code>192.168.1.100:8080</code> 的 <code>web</code> 目录下，
+当用户访问 <code>http://www.liwanggui.com/admin</code> 时就代理到 <code>192.168.1.100:8080</code> 的 <code>admin</code> 目录下，
+当用户访问 <code>wap.liwanggui.com</code> 时就代理到 <code>192.168.1.100:8080</code> 的 <code>wap</code> 目录下</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>server_name www.liwanggui.com<span class=p>;</span>
+</span></span><span class=line><span class=cl>location / <span class=o>{</span>
+</span></span><span class=line><span class=cl>    proxy_pass http://192.168.1.100:8080/web/<span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=o>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>location /admin <span class=o>{</span>
+</span></span><span class=line><span class=cl>    proxy_pass http://192.168.1.100:8080/admin<span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=o>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>server_name wap.liwanggui.com<span class=p>;</span>
+</span></span><span class=line><span class=cl>location / <span class=o>{</span>
+</span></span><span class=line><span class=cl>    proxy_pass http://192.168.1.100:8080/wap/<span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=o>}</span>
+</span></span></code></pre></td></tr></table></div></div><blockquote><p>注意：在 <code>proxy_pass</code> 配置两个代理目录 <code>web</code> 和 <code>wap</code> 后面必须加一个斜杠，否则 <code>nginx</code> 会报错，仔细看上面代理配置中两种写法的区别就明白了</p></blockquote><h2 id=nginx-常用指令 class=headerLink><a href=#nginx-%e5%b8%b8%e7%94%a8%e6%8c%87%e4%bb%a4 class=header-mark></a>nginx 常用指令</h2><p><code>nginx</code> 的 URL 重写模块是用得比较多的模块之一，常用的 URL 重写模块命令有 <code>if</code> 、<code>rewrite</code>、 <code>set</code>、 <code>break</code></p><h3 id=if-命令 class=headerLink><a href=#if-%e5%91%bd%e4%bb%a4 class=header-mark></a>if 命令</h3><ul><li>语法： <code>if (condition) {....}</code></li><li>默认值： <code>none</code></li><li>使用字段: <code>server</code> 、<code>location</code></li></ul><p>默认情况下，<code>if</code> 命令默认值为空，可在 nginx 配置文件的 <code>server</code>、<code>location</code> 部分使用，另外，<code>if</code> 命令可以在在判断语句中指定正则或匹配条件等，相关匹配条件如下：</p><blockquote><p><code>if</code> 与小括号之间有一个空格</p></blockquote><p><strong>正则表达式匹配</strong></p><ul><li><code>~</code> 表示区分大小写匹配</li><li><code>~*</code> 表示不区分大小写匹配</li><li><code>!~</code> 表示区分大小写<code>不匹配</code>，</li><li><code>!~*</code> 表示不区分大小写<code>不匹配</code></li></ul><p><strong>文件及目录匹配</strong></p><ul><li><code>-f</code> 和 <code>!-f</code> 用来判断是否存在文件</li><li><code>-d</code> 和 <code>!-d</code> 用来判断是否存在目录</li><li><code>-e</code> 和 <code>!-e</code> 用来判断是否存在文件和目录</li><li><code>-x</code> 和 <code>!-x</code> 用来判断文件是否可执行</li></ul><p><code>nginx</code> 配置文件中有很多内置变量，这些变量经常和if命令一起使用。常见的内置变量有如下几种:</p><ul><li><p><code>$args</code>, 此变量与请求行中的参数相等</p></li><li><p><code>$document_root</code>， 此变量等同于当前请求的 root 命令指定的值</p></li><li><p><code>$uri</code>, 此变量等同于当前 <code>request</code> 中的 <code>uri</code></p></li><li><p><code>$document_uri</code>， 此变量与 <code>$uri</code> 含义一样</p></li><li><p><code>$host</code>， 此变量与请求头部中的 &ldquo;Host&rdquo; 行指定的值一致</p></li><li><p><code>$limit_rate</code>, 此变量用来设置限制连接的速率</p></li><li><p><code>$request_method</code>, 此变量等同于 <code>request</code> 的 <code>method</code>，通常是&rsquo;GET&rsquo;,&lsquo;POST&rsquo;</p></li><li><p><code>$remote_addr</code>, 此变量表示客户端的IP地址</p></li><li><p><code>$remote_port</code>, 此变量表示客户端端口</p></li><li><p><code>$remote_user</code>, 此变量等同于用户名，由 <code>ngx_http_auth_basic_module</code> 认证</p></li><li><p><code>$request_filename</code>, 此变量表示当前请求的文件的路径名，由 root 或 alias 与 URI request 组合而成</p></li><li><p><code>$request_uri</code>, 此变量表示含有参数的完整的初始 URI</p></li><li><p><code>$query_string</code>, 此变量与$args含义一致</p></li><li><p><code>$server_name</code>, 此变量表示请求到达的服务器名</p></li><li><p><code>$server_port</code>, 此变量表示请示到达的服务器端口</p></li></ul><p><strong>例：uri为：http://localhost:88/test1/test2/test.php</strong></p><p>各变量值如下：</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>$host： localhost
+</span></span><span class=line><span class=cl>$server_port：  88
+</span></span><span class=line><span class=cl>$request_uri：  http://localhost:88/test1/test2/test.php
+</span></span><span class=line><span class=cl>$document_uri： /test1/test2/test.php
+</span></span><span class=line><span class=cl>$document_root：    /var/www/html
+</span></span><span class=line><span class=cl>$request_filename： /var/www/html/test1/test2/test.php
+</span></span></code></pre></td></tr></table></div></div><p>配置实例</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span><span class=lnt>26
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>server {
+</span></span><span class=line><span class=cl>    listen  80;
+</span></span><span class=line><span class=cl>    server_name www.liwanggui.com;
+</span></span><span class=line><span class=cl>    access_log  logs/host.access.log main;
+</span></span><span class=line><span class=cl>    index index.html index.htm;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    root /var/www/html;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    location ~*\.(gif|jpg|jpeg|png|bmp|swf|htm|html|css|js)$ {
+</span></span><span class=line><span class=cl>        root /usr/local/nginx/www/img;
+</span></span><span class=line><span class=cl>        if (!-f $request_filename){
+</span></span><span class=line><span class=cl>            root /var/www/html/img;
+</span></span><span class=line><span class=cl>        }
+</span></span><span class=line><span class=cl>        if (!-f $request_filename){
+</span></span><span class=line><span class=cl>            root /apps/images;
+</span></span><span class=line><span class=cl>        }
+</span></span><span class=line><span class=cl>    }
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    location ~*\.(jsp)${
+</span></span><span class=line><span class=cl>        root /webdata/webapp/www/ROOT;
+</span></span><span class=line><span class=cl>        if (!-f $request_filename){
+</span></span><span class=line><span class=cl>            root /usr/local/nginx/www/jsp;
+</span></span><span class=line><span class=cl>        }
+</span></span><span class=line><span class=cl>        proxy_pass http://127.0.0.1:8888;
+</span></span><span class=line><span class=cl>    }
+</span></span><span class=line><span class=cl>}
+</span></span></code></pre></td></tr></table></div></div><p>这段代码主要完成对 <code>www.liwanggui.com</code> 这个域名的资源访问配置， <code>www.liwanggui.com</code> 这个域名的根目录为 <code>/var/www/html</code>,
+而静态资源分别位于 <code>/usr/local/nginx/www/img</code>, <code>/var/www/html/img</code>, <code>/apps/images</code> 三个目录下，
+请求静态资源的方式依次在三个目录中找，如果第一个目录找不到，就找第二目录，以此类推，如果都找不到，将提示404错误；</p><p>动态资源分别位于 <code>/webdata/webapp/www/ROOT</code>,<code>/usr/local/nginx/www/jsp</code>,
+两个目录下，如果客户端请求的的资源是以 <code>.jsp</code> 结尾的，那么将依次在这两个动态程序目录下查找资源。
+而于没有在这两个目录中定义的资源，将全部从根目录 <code>/var/www/html</code> 进行查找。</p><h3 id=rewrite-命令 class=headerLink><a href=#rewrite-%e5%91%bd%e4%bb%a4 class=header-mark></a>rewrite 命令</h3><p><code>nginx</code> 通过 <code>ngx_http_rewrite_module</code> 模块支持URL重写和if条件判断，但要使用 <code>rewrite</code> 功能，需要 <code>pcre</code> 支持，应在编译 <code>nginx</code> 时指定 <code>pcre</code> 源码目录. <code>rewrite</code> 的使用语法如下：</p><ul><li>语法： <code>rewrite regex flag</code></li><li>默认值： <code>none</code></li><li>使用字段： <code>server</code> <code>location</code> <code>if</code></li></ul><p>在默认情况下，<code>rewrite</code> 命令默认值为空，可以 <code>nginx</code> 配置文件的 <code>server</code>,<code>location</code>,<code>if</code> 部分使用，<code>rewrite</code> 命令的最后一项参数为 <code>flag</code> 标记,其支持的 <code>flag</code> 标记主要有以下几种：</p><ul><li><code>last</code>, 相当于 <code>apache</code> 里的 <code>L</code> 标记，表示完成 <code>rewrite</code> 之后搜索相应的 <code>uri</code> 或 <code>location</code></li><li><code>break</code>, 表示终止匹配，不再匹配后面的规则</li><li><code>redirect</code>, 将返回 <code>302</code> 临时重定向，在浏览器地址会显示跳转后的 <code>URL</code> 地址。</li><li><code>permanent</code>, 将返回 <code>301</code> 永久重定向，在浏览器地址会显示跳转后的 <code>URL</code> 地址。</li></ul><blockquote><p>last 一般写在 server 和 if 中，而 break 一般使用在 location 中
+last 不终止重写后的 url 匹配，即新的 url 会再从 server 走一遍匹配流程，而 break 终止重写后的匹配
+break 和 last 都能组织继续执行后面的 rewrite 指令</p></blockquote><p>其中 last 和 break 用来实现 URL 重写，浏览器地址不变。下面是一个示例配置：</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>location ~ ^/best/ <span class=o>{</span>
+</span></span><span class=line><span class=cl>    rewrite ^/best/<span class=o>(</span>.*<span class=o>)</span>$ /best/<span class=nv>$1</span> break<span class=p>;</span>
+</span></span><span class=line><span class=cl>    proxy_pass http://www.liwanggui.com<span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=o>}</span>
+</span></span></code></pre></td></tr></table></div></div><blockquote><p>这个例子使用了 break 标记，可实现将请求为 <a href=http://www.lwg.com/best/webinfo.html target=_blank rel="noopener noreferrer">http://www.lwg.com/best/webinfo.html</a> 的页面重定向到 <a href=http://www.liwanggui.com/best/webinfo.html target=_blank rel="noopener noreferrer">http://www.liwanggui.com/best/webinfo.html</a> 页面而不引起浏览器地址栏中 URL 的变化。
+这个功能在新旧网站交替的时候非常有用（最好实践下，感觉有问题）</p></blockquote><h3 id=set-命令 class=headerLink><a href=#set-%e5%91%bd%e4%bb%a4 class=header-mark></a>set 命令</h3><p>通过 <code>set</code> 命令可以设置一个变量并为其赋值，其值可以是文本、变量或他们的组合。也可以使用set定义一个新的变量，但是不能使用 set 设置 $http_xxx 头部变量</p><p>set 的使用方法如下：</p><ul><li>语法： <code>set variable value</code></li><li>默认值： <code>none</code></li><li>使用字段： <code>server</code> <code>location</code> <code>if</code></li></ul><p>在默认情况下，set 命令默认值为空，可以 nginx 配置文件的 server location if 部分使用，下面是一个示例配置</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>location / {
+</span></span><span class=line><span class=cl>    proxy_pass http://127.0.0.1:8080/;
+</span></span><span class=line><span class=cl>    set $query $query_string;
+</span></span><span class=line><span class=cl>    rewrite /dede /wordpress?$query?;
+</span></span><span class=line><span class=cl>}
+</span></span></code></pre></td></tr></table></div></div><blockquote><p>在这个例子中，要实现将请求 <code>http://www.liwanggui.com/dede/wp?p=160</code> 的页面，重写到地址 <code>http://www.liwanggui.com/wordpress/?p=160</code>, 也就是重写带参数的 URL. 这里涉及 <code>$query_string</code> 变量，这个变量相当于请求行中的参数，也就是<code>？</code> 后面的内容。也可以用 $args 代替 <code>$query_string</code> 变量</p></blockquote><h3 id=break-命令 class=headerLink><a href=#break-%e5%91%bd%e4%bb%a4 class=header-mark></a>break 命令</h3><p><code>break</code> 的用法在前面的介绍中其实已经出现过，它表示完成当前设置的规则后，不再匹配后面的重写规则。 break的使用语法如下：</p><ul><li>语法： <code>break</code></li><li>默认值： <code>none</code></li><li>使用字段： <code>server</code> <code>lcoation</code> <code>if</code></li></ul><p>在默认情况下，<code>break</code> 命令的值为空，可以 <code>nginx</code> 配置文件的 <code>server</code> <code>lcoation</code> <code>if</code> 部分使用，下面是一个示例配置</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span><span class=lnt>7
+</span><span class=lnt>8
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>server {
+</span></span><span class=line><span class=cl>    listen 80;
+</span></span><span class=line><span class=cl>    server_name www.lwg.com www.liwanggui.com;
+</span></span><span class=line><span class=cl>    if ($host != &#39;www.wb.com&#39;){
+</span></span><span class=line><span class=cl>        rewrite ^/(.*)$ http://www.lwg.com/error.txt break;
+</span></span><span class=line><span class=cl>        rewrite ^/(.*)$ http://www.lwg.com/$1 permanent;
+</span></span><span class=line><span class=cl>    }
+</span></span><span class=line><span class=cl>}
+</span></span></code></pre></td></tr></table></div></div><blockquote><p>这个例子定义了两个域名 <code>www.lwg.com</code> 和 <code>www.liwanggui.com</code>, 当通过域名 <code>www.liwanggui.com</code> 访问网站时，会将请求重定向到 <code>http://www.lwg.com/error.txt</code> 页面，由于设置了 <code>break</code> 命令，因此下面的 <code>rewrite</code> 规则不再执行，直接退出。</p></blockquote></div><div class=post-footer id=post-footer><div class=post-info><div class=post-info-line><div class=post-info-mod><span>更新于 2021-04-01</span></div><div class=post-info-license></div></div><div class=post-info-line><div class=post-info-md><span><a class=link-to-mardown href=/posts/nginx-syntax/index.md target=_blank rel="noopener noreferrer">阅读原始文档</a></span></div><div class=post-info-share><span><a href=# title="分享到 Twitter" data-sharer=twitter data-url=https://liwanggui.com/posts/nginx-syntax/ data-title="nginx - 常用指令语法" data-hashtags=nginx><i class="fab fa-twitter fa-fw"></i></a><a href=# title="分享到 Facebook" data-sharer=facebook data-url=https://liwanggui.com/posts/nginx-syntax/ data-hashtag=nginx><i class="fab fa-facebook-square fa-fw"></i></a><a href=# title="分享到 WhatsApp" data-sharer=whatsapp data-url=https://liwanggui.com/posts/nginx-syntax/ data-title="nginx - 常用指令语法" data-web><i class="fab fa-whatsapp fa-fw"></i></a><a href=# title="分享到 Line" data-sharer=line data-url=https://liwanggui.com/posts/nginx-syntax/ data-title="nginx - 常用指令语法"><i data-svg-src=/lib/simple-icons/icons/line.min.svg></i></a><a href=# title="分享到 微博" data-sharer=weibo data-url=https://liwanggui.com/posts/nginx-syntax/ data-title="nginx - 常用指令语法"><i class="fab fa-weibo fa-fw"></i></a><a href=# title="分享到 Myspace" data-sharer=myspace data-url=https://liwanggui.com/posts/nginx-syntax/ data-title="nginx - 常用指令语法" data-description><i data-svg-src=/lib/simple-icons/icons/myspace.min.svg></i></a><a href=# title="分享到 Blogger" data-sharer=blogger data-url=https://liwanggui.com/posts/nginx-syntax/ data-title="nginx - 常用指令语法" data-description><i class="fab fa-blogger fa-fw"></i></a><a href=# title="分享到 百度" data-sharer=baidu data-url=https://liwanggui.com/posts/nginx-syntax/ data-title="nginx - 常用指令语法"><i data-svg-src=/lib/simple-icons/icons/baidu.min.svg></i></a><a href=# title="分享到 Evernote" data-sharer=evernote data-url=https://liwanggui.com/posts/nginx-syntax/ data-title="nginx - 常用指令语法"><i class="fab fa-evernote fa-fw"></i></a></span></div></div></div><div class=post-info-more><section class=post-tags><i class="fas fa-tags fa-fw"></i>&nbsp;<a href=/tags/nginx/>nginx</a></section><section><span><a href=javascript:void(0); onclick=window.history.back()>返回</a></span>&nbsp;|&nbsp;<span><a href=/>主页</a></span></section></div><div class=post-nav><a href=/posts/yum-repo/ class=prev rel=prev title="部署 YUM 本地仓库"><i class="fas fa-angle-left fa-fw"></i>部署 YUM 本地仓库</a>
+<a href=/posts/nginx-alias-root/ class=next rel=next title="nginx - alias 与 root 区别">nginx - alias 与 root 区别<i class="fas fa-angle-right fa-fw"></i></a></div></div><div id=comments><div id=giscus></div><noscript>Please enable JavaScript to view the comments powered by <a href=https://giscus.app/>giscus</a>.</noscript></div></article></div></main><footer class=footer><div class=footer-container><div class=footer-line>由 <a href=https://gohugo.io/ target=_blank rel="noopener noreferrer" title="Hugo 0.101.0">Hugo</a> 强力驱动&nbsp;|&nbsp;主题 - <a href=https://github.com/HEIGE-PCloud/DoIt target=_blank rel="noopener noreferrer" title="DoIt 0.3.0"><i class="far fa-edit fa-fw"></i> DoIt</a></div><div class=footer-line><i class="far fa-copyright fa-fw"></i><span itemprop=copyrightYear>2017 - 2024</span><span class=author itemprop=copyrightHolder>&nbsp;<a href=/about/ target=_blank rel="noopener noreferrer">李王贵</a></span><span class=icp-splitter>&nbsp;|&nbsp;</span><br class=icp-br><span class=icp><a href=https://beian.miit.gov.cn target=_blank>赣ICP备2023001395号</a></span></div><div class=footer-line></div><div class=footer-line></div></div></footer></div><div id=fixed-buttons><a href=#back-to-top id=back-to-top-button class=fixed-button title=回到顶部><i class="fas fa-arrow-up fa-fw"></i>
+</a><a href=# id=view-comments class=fixed-button title=查看评论><i class="fas fa-comment fa-fw"></i></a></div><div id=cookieconsent-container></div><div class=assets><link rel=stylesheet href=/lib/lightgallery/lightgallery.min.css><link rel=stylesheet href=/lib/katex/katex.min.css><link rel=preload as=style onload='this.onload=null,this.rel="stylesheet"' href=/lib/katex/copy-tex.min.css><noscript><link rel=stylesheet href=/lib/katex/copy-tex.min.css></noscript><link rel=stylesheet href=/lib/cookieconsent/cookieconsent.min.css><script type=text/javascript>window.config={code:{copyTitle:"复制到剪贴板",maxShownLines:10},comment:{giscus:{darkTheme:"dark",dataCategory:"Announcements",dataCategoryId:"DIC_kwDOE7mEQ84CY9pq",dataEmitMetadata:"1",dataInputPosition:"top",dataLang:"zh-CN",dataMapping:"pathname",dataReactionsEnabled:"1",dataRepo:"liwanggui/liwanggui.github.io",dataRepoId:"MDEwOlJlcG9zaXRvcnkzMzA5MjUxMjM=",dataStrict:"0",lightTheme:"light"}},cookieconsent:{content:{dismiss:"同意",link:"了解更多",message:"本网站使用 Cookies 来改善您的浏览体验."},enable:!0,palette:{button:{background:"#f0f0f0"},popup:{background:"#1aa3ff"}},theme:"edgeless"},lightGallery:{actualSize:!1,exThumbImage:"data-thumbnail",hideBarsDelay:2e3,selector:".lightgallery",speed:400,thumbContHeight:80,thumbWidth:80,thumbnail:!0},math:{delimiters:[{display:!0,left:"$$",right:"$$"},{display:!0,left:"\\[",right:"\\]"},{display:!1,left:"$",right:"$"},{display:!1,left:"\\(",right:"\\)"}],strict:!1},search:{distance:100,findAllMatches:!1,fuseIndexURL:"/index.json",highlightTag:"em",ignoreFieldNorm:!1,ignoreLocation:!1,isCaseSensitive:!1,location:0,maxResultLength:10,minMatchCharLength:2,noResultsFound:"没有找到结果",snippetLength:50,threshold:.3,type:"fuse",useExtendedSearch:!1},sharerjs:!0,twemoji:!0}</script><script type=text/javascript src=/js/giscus.min.js defer></script><script type=text/javascript src=/lib/twemoji/twemoji.min.js defer></script><script type=text/javascript src=/js/twemoji.min.js defer></script><script type=text/javascript src=/lib/lightgallery/lightgallery.min.js></script><script type=text/javascript src=/lib/lightgallery/lg-thumbnail.min.js></script><script type=text/javascript src=/lib/lightgallery/lg-zoom.min.js></script><script type=text/javascript src=/lib/clipboard/clipboard.min.js></script><script type=text/javascript src=/lib/sharer/sharer.min.js></script><script type=text/javascript src=/lib/katex/katex.min.js defer></script><script type=text/javascript src=/lib/katex/auto-render.min.js defer></script><script type=text/javascript src=/lib/katex/copy-tex.min.js defer></script><script type=text/javascript src=/lib/katex/mhchem.min.js defer></script><script type=text/javascript src=/js/katex.min.js defer></script><script type=text/javascript src=/lib/cookieconsent/cookieconsent.min.js defer></script><script type=text/javascript src=/js/cookieconsent.min.js defer></script><script type=text/javascript src=/js/theme.min.js defer></script></div></body></html>

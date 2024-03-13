@@ -1,0 +1,175 @@
+<!doctype html><html lang=zh-cn><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><meta name=robots content="noodp"><title>Bash {} 的特殊用法 - _浅行</title><meta name=Description content="_浅行"><meta property="og:title" content="Bash {} 的特殊用法"><meta property="og:description" content="本文主要介绍 Bash {} 的特殊用法 1. 输出变量的值 1 2 3 root@DESKTOP-Q3T526A:~# var=&#34;hello world&#34; root@DESKTOP-Q3T526A:~# echo ${var} hello world 2. 设置变量默认值 语法: ${var:-default} 变量 var 没有定义或者值为空时，输出 default，变量的"><meta property="og:type" content="article"><meta property="og:url" content="https://liwanggui.com/posts/bash-brace-syntax/"><meta property="og:image" content="https://liwanggui.com/logo.png"><meta property="article:section" content="posts"><meta property="article:published_time" content="2023-12-28T10:32:00+08:00"><meta property="article:modified_time" content="2023-12-28T10:32:00+08:00"><meta name=twitter:card content="summary_large_image"><meta name=twitter:image content="https://liwanggui.com/logo.png"><meta name=twitter:title content="Bash {} 的特殊用法"><meta name=twitter:description content="本文主要介绍 Bash {} 的特殊用法 1. 输出变量的值 1 2 3 root@DESKTOP-Q3T526A:~# var=&#34;hello world&#34; root@DESKTOP-Q3T526A:~# echo ${var} hello world 2. 设置变量默认值 语法: ${var:-default} 变量 var 没有定义或者值为空时，输出 default，变量的"><meta name=application-name content="LoveIt"><meta name=apple-mobile-web-app-title content="LoveIt"><meta name=theme-color content="#f8f8f8"><meta name=msapplication-TileColor content="#da532c"><link rel=canonical href=https://liwanggui.com/posts/bash-brace-syntax/><link rel=prev href=https://liwanggui.com/posts/ossfs/><link rel=next href=https://liwanggui.com/posts/windows-accounts/><link rel=stylesheet href=/lib/normalize/normalize.min.css><link rel=stylesheet href=/css/color.css><link rel=stylesheet href=/css/style.min.css><link rel=preload as=style onload='this.onload=null,this.rel="stylesheet"' href=/lib/fontawesome-free/all.min.css><noscript><link rel=stylesheet href=/lib/fontawesome-free/all.min.css></noscript><link rel=preload as=style onload='this.onload=null,this.rel="stylesheet"' href=/lib/animate/animate.min.css><noscript><link rel=stylesheet href=/lib/animate/animate.min.css></noscript><script type=application/ld+json>{"@context":"http://schema.org","@type":"BlogPosting","headline":"Bash {} 的特殊用法","inLanguage":"zh-CN","mainEntityOfPage":{"@type":"WebPage","@id":"https:\/\/liwanggui.com\/posts\/bash-brace-syntax\/"},"genre":"posts","keywords":"bash","wordcount":892,"url":"https:\/\/liwanggui.com\/posts\/bash-brace-syntax\/","datePublished":"2023-12-28T10:32:00+08:00","dateModified":"2023-12-28T10:32:00+08:00","publisher":{"@type":"Organization","name":""},"author":{"@type":"Person","name":"李王贵"},"description":""}</script><script src=//instant.page/5.1.1 defer type=module integrity=sha384-MWfCL6g1OTGsbSwfuMHc8+8J2u71/LA8dzlIN3ycajckxuZZmF+DNjdm7O6H3PSq></script></head><body header-desktop=fixed header-mobile=auto><script type=text/javascript>function setTheme(e){document.body.setAttribute("theme",e),document.documentElement.style.setProperty("color-scheme",e==="light"?"light":"dark")}function saveTheme(e){window.localStorage&&localStorage.setItem("theme",e)}function getMeta(e){const t=document.getElementsByTagName("meta");for(let n=0;n<t.length;n++)if(t[n].getAttribute("name")===e)return t[n];return""}if(window.localStorage&&localStorage.getItem("theme")){let e=localStorage.getItem("theme");e==="light"||e==="dark"||e==="black"?setTheme(e):setTheme(window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light")}else"auto"==="light"||"auto"==="dark"||"auto"==="black"?(setTheme("auto"),saveTheme("auto")):(saveTheme("auto"),setTheme(window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"));let metaColors={light:"#f8f8f8",dark:"#252627",black:"#000000"};getMeta("theme-color").content=metaColors[document.body.getAttribute("theme")]</script><div id=back-to-top></div><div id=mask></div><div class=wrapper><header class=desktop id=header-desktop><div class=header-wrapper><div class=header-title><a href=/ title=_浅行><span class=header-title-pre><i class='far fa-kiss-wink-heart fa-fw'></i></span>_浅行</a></div><div class=menu><div class=menu-inner><a class=menu-item href=/posts/ title=文章列表>文章 </a><a class=menu-item href=/tags/ title=标签云>标签 </a><a class=menu-item href=/categories/ title=分类>分类 </a><a class=menu-item href=https://cook.liwanggui.com/ title=程序员做饭指南 rel="noopener noreferrer" target=_blank>烹饪 </a><a class=menu-item href=/about/index.html title=关于>关于 </a><span class="menu-item delimiter"></span><span class="menu-item search" id=search-desktop>
+<input type=text placeholder=搜索文章标题或内容... id=search-input-desktop>
+<a href=# class="search-button search-toggle" id=search-toggle-desktop title=搜索><i class="fas fa-search fa-fw"></i></a>
+<a href=# class="search-button search-clear" id=search-clear-desktop title=清空><i class="fas fa-times-circle fa-fw"></i></a>
+<span class="search-button search-loading" id=search-loading-desktop><i class="fas fa-spinner fa-fw fa-spin"></i></span>
+</span><a href=# class="menu-item theme-switch" title=切换主题><i class="fas fa-adjust fa-fw"></i></a></div></div></div></header><header class=mobile id=header-mobile><div class=header-container><div class=header-wrapper><div class=header-title><a href=/ title=_浅行><span class=header-title-pre><i class='far fa-kiss-wink-heart fa-fw'></i></span>_浅行</a></div><div class=menu-toggle id=menu-toggle-mobile><span></span><span></span><span></span></div></div><div class=menu id=menu-mobile><div class=search-wrapper><div class="search mobile" id=search-mobile><input type=text placeholder=搜索文章标题或内容... id=search-input-mobile>
+<a href=# class="search-button search-toggle" id=search-toggle-mobile title=搜索><i class="fas fa-search fa-fw"></i></a>
+<a href=# class="search-button search-clear" id=search-clear-mobile title=清空><i class="fas fa-times-circle fa-fw"></i></a>
+<span class="search-button search-loading" id=search-loading-mobile><i class="fas fa-spinner fa-fw fa-spin"></i></span></div><a href=# class=search-cancel id=search-cancel-mobile>取消</a></div><a class=menu-item href=/posts/ title=文章列表>文章</a><a class=menu-item href=/tags/ title=标签云>标签</a><a class=menu-item href=/categories/ title=分类>分类</a><a class=menu-item href=https://cook.liwanggui.com/ title=程序员做饭指南 rel="noopener noreferrer" target=_blank>烹饪</a><a class=menu-item href=/about/index.html title=关于>关于</a><a href=# class="menu-item theme-switch" title=切换主题>
+<i class="fas fa-adjust fa-fw"></i></a></div></div></header><div class="search-dropdown desktop"><div id=search-dropdown-desktop></div></div><div class="search-dropdown mobile"><div id=search-dropdown-mobile></div></div><main class=main><div class=container><div class=toc id=toc-auto><h2 class=toc-title>目录</h2><div class=toc-content id=toc-content-auto><nav id=TableOfContents><ul><li><a href=#1-输出变量的值>1. 输出变量的值</a></li><li><a href=#2-设置变量默认值>2. 设置变量默认值</a></li><li><a href=#3-判断变量是否定义及非空>3. 判断变量是否定义及非空</a></li><li><a href=#4-查看变量>4. 查看变量</a></li><li><a href=#5-变量嵌套间接引用>5. 变量嵌套（间接）引用</a></li><li><a href=#6-获取变量长度>6. 获取变量长度</a></li><li><a href=#7-转换变量值的大小写>7. 转换变量值的大小写</a></li><li><a href=#8-变量字符截取>8. 变量字符截取</a></li><li><a href=#9-查找删除字符串>9. 查找删除字符串</a><ul><li><a href=#1-从头开始查找>1. 从头开始查找</a></li><li><a href=#2-从尾部开始查找>2. 从尾部开始查找</a></li></ul></li><li><a href=#10-字符串替换>10. 字符串替换</a></li></ul></nav></div></div><script>document.getElementsByTagName("main")[0].setAttribute("pageStyle","normal")</script><script>document.getElementsByTagName("main")[0].setAttribute("autoTOC","true")</script><article class="page single"><h1 class="single-title animate__animated animate__flipInX">Bash {} 的特殊用法</h1><div class=post-meta><div class=post-meta-line><span class=post-author><i class="author fas fa-user-circle fa-fw"></i><a href=/about/ title=Author rel=author class=author>李王贵</a>
+</span>&nbsp;<span class=post-category>收录于 </span>&nbsp;<span class=post-category>类别 <a href=/categories/bash/><i class="far fa-folder fa-fw"></i>bash</a></span></div><div class=post-meta-line><i class="far fa-calendar-alt fa-fw"></i>&nbsp;<time datetime=2023-12-28>2023-12-28</time>&nbsp;<i class="far fa-edit fa-fw"></i>&nbsp;<time datetime=2023-12-28>2023-12-28</time>&nbsp;<i class="fas fa-pencil-alt fa-fw"></i>&nbsp;约 892 字&nbsp;
+<i class="far fa-clock fa-fw"></i>&nbsp;预计阅读 2 分钟&nbsp;</div></div><div class="details toc" id=toc-static kept><div class="details-summary toc-title"><span>目录</span>
+<span><i class="details-icon fas fa-angle-right"></i></span></div><div class="details-content toc-content" id=toc-content-static><nav id=TableOfContents><ul><li><a href=#1-输出变量的值>1. 输出变量的值</a></li><li><a href=#2-设置变量默认值>2. 设置变量默认值</a></li><li><a href=#3-判断变量是否定义及非空>3. 判断变量是否定义及非空</a></li><li><a href=#4-查看变量>4. 查看变量</a></li><li><a href=#5-变量嵌套间接引用>5. 变量嵌套（间接）引用</a></li><li><a href=#6-获取变量长度>6. 获取变量长度</a></li><li><a href=#7-转换变量值的大小写>7. 转换变量值的大小写</a></li><li><a href=#8-变量字符截取>8. 变量字符截取</a></li><li><a href=#9-查找删除字符串>9. 查找删除字符串</a><ul><li><a href=#1-从头开始查找>1. 从头开始查找</a></li><li><a href=#2-从尾部开始查找>2. 从尾部开始查找</a></li></ul></li><li><a href=#10-字符串替换>10. 字符串替换</a></li></ul></nav></div></div><div class=content id=content><p>本文主要介绍 <code>Bash</code> <code>{}</code> 的特殊用法</p><h2 id=1-输出变量的值 class=headerLink><a href=#1-%e8%be%93%e5%87%ba%e5%8f%98%e9%87%8f%e7%9a%84%e5%80%bc class=header-mark></a>1. 输出变量的值</h2><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>root@DESKTOP-Q3T526A:~# <span class=nv>var</span><span class=o>=</span><span class=s2>&#34;hello world&#34;</span>
+</span></span><span class=line><span class=cl>root@DESKTOP-Q3T526A:~# <span class=nb>echo</span> <span class=si>${</span><span class=nv>var</span><span class=si>}</span>
+</span></span><span class=line><span class=cl>hello world
+</span></span></code></pre></td></tr></table></div></div><h2 id=2-设置变量默认值 class=headerLink><a href=#2-%e8%ae%be%e7%bd%ae%e5%8f%98%e9%87%8f%e9%bb%98%e8%ae%a4%e5%80%bc class=header-mark></a>2. 设置变量默认值</h2><ol><li>语法: <code>${var:-default}</code> 变量 var 没有定义或者值为空时，输出 <code>default</code>，变量的值保持不变(不会对变量进行赋值操作)</li></ol><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span><span class=lnt>7
+</span><span class=lnt>8
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=c1># 变量未定义时</span>
+</span></span><span class=line><span class=cl>root@DESKTOP-Q3T526A:~# <span class=nb>echo</span> <span class=si>${</span><span class=nv>var</span><span class=k>:-</span><span class=nv>default</span><span class=si>}</span>
+</span></span><span class=line><span class=cl>default
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># 变量值为空时</span>
+</span></span><span class=line><span class=cl>root@DESKTOP-Q3T526A:~# <span class=nv>var</span><span class=o>=</span>
+</span></span><span class=line><span class=cl>root@DESKTOP-Q3T526A:~# <span class=nb>echo</span> <span class=si>${</span><span class=nv>var</span><span class=k>:-</span><span class=nv>default2</span><span class=si>}</span>
+</span></span><span class=line><span class=cl>default2
+</span></span></code></pre></td></tr></table></div></div><ol start=2><li>语法：<code>${var:=default}</code> 变量 var 没有定义或者为空时，输出 default，同时变量 var 的值被设置为 default</li></ol><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>root@DESKTOP-Q3T526A:~# <span class=nb>echo</span> <span class=si>${</span><span class=nv>var</span><span class=p>:=default</span><span class=si>}</span>
+</span></span><span class=line><span class=cl>default
+</span></span><span class=line><span class=cl>root@DESKTOP-Q3T526A:~# <span class=nb>echo</span> <span class=si>${</span><span class=nv>var</span><span class=si>}</span>
+</span></span><span class=line><span class=cl>default
+</span></span></code></pre></td></tr></table></div></div><h2 id=3-判断变量是否定义及非空 class=headerLink><a href=#3-%e5%88%a4%e6%96%ad%e5%8f%98%e9%87%8f%e6%98%af%e5%90%a6%e5%ae%9a%e4%b9%89%e5%8f%8a%e9%9d%9e%e7%a9%ba class=header-mark></a>3. 判断变量是否定义及非空</h2><ol><li>语法: <code>${var+value}</code> 变量 var 被定义时输出 value, 未定义时输出空字符串, 变量 var 保持不变</li></ol><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span><span class=lnt>7
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=c1># var 未定义时</span>
+</span></span><span class=line><span class=cl>root@DESKTOP-Q3T526A:~# <span class=nb>echo</span> <span class=si>${</span><span class=nv>var</span><span class=p>+define</span><span class=si>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># var 定义时</span>
+</span></span><span class=line><span class=cl>root@DESKTOP-Q3T526A:~# <span class=nv>var</span><span class=o>=</span>
+</span></span><span class=line><span class=cl>root@DESKTOP-Q3T526A:~# <span class=nb>echo</span> <span class=si>${</span><span class=nv>var</span><span class=p>+define</span><span class=si>}</span>
+</span></span><span class=line><span class=cl>define
+</span></span></code></pre></td></tr></table></div></div><ol start=2><li>语法: <code>${var:+value}</code> 变量 var 被定义且非空时时输出 value, 未定义时输出空字符串, 变量 var 保持不变</li></ol><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=c1># var 未定义时</span>
+</span></span><span class=line><span class=cl>root@DESKTOP-Q3T526A:~# <span class=nb>echo</span> <span class=si>${</span><span class=nv>var</span><span class=p>:+define</span><span class=si>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># var 定义为空时</span>
+</span></span><span class=line><span class=cl>root@DESKTOP-Q3T526A:~# <span class=nv>var</span><span class=o>=</span>
+</span></span><span class=line><span class=cl>root@DESKTOP-Q3T526A:~# <span class=nb>echo</span> <span class=si>${</span><span class=nv>var</span><span class=p>:+define</span><span class=si>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1>#var 定义且非空时</span>
+</span></span><span class=line><span class=cl>root@DESKTOP-Q3T526A:~# <span class=nv>var</span><span class=o>=</span><span class=m>1</span>
+</span></span><span class=line><span class=cl>root@DESKTOP-Q3T526A:~# <span class=nb>echo</span> <span class=si>${</span><span class=nv>var</span><span class=p>:+define</span><span class=si>}</span>
+</span></span><span class=line><span class=cl>define
+</span></span></code></pre></td></tr></table></div></div><h2 id=4-查看变量 class=headerLink><a href=#4-%e6%9f%a5%e7%9c%8b%e5%8f%98%e9%87%8f class=header-mark></a>4. 查看变量</h2><p>语法: <code>${!PREFIX*}</code> or <code>${!PREFIX@}</code> 匹配输出所有以 <code>PREFIX</code> 开头的变量名</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>root@DESKTOP-Q3T526A:~# <span class=nb>echo</span> <span class=si>${</span><span class=p>!SSH*</span><span class=si>}</span>
+</span></span><span class=line><span class=cl>SSH_CLIENT SSH_CONNECTION SSH_TTY
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>root@DESKTOP-Q3T526A:~# <span class=nb>echo</span> <span class=si>${</span><span class=p>!SSH@</span><span class=si>}</span>
+</span></span><span class=line><span class=cl>SSH_CLIENT SSH_CONNECTION SSH_TTY
+</span></span></code></pre></td></tr></table></div></div><h2 id=5-变量嵌套间接引用 class=headerLink><a href=#5-%e5%8f%98%e9%87%8f%e5%b5%8c%e5%a5%97%e9%97%b4%e6%8e%a5%e5%bc%95%e7%94%a8 class=header-mark></a>5. 变量嵌套（间接）引用</h2><p>语法: <code>${!var}</code> 变量间接引入</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>root@DESKTOP-Q3T526A:~# <span class=nv>teacher</span><span class=o>=</span>ZhangSan
+</span></span><span class=line><span class=cl>root@DESKTOP-Q3T526A:~# <span class=nv>job</span><span class=o>=</span>teacher
+</span></span><span class=line><span class=cl>root@DESKTOP-Q3T526A:~# <span class=nb>echo</span> <span class=si>${</span><span class=p>!job</span><span class=si>}</span>
+</span></span><span class=line><span class=cl>ZhangSan
+</span></span></code></pre></td></tr></table></div></div><blockquote><p>等同于 <code>eval \$$</code></p></blockquote><h2 id=6-获取变量长度 class=headerLink><a href=#6-%e8%8e%b7%e5%8f%96%e5%8f%98%e9%87%8f%e9%95%bf%e5%ba%a6 class=header-mark></a>6. 获取变量长度</h2><p>语法: <code>${#var}</code> 返回变量字符长度</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=si>${#</span><span class=nv>var</span><span class=si>}</span>
+</span></span></code></pre></td></tr></table></div></div><h2 id=7-转换变量值的大小写 class=headerLink><a href=#7-%e8%bd%ac%e6%8d%a2%e5%8f%98%e9%87%8f%e5%80%bc%e7%9a%84%e5%a4%a7%e5%b0%8f%e5%86%99 class=header-mark></a>7. 转换变量值的大小写</h2><p>变量值的大小写转换，不改原变量的值</p><p><strong>语法:</strong></p><ul><li><code>${var,,}</code> 将 var 的值转为小写</li><li><code>${var^^}</code> 将 var 的值转为大写</li></ul><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>root@DESKTOP-Q3T526A:~# <span class=nv>var1</span><span class=o>=</span>HELLO
+</span></span><span class=line><span class=cl>root@DESKTOP-Q3T526A:~# <span class=nv>var2</span><span class=o>=</span>hello
+</span></span><span class=line><span class=cl>root@DESKTOP-Q3T526A:~# <span class=nb>echo</span> <span class=si>${</span><span class=nv>var1</span><span class=p>,,</span><span class=si>}</span>
+</span></span><span class=line><span class=cl>hello
+</span></span><span class=line><span class=cl>root@DESKTOP-Q3T526A:~# <span class=nb>echo</span> <span class=si>${</span><span class=nv>var2</span><span class=p>^^</span><span class=si>}</span>
+</span></span><span class=line><span class=cl>HELLO
+</span></span></code></pre></td></tr></table></div></div><h2 id=8-变量字符截取 class=headerLink><a href=#8-%e5%8f%98%e9%87%8f%e5%ad%97%e7%ac%a6%e6%88%aa%e5%8f%96 class=header-mark></a>8. 变量字符截取</h2><p>语法: <code>${var:start_position:length}</code></p><ul><li>start_position: 截取字符起始点，以索引 0 开始</li><li>length：截取字符的长度</li></ul><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>root@DESKTOP-Q3T526A:~# <span class=nv>var2</span><span class=o>=</span>hello
+</span></span><span class=line><span class=cl>root@DESKTOP-Q3T526A:~# <span class=nb>echo</span> <span class=si>${</span><span class=nv>var2</span><span class=p>:</span><span class=nv>1</span><span class=si>}</span>
+</span></span><span class=line><span class=cl>ello
+</span></span><span class=line><span class=cl>root@DESKTOP-Q3T526A:~# <span class=nb>echo</span> <span class=si>${</span><span class=nv>var2</span><span class=p>:</span><span class=nv>1</span><span class=p>:</span><span class=nv>2</span><span class=si>}</span>
+</span></span><span class=line><span class=cl>el
+</span></span></code></pre></td></tr></table></div></div><h2 id=9-查找删除字符串 class=headerLink><a href=#9-%e6%9f%a5%e6%89%be%e5%88%a0%e9%99%a4%e5%ad%97%e7%ac%a6%e4%b8%b2 class=header-mark></a>9. 查找删除字符串</h2><h3 id=1-从头开始查找 class=headerLink><a href=#1-%e4%bb%8e%e5%a4%b4%e5%bc%80%e5%a7%8b%e6%9f%a5%e6%89%be class=header-mark></a>1. 从头开始查找</h3><p>语法:</p><ul><li><code>${str#substr}</code> : 从头开始查找匹配，删除最短匹配 substr 的子串</li><li><code>${str##substr}</code>: 从头开始查找匹配，删除最长匹配 substr 的子串</li></ul><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span><span class=lnt>7
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>root@DESKTOP-Q3T526A:~# <span class=nv>str</span><span class=o>=</span><span class=s2>&#34;/usr/local/src&#34;</span>
+</span></span><span class=line><span class=cl><span class=c1># 删除最短匹配</span>
+</span></span><span class=line><span class=cl>root@DESKTOP-Q3T526A:~# <span class=nb>echo</span> <span class=si>${</span><span class=nv>str</span><span class=p>#/*/</span><span class=si>}</span>
+</span></span><span class=line><span class=cl>local/src
+</span></span><span class=line><span class=cl><span class=c1># 删除最长匹配</span>
+</span></span><span class=line><span class=cl>root@DESKTOP-Q3T526A:~# <span class=nb>echo</span> <span class=si>${</span><span class=nv>str</span><span class=p>##/*/</span><span class=si>}</span>
+</span></span><span class=line><span class=cl>src
+</span></span></code></pre></td></tr></table></div></div><h3 id=2-从尾部开始查找 class=headerLink><a href=#2-%e4%bb%8e%e5%b0%be%e9%83%a8%e5%bc%80%e5%a7%8b%e6%9f%a5%e6%89%be class=header-mark></a>2. 从尾部开始查找</h3><ul><li><code>${str%substr}</code> : 从尾部开始查找匹配，删除最短匹配 substr 的子串</li><li><code>${str%%substr}</code>: 从尾部开始查找匹配，删除最长匹配 substr 的子串</li></ul><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span><span class=lnt>7
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>root@DESKTOP-Q3T526A:~# <span class=nv>str</span><span class=o>=</span><span class=s2>&#34;/usr/local/src/&#34;</span>
+</span></span><span class=line><span class=cl><span class=c1># 删除最短匹配</span>
+</span></span><span class=line><span class=cl>root@DESKTOP-Q3T526A:~# <span class=nb>echo</span> <span class=si>${</span><span class=nv>str</span><span class=p>%*/</span><span class=si>}</span>
+</span></span><span class=line><span class=cl>/usr/local/src
+</span></span><span class=line><span class=cl><span class=c1># 删除最长匹配</span>
+</span></span><span class=line><span class=cl>root@DESKTOP-Q3T526A:~# <span class=nb>echo</span> <span class=si>${</span><span class=nv>str</span><span class=p>%%*/</span><span class=si>}</span>
+</span></span><span class=line><span class=cl><span class=c1># 没有输出,删除了所有匹配的字符</span>
+</span></span></code></pre></td></tr></table></div></div><h2 id=10-字符串替换 class=headerLink><a href=#10-%e5%ad%97%e7%ac%a6%e4%b8%b2%e6%9b%bf%e6%8d%a2 class=header-mark></a>10. 字符串替换</h2><p><strong>语法:</strong></p><ul><li><code>${str/substr/replace}</code> 使用 replace 替换第一个匹配 substr 的字符串</li><li><code>${str//substr/replace}</code> 使用 replace 替换所有匹配 substr 的字符串</li></ul><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span><span class=lnt>7
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>root@DESKTOP-Q3T526A:~# <span class=nv>str</span><span class=o>=</span><span class=s2>&#34;/usr/local/src/test/src&#34;</span>
+</span></span><span class=line><span class=cl><span class=c1># 替换第一个</span>
+</span></span><span class=line><span class=cl>root@DESKTOP-Q3T526A:~# <span class=nb>echo</span> <span class=si>${</span><span class=nv>str</span><span class=p>/src/bin</span><span class=si>}</span>
+</span></span><span class=line><span class=cl>/usr/local/bin/test/src
+</span></span><span class=line><span class=cl><span class=c1># 替换所有</span>
+</span></span><span class=line><span class=cl>root@DESKTOP-Q3T526A:~# <span class=nb>echo</span> <span class=si>${</span><span class=nv>str</span><span class=p>//src/bin</span><span class=si>}</span>
+</span></span><span class=line><span class=cl>/usr/local/bin/test/bin
+</span></span></code></pre></td></tr></table></div></div><p><strong>语法:</strong></p><ul><li><code>${str/#substr/replace}</code> 以 substr 字符开头时，使用 replace 替换一次匹配的 substr 的字符串</li><li><code>${str/%substr/replace}</code> 以 substr 字符结尾时，使用 replace 替换一次匹配的 substr 的字符串</li></ul><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>root@DESKTOP-Q3T526A:~# <span class=nv>str</span><span class=o>=</span><span class=s2>&#34;hello world, hello welcome, he&#34;</span>
+</span></span><span class=line><span class=cl>root@DESKTOP-Q3T526A:~# <span class=nb>echo</span> <span class=si>${</span><span class=nv>str</span><span class=p>/#he/ha</span><span class=si>}</span>
+</span></span><span class=line><span class=cl>hallo world, hello welcome, he
+</span></span><span class=line><span class=cl>root@DESKTOP-Q3T526A:~# <span class=nb>echo</span> <span class=si>${</span><span class=nv>str</span><span class=p>/%he/ha</span><span class=si>}</span>
+</span></span><span class=line><span class=cl>hello world, hello welcome, ha
+</span></span></code></pre></td></tr></table></div></div></div><div class=post-footer id=post-footer><div class=post-info><div class=post-info-line><div class=post-info-mod><span>更新于 2023-12-28</span></div><div class=post-info-license></div></div><div class=post-info-line><div class=post-info-md><span><a class=link-to-mardown href=/posts/bash-brace-syntax/index.md target=_blank rel="noopener noreferrer">阅读原始文档</a></span></div><div class=post-info-share><span><a href=# title="分享到 Twitter" data-sharer=twitter data-url=https://liwanggui.com/posts/bash-brace-syntax/ data-title="Bash {} 的特殊用法" data-hashtags=bash><i class="fab fa-twitter fa-fw"></i></a><a href=# title="分享到 Facebook" data-sharer=facebook data-url=https://liwanggui.com/posts/bash-brace-syntax/ data-hashtag=bash><i class="fab fa-facebook-square fa-fw"></i></a><a href=# title="分享到 WhatsApp" data-sharer=whatsapp data-url=https://liwanggui.com/posts/bash-brace-syntax/ data-title="Bash {} 的特殊用法" data-web><i class="fab fa-whatsapp fa-fw"></i></a><a href=# title="分享到 Line" data-sharer=line data-url=https://liwanggui.com/posts/bash-brace-syntax/ data-title="Bash {} 的特殊用法"><i data-svg-src=/lib/simple-icons/icons/line.min.svg></i></a><a href=# title="分享到 微博" data-sharer=weibo data-url=https://liwanggui.com/posts/bash-brace-syntax/ data-title="Bash {} 的特殊用法"><i class="fab fa-weibo fa-fw"></i></a><a href=# title="分享到 Myspace" data-sharer=myspace data-url=https://liwanggui.com/posts/bash-brace-syntax/ data-title="Bash {} 的特殊用法" data-description><i data-svg-src=/lib/simple-icons/icons/myspace.min.svg></i></a><a href=# title="分享到 Blogger" data-sharer=blogger data-url=https://liwanggui.com/posts/bash-brace-syntax/ data-title="Bash {} 的特殊用法" data-description><i class="fab fa-blogger fa-fw"></i></a><a href=# title="分享到 百度" data-sharer=baidu data-url=https://liwanggui.com/posts/bash-brace-syntax/ data-title="Bash {} 的特殊用法"><i data-svg-src=/lib/simple-icons/icons/baidu.min.svg></i></a><a href=# title="分享到 Evernote" data-sharer=evernote data-url=https://liwanggui.com/posts/bash-brace-syntax/ data-title="Bash {} 的特殊用法"><i class="fab fa-evernote fa-fw"></i></a></span></div></div></div><div class=post-info-more><section class=post-tags><i class="fas fa-tags fa-fw"></i>&nbsp;<a href=/tags/bash/>bash</a></section><section><span><a href=javascript:void(0); onclick=window.history.back()>返回</a></span>&nbsp;|&nbsp;<span><a href=/>主页</a></span></section></div><div class=post-nav><a href=/posts/ossfs/ class=prev rel=prev title="使用 ossfs 挂载阿里云 OSS 至本地文件系统"><i class="fas fa-angle-left fa-fw"></i>使用 ossfs 挂载阿里云 OSS 至本地文件系统</a>
+<a href=/posts/windows-accounts/ class=next rel=next title="Windows 本地用户密码过期策略设置">Windows 本地用户密码过期策略设置<i class="fas fa-angle-right fa-fw"></i></a></div></div><div id=comments><div id=giscus></div><noscript>Please enable JavaScript to view the comments powered by <a href=https://giscus.app/>giscus</a>.</noscript></div></article></div></main><footer class=footer><div class=footer-container><div class=footer-line>由 <a href=https://gohugo.io/ target=_blank rel="noopener noreferrer" title="Hugo 0.101.0">Hugo</a> 强力驱动&nbsp;|&nbsp;主题 - <a href=https://github.com/HEIGE-PCloud/DoIt target=_blank rel="noopener noreferrer" title="DoIt 0.3.0"><i class="far fa-edit fa-fw"></i> DoIt</a></div><div class=footer-line><i class="far fa-copyright fa-fw"></i><span itemprop=copyrightYear>2017 - 2024</span><span class=author itemprop=copyrightHolder>&nbsp;<a href=/about/ target=_blank rel="noopener noreferrer">李王贵</a></span><span class=icp-splitter>&nbsp;|&nbsp;</span><br class=icp-br><span class=icp><a href=https://beian.miit.gov.cn target=_blank>赣ICP备2023001395号</a></span></div><div class=footer-line></div><div class=footer-line></div></div></footer></div><div id=fixed-buttons><a href=#back-to-top id=back-to-top-button class=fixed-button title=回到顶部><i class="fas fa-arrow-up fa-fw"></i>
+</a><a href=# id=view-comments class=fixed-button title=查看评论><i class="fas fa-comment fa-fw"></i></a></div><div id=cookieconsent-container></div><div class=assets><link rel=stylesheet href=/lib/lightgallery/lightgallery.min.css><link rel=stylesheet href=/lib/katex/katex.min.css><link rel=preload as=style onload='this.onload=null,this.rel="stylesheet"' href=/lib/katex/copy-tex.min.css><noscript><link rel=stylesheet href=/lib/katex/copy-tex.min.css></noscript><link rel=stylesheet href=/lib/cookieconsent/cookieconsent.min.css><script type=text/javascript>window.config={code:{copyTitle:"复制到剪贴板",maxShownLines:10},comment:{giscus:{darkTheme:"dark",dataCategory:"Announcements",dataCategoryId:"DIC_kwDOE7mEQ84CY9pq",dataEmitMetadata:"1",dataInputPosition:"top",dataLang:"zh-CN",dataMapping:"pathname",dataReactionsEnabled:"1",dataRepo:"liwanggui/liwanggui.github.io",dataRepoId:"MDEwOlJlcG9zaXRvcnkzMzA5MjUxMjM=",dataStrict:"0",lightTheme:"light"}},cookieconsent:{content:{dismiss:"同意",link:"了解更多",message:"本网站使用 Cookies 来改善您的浏览体验."},enable:!0,palette:{button:{background:"#f0f0f0"},popup:{background:"#1aa3ff"}},theme:"edgeless"},lightGallery:{actualSize:!1,exThumbImage:"data-thumbnail",hideBarsDelay:2e3,selector:".lightgallery",speed:400,thumbContHeight:80,thumbWidth:80,thumbnail:!0},math:{delimiters:[{display:!0,left:"$$",right:"$$"},{display:!0,left:"\\[",right:"\\]"},{display:!1,left:"$",right:"$"},{display:!1,left:"\\(",right:"\\)"}],strict:!1},search:{distance:100,findAllMatches:!1,fuseIndexURL:"/index.json",highlightTag:"em",ignoreFieldNorm:!1,ignoreLocation:!1,isCaseSensitive:!1,location:0,maxResultLength:10,minMatchCharLength:2,noResultsFound:"没有找到结果",snippetLength:50,threshold:.3,type:"fuse",useExtendedSearch:!1},sharerjs:!0,twemoji:!0}</script><script type=text/javascript src=/js/giscus.min.js defer></script><script type=text/javascript src=/lib/twemoji/twemoji.min.js defer></script><script type=text/javascript src=/js/twemoji.min.js defer></script><script type=text/javascript src=/lib/lightgallery/lightgallery.min.js></script><script type=text/javascript src=/lib/lightgallery/lg-thumbnail.min.js></script><script type=text/javascript src=/lib/lightgallery/lg-zoom.min.js></script><script type=text/javascript src=/lib/clipboard/clipboard.min.js></script><script type=text/javascript src=/lib/sharer/sharer.min.js></script><script type=text/javascript src=/lib/katex/katex.min.js defer></script><script type=text/javascript src=/lib/katex/auto-render.min.js defer></script><script type=text/javascript src=/lib/katex/copy-tex.min.js defer></script><script type=text/javascript src=/lib/katex/mhchem.min.js defer></script><script type=text/javascript src=/js/katex.min.js defer></script><script type=text/javascript src=/lib/cookieconsent/cookieconsent.min.js defer></script><script type=text/javascript src=/js/cookieconsent.min.js defer></script><script type=text/javascript src=/js/theme.min.js defer></script></div></body></html>

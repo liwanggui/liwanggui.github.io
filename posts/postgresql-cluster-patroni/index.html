@@ -1,0 +1,573 @@
+<!doctype html><html lang=zh-cn><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><meta name=robots content="noodp"><title>PostgreSQL 高可用集群之 patroni - _浅行</title><meta name=Description content="_浅行"><meta property="og:title" content="PostgreSQL 高可用集群之 patroni"><meta property="og:description" content="服务器列表 节点名 IP 操作系统 安装软件 备注 pg1 192.168.142.11 uos server 20 PostgreSQL 13.3/patroni 3.1.2/etcd 3.5.4 初始主节点 pg2 192.168.142.12 uos server 20 PostgreSQL 13.3/patroni 3.1.2/etcd 3.5.4 初始备节点 pg3 192.168.142.13 uos server 20 PostgreSQL 13.3/patroni 3.1.2/etcd 3.5.4 初始备节点 VIP: 192.168.142.10 安装 postg"><meta property="og:type" content="article"><meta property="og:url" content="https://liwanggui.com/posts/postgresql-cluster-patroni/"><meta property="og:image" content="https://liwanggui.com/logo.png"><meta property="article:section" content="posts"><meta property="article:published_time" content="2023-10-08T16:44:39+08:00"><meta property="article:modified_time" content="2023-10-08T16:44:39+08:00"><meta name=twitter:card content="summary_large_image"><meta name=twitter:image content="https://liwanggui.com/logo.png"><meta name=twitter:title content="PostgreSQL 高可用集群之 patroni"><meta name=twitter:description content="服务器列表 节点名 IP 操作系统 安装软件 备注 pg1 192.168.142.11 uos server 20 PostgreSQL 13.3/patroni 3.1.2/etcd 3.5.4 初始主节点 pg2 192.168.142.12 uos server 20 PostgreSQL 13.3/patroni 3.1.2/etcd 3.5.4 初始备节点 pg3 192.168.142.13 uos server 20 PostgreSQL 13.3/patroni 3.1.2/etcd 3.5.4 初始备节点 VIP: 192.168.142.10 安装 postg"><meta name=application-name content="LoveIt"><meta name=apple-mobile-web-app-title content="LoveIt"><meta name=theme-color content="#f8f8f8"><meta name=msapplication-TileColor content="#da532c"><link rel=canonical href=https://liwanggui.com/posts/postgresql-cluster-patroni/><link rel=prev href=https://liwanggui.com/posts/etcd-cluster/><link rel=next href=https://liwanggui.com/posts/pve-reinstall/><link rel=stylesheet href=/lib/normalize/normalize.min.css><link rel=stylesheet href=/css/color.css><link rel=stylesheet href=/css/style.min.css><link rel=preload as=style onload='this.onload=null,this.rel="stylesheet"' href=/lib/fontawesome-free/all.min.css><noscript><link rel=stylesheet href=/lib/fontawesome-free/all.min.css></noscript><link rel=preload as=style onload='this.onload=null,this.rel="stylesheet"' href=/lib/animate/animate.min.css><noscript><link rel=stylesheet href=/lib/animate/animate.min.css></noscript><script type=application/ld+json>{"@context":"http://schema.org","@type":"BlogPosting","headline":"PostgreSQL 高可用集群之 patroni","inLanguage":"zh-CN","mainEntityOfPage":{"@type":"WebPage","@id":"https:\/\/liwanggui.com\/posts\/postgresql-cluster-patroni\/"},"genre":"posts","keywords":"postgresql, patroni","wordcount":1334,"url":"https:\/\/liwanggui.com\/posts\/postgresql-cluster-patroni\/","datePublished":"2023-10-08T16:44:39+08:00","dateModified":"2023-10-08T16:44:39+08:00","publisher":{"@type":"Organization","name":""},"author":{"@type":"Person","name":"李王贵"},"description":""}</script><script src=//instant.page/5.1.1 defer type=module integrity=sha384-MWfCL6g1OTGsbSwfuMHc8+8J2u71/LA8dzlIN3ycajckxuZZmF+DNjdm7O6H3PSq></script></head><body header-desktop=fixed header-mobile=auto><script type=text/javascript>function setTheme(e){document.body.setAttribute("theme",e),document.documentElement.style.setProperty("color-scheme",e==="light"?"light":"dark")}function saveTheme(e){window.localStorage&&localStorage.setItem("theme",e)}function getMeta(e){const t=document.getElementsByTagName("meta");for(let n=0;n<t.length;n++)if(t[n].getAttribute("name")===e)return t[n];return""}if(window.localStorage&&localStorage.getItem("theme")){let e=localStorage.getItem("theme");e==="light"||e==="dark"||e==="black"?setTheme(e):setTheme(window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light")}else"auto"==="light"||"auto"==="dark"||"auto"==="black"?(setTheme("auto"),saveTheme("auto")):(saveTheme("auto"),setTheme(window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"));let metaColors={light:"#f8f8f8",dark:"#252627",black:"#000000"};getMeta("theme-color").content=metaColors[document.body.getAttribute("theme")]</script><div id=back-to-top></div><div id=mask></div><div class=wrapper><header class=desktop id=header-desktop><div class=header-wrapper><div class=header-title><a href=/ title=_浅行><span class=header-title-pre><i class='far fa-kiss-wink-heart fa-fw'></i></span>_浅行</a></div><div class=menu><div class=menu-inner><a class=menu-item href=/posts/ title=文章列表>文章 </a><a class=menu-item href=/tags/ title=标签云>标签 </a><a class=menu-item href=/categories/ title=分类>分类 </a><a class=menu-item href=https://cook.liwanggui.com/ title=程序员做饭指南 rel="noopener noreferrer" target=_blank>烹饪 </a><a class=menu-item href=/about/index.html title=关于>关于 </a><span class="menu-item delimiter"></span><span class="menu-item search" id=search-desktop>
+<input type=text placeholder=搜索文章标题或内容... id=search-input-desktop>
+<a href=# class="search-button search-toggle" id=search-toggle-desktop title=搜索><i class="fas fa-search fa-fw"></i></a>
+<a href=# class="search-button search-clear" id=search-clear-desktop title=清空><i class="fas fa-times-circle fa-fw"></i></a>
+<span class="search-button search-loading" id=search-loading-desktop><i class="fas fa-spinner fa-fw fa-spin"></i></span>
+</span><a href=# class="menu-item theme-switch" title=切换主题><i class="fas fa-adjust fa-fw"></i></a></div></div></div></header><header class=mobile id=header-mobile><div class=header-container><div class=header-wrapper><div class=header-title><a href=/ title=_浅行><span class=header-title-pre><i class='far fa-kiss-wink-heart fa-fw'></i></span>_浅行</a></div><div class=menu-toggle id=menu-toggle-mobile><span></span><span></span><span></span></div></div><div class=menu id=menu-mobile><div class=search-wrapper><div class="search mobile" id=search-mobile><input type=text placeholder=搜索文章标题或内容... id=search-input-mobile>
+<a href=# class="search-button search-toggle" id=search-toggle-mobile title=搜索><i class="fas fa-search fa-fw"></i></a>
+<a href=# class="search-button search-clear" id=search-clear-mobile title=清空><i class="fas fa-times-circle fa-fw"></i></a>
+<span class="search-button search-loading" id=search-loading-mobile><i class="fas fa-spinner fa-fw fa-spin"></i></span></div><a href=# class=search-cancel id=search-cancel-mobile>取消</a></div><a class=menu-item href=/posts/ title=文章列表>文章</a><a class=menu-item href=/tags/ title=标签云>标签</a><a class=menu-item href=/categories/ title=分类>分类</a><a class=menu-item href=https://cook.liwanggui.com/ title=程序员做饭指南 rel="noopener noreferrer" target=_blank>烹饪</a><a class=menu-item href=/about/index.html title=关于>关于</a><a href=# class="menu-item theme-switch" title=切换主题>
+<i class="fas fa-adjust fa-fw"></i></a></div></div></header><div class="search-dropdown desktop"><div id=search-dropdown-desktop></div></div><div class="search-dropdown mobile"><div id=search-dropdown-mobile></div></div><main class=main><div class=container><div class=toc id=toc-auto><h2 class=toc-title>目录</h2><div class=toc-content id=toc-content-auto><nav id=TableOfContents><ul><li><a href=#安装-postgresql>安装 postgresql</a></li><li><a href=#部署-etcd>部署 etcd</a></li><li><a href=#部署-patroni>部署 patroni</a></li><li><a href=#启动-postgresql-集群>启动 postgresql 集群</a></li></ul></nav></div></div><script>document.getElementsByTagName("main")[0].setAttribute("pageStyle","normal")</script><script>document.getElementsByTagName("main")[0].setAttribute("autoTOC","true")</script><article class="page single"><h1 class="single-title animate__animated animate__flipInX">PostgreSQL 高可用集群之 patroni</h1><div class=post-meta><div class=post-meta-line><span class=post-author><i class="author fas fa-user-circle fa-fw"></i><a href=/about/ title=Author rel=author class=author>李王贵</a>
+</span>&nbsp;<span class=post-category>收录于 </span>&nbsp;<span class=post-category>类别 <a href=/categories/postgresql/><i class="far fa-folder fa-fw"></i>postgresql</a></span></div><div class=post-meta-line><i class="far fa-calendar-alt fa-fw"></i>&nbsp;<time datetime=2023-10-08>2023-10-08</time>&nbsp;<i class="far fa-edit fa-fw"></i>&nbsp;<time datetime=2023-10-08>2023-10-08</time>&nbsp;<i class="fas fa-pencil-alt fa-fw"></i>&nbsp;约 1334 字&nbsp;
+<i class="far fa-clock fa-fw"></i>&nbsp;预计阅读 3 分钟&nbsp;</div></div><div class="details toc" id=toc-static kept><div class="details-summary toc-title"><span>目录</span>
+<span><i class="details-icon fas fa-angle-right"></i></span></div><div class="details-content toc-content" id=toc-content-static><nav id=TableOfContents><ul><li><a href=#安装-postgresql>安装 postgresql</a></li><li><a href=#部署-etcd>部署 etcd</a></li><li><a href=#部署-patroni>部署 patroni</a></li><li><a href=#启动-postgresql-集群>启动 postgresql 集群</a></li></ul></nav></div></div><div class=content id=content><p><em>服务器列表</em></p><table><thead><tr><th style=text-align:left>节点名</th><th style=text-align:left>IP</th><th style=text-align:left>操作系统</th><th style=text-align:left>安装软件</th><th style=text-align:left>备注</th></tr></thead><tbody><tr><td style=text-align:left>pg1</td><td style=text-align:left>192.168.142.11</td><td style=text-align:left>uos server 20</td><td style=text-align:left>PostgreSQL 13.3/patroni 3.1.2/etcd 3.5.4</td><td style=text-align:left>初始主节点</td></tr><tr><td style=text-align:left>pg2</td><td style=text-align:left>192.168.142.12</td><td style=text-align:left>uos server 20</td><td style=text-align:left>PostgreSQL 13.3/patroni 3.1.2/etcd 3.5.4</td><td style=text-align:left>初始备节点</td></tr><tr><td style=text-align:left>pg3</td><td style=text-align:left>192.168.142.13</td><td style=text-align:left>uos server 20</td><td style=text-align:left>PostgreSQL 13.3/patroni 3.1.2/etcd 3.5.4</td><td style=text-align:left>初始备节点</td></tr></tbody></table><blockquote><p>VIP: 192.168.142.10</p></blockquote><h2 id=安装-postgresql class=headerLink><a href=#%e5%ae%89%e8%a3%85-postgresql class=header-mark></a>安装 postgresql</h2><p>由于 <code>uos server 20</code> 仓库源中的 <code>postgresql</code> 版本过低，这里通过源码编译安装 <code>postgresql</code>, 编译安装过程如下</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>yum install -qy gcc gcc-c++ make readline-devel zlib-devel
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=nb>cd</span> /usr/local/src
+</span></span><span class=line><span class=cl>wget https://ftp.postgresql.org/pub/source/v13.3/postgresql-13.3.tar.gz
+</span></span><span class=line><span class=cl>tar xzf postgresql-13.3.tar.gz
+</span></span><span class=line><span class=cl><span class=nb>cd</span> postgresql-13.3
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>./configure --prefix<span class=o>=</span>/usr/local/pg13
+</span></span><span class=line><span class=cl>make -j<span class=sb>`</span>nproc<span class=sb>`</span>
+</span></span><span class=line><span class=cl>make install
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=nb>cd</span> contrib/
+</span></span><span class=line><span class=cl>make install
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=nb>echo</span> <span class=s1>&#39;/usr/local/pg13/lib&#39;</span> &gt; /etc/ld.so.conf.d/postgresql.conf
+</span></span><span class=line><span class=cl>ldconfig
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=nb>echo</span> <span class=s1>&#39;export PATH=/usr/local/pg13/bin:$PATH&#39;</span> &gt; /etc/profile.d/postgresql.sh
+</span></span><span class=line><span class=cl><span class=nb>source</span> /etc/profile
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># 创建 postgres 用户</span>
+</span></span><span class=line><span class=cl>useradd -r -d /var/lib/pg13 -m postgres
+</span></span><span class=line><span class=cl><span class=nb>echo</span> <span class=s1>&#39;postgres  ALL=(ALL)  NOPASSWD: ALL&#39;</span> &gt; /etc/sudoers.d/postgres
+</span></span></code></pre></td></tr></table></div></div><h2 id=部署-etcd class=headerLink><a href=#%e9%83%a8%e7%bd%b2-etcd class=header-mark></a>部署 etcd</h2><p><em>安装配置 etcd</em></p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>yum install -y etcd
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># 配置 etcd</span>
+</span></span><span class=line><span class=cl>cat /etc/etcd/etcd.conf <span class=p>|</span> grep -v ^#
+</span></span><span class=line><span class=cl><span class=nv>ETCD_NAME</span><span class=o>=</span>e1
+</span></span><span class=line><span class=cl><span class=nv>ETCD_DATA_DIR</span><span class=o>=</span><span class=s2>&#34;/var/lib/etcd/default.etcd&#34;</span>
+</span></span><span class=line><span class=cl><span class=nv>ETCD_LISTEN_PEER_URLS</span><span class=o>=</span><span class=s2>&#34;http://192.168.142.11:2380&#34;</span>
+</span></span><span class=line><span class=cl><span class=nv>ETCD_LISTEN_CLIENT_URLS</span><span class=o>=</span><span class=s2>&#34;http://localhost:2379,http://192.168.142.11:2379&#34;</span>
+</span></span><span class=line><span class=cl><span class=nv>ETCD_INITIAL_ADVERTISE_PEER_URLS</span><span class=o>=</span><span class=s2>&#34;http://192.168.142.11:2380&#34;</span>
+</span></span><span class=line><span class=cl><span class=nv>ETCD_INITIAL_CLUSTER</span><span class=o>=</span><span class=s2>&#34;e1=http://192.168.142.11:2380,e2=http://192.168.142.12:2380,e3=http://192.168.142.13:2380&#34;</span>
+</span></span><span class=line><span class=cl><span class=nv>ETCD_INITIAL_CLUSTER_STATE</span><span class=o>=</span><span class=s2>&#34;new&#34;</span>
+</span></span><span class=line><span class=cl><span class=nv>ETCD_INITIAL_CLUSTER_TOKEN</span><span class=o>=</span><span class=s2>&#34;etcd-cluster&#34;</span>
+</span></span><span class=line><span class=cl><span class=nv>ETCD_ADVERTISE_CLIENT_URLS</span><span class=o>=</span><span class=s2>&#34;http://localhost:2379,http://192.168.142.11:2379&#34;</span>
+</span></span></code></pre></td></tr></table></div></div><blockquote><p>注意: 在另外两台主机进行相同操作时，注意配置项 IP 地址的不同</p></blockquote><p><em>启动 etcd</em></p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>systemctl <span class=nb>enable</span> --now etcd
+</span></span></code></pre></td></tr></table></div></div><blockquote><p>提示: 关于 etcd 集群详细信息参考 <a href=/posts/etcd-cluster/ rel>部署 etcd 集群</a></p></blockquote><h2 id=部署-patroni class=headerLink><a href=#%e9%83%a8%e7%bd%b2-patroni class=header-mark></a>部署 patroni</h2><p><em>配置 pip 加速</em></p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span><span class=lnt>7
+</span><span class=lnt>8
+</span><span class=lnt>9
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>mkdir ~/.pip
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>cat &gt;~/.pip/pip.conf<span class=s>&lt;&lt;EOF
+</span></span></span><span class=line><span class=cl><span class=s>[global]
+</span></span></span><span class=line><span class=cl><span class=s>index-url = https://mirrors.aliyun.com/pypi/simple/
+</span></span></span><span class=line><span class=cl><span class=s>
+</span></span></span><span class=line><span class=cl><span class=s>[install]
+</span></span></span><span class=line><span class=cl><span class=s>trusted-host=mirrors.aliyun.com
+</span></span></span><span class=line><span class=cl><span class=s>EOF</span>
+</span></span></code></pre></td></tr></table></div></div><p><em>安装 patroni</em></p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>yum install -y python36-devel
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>pip3 install psycopg2-binary
+</span></span><span class=line><span class=cl>pip3 install patroni<span class=o>[</span>etcd<span class=o>]</span>
+</span></span></code></pre></td></tr></table></div></div><blockquote><p>详细安装信息参考: <a href=https://patroni.readthedocs.io/en/latest/README.html target=_blank rel="noopener noreferrer">https://patroni.readthedocs.io/en/latest/README.html</a></p></blockquote><p><em>安装 watchdog, patroni 使用 watchdog 为防止出现脑裂, <strong>可选</strong></em></p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span><span class=lnt>7
+</span><span class=lnt>8
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>yum install -y watchdog
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># 初始化 watchdog 字符设备</span>
+</span></span><span class=line><span class=cl>modprobe softdog
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># 启动 watchdog 服务</span>
+</span></span><span class=line><span class=cl>systemctl start watchdog
+</span></span><span class=line><span class=cl>systemctl <span class=nb>enable</span> watchdog
+</span></span></code></pre></td></tr></table></div></div><p><em>配置 patroni, 创建 <code>/etc/patroni</code> 目录，编辑 <code>/etc/patroni/patroni.yml</code> 配置文件</em></p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span><span class=lnt>26
+</span><span class=lnt>27
+</span><span class=lnt>28
+</span><span class=lnt>29
+</span><span class=lnt>30
+</span><span class=lnt>31
+</span><span class=lnt>32
+</span><span class=lnt>33
+</span><span class=lnt>34
+</span><span class=lnt>35
+</span><span class=lnt>36
+</span><span class=lnt>37
+</span><span class=lnt>38
+</span><span class=lnt>39
+</span><span class=lnt>40
+</span><span class=lnt>41
+</span><span class=lnt>42
+</span><span class=lnt>43
+</span><span class=lnt>44
+</span><span class=lnt>45
+</span><span class=lnt>46
+</span><span class=lnt>47
+</span><span class=lnt>48
+</span><span class=lnt>49
+</span><span class=lnt>50
+</span><span class=lnt>51
+</span><span class=lnt>52
+</span><span class=lnt>53
+</span><span class=lnt>54
+</span><span class=lnt>55
+</span><span class=lnt>56
+</span><span class=lnt>57
+</span><span class=lnt>58
+</span><span class=lnt>59
+</span><span class=lnt>60
+</span><span class=lnt>61
+</span><span class=lnt>62
+</span><span class=lnt>63
+</span><span class=lnt>64
+</span><span class=lnt>65
+</span><span class=lnt>66
+</span><span class=lnt>67
+</span><span class=lnt>68
+</span><span class=lnt>69
+</span><span class=lnt>70
+</span><span class=lnt>71
+</span><span class=lnt>72
+</span><span class=lnt>73
+</span><span class=lnt>74
+</span><span class=lnt>75
+</span><span class=lnt>76
+</span><span class=lnt>77
+</span><span class=lnt>78
+</span><span class=lnt>79
+</span><span class=lnt>80
+</span><span class=lnt>81
+</span><span class=lnt>82
+</span><span class=lnt>83
+</span><span class=lnt>84
+</span><span class=lnt>85
+</span><span class=lnt>86
+</span><span class=lnt>87
+</span><span class=lnt>88
+</span><span class=lnt>89
+</span><span class=lnt>90
+</span><span class=lnt>91
+</span><span class=lnt>92
+</span><span class=lnt>93
+</span><span class=lnt>94
+</span><span class=lnt>95
+</span><span class=lnt>96
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-yaml data-lang=yaml><span class=line><span class=cl><span class=nt>scope</span><span class=p>:</span><span class=w> </span><span class=l>pgcluster</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=nt>namespace</span><span class=p>:</span><span class=w> </span><span class=l>/service/</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=nt>name</span><span class=p>:</span><span class=w> </span><span class=l>pg1</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=nt>restapi</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>listen</span><span class=p>:</span><span class=w> </span><span class=m>0.0.0.0</span><span class=p>:</span><span class=m>8008</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>connect_address</span><span class=p>:</span><span class=w> </span><span class=m>192.168.142.11</span><span class=p>:</span><span class=m>8008</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=nt>etcd3</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>hosts</span><span class=p>:</span><span class=w> </span><span class=m>192.168.142.11</span><span class=p>:</span><span class=m>2379</span><span class=p>,</span><span class=m>192.168.142.12</span><span class=p>:</span><span class=m>2379</span><span class=p>,</span><span class=m>192.168.142.13</span><span class=p>:</span><span class=m>2379</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=nt>log</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>dir</span><span class=p>:</span><span class=w> </span><span class=l>/etc/patroni</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>file_size</span><span class=p>:</span><span class=w> </span><span class=m>50000000</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>file_num</span><span class=p>:</span><span class=w> </span><span class=m>10</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>dateformat</span><span class=p>:</span><span class=w> </span><span class=s1>&#39;%Y-%m-%d %H:%M:%S&#39;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>loggers</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>patroni.postmaster</span><span class=p>:</span><span class=w> </span><span class=l>WARNING</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=nt>bootstrap</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>dcs</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>ttl</span><span class=p>:</span><span class=w> </span><span class=m>30</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>loop_wait</span><span class=p>:</span><span class=w> </span><span class=m>10</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>retry_timeout</span><span class=p>:</span><span class=w> </span><span class=m>10</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>maximum_lag_on_failover</span><span class=p>:</span><span class=w> </span><span class=m>1048576</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>primary_start_timeout</span><span class=p>:</span><span class=w> </span><span class=m>300</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>synchronous_mode</span><span class=p>:</span><span class=w> </span><span class=kc>true</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>postgresql</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span><span class=nt>use_pg_rewind</span><span class=p>:</span><span class=w> </span><span class=kc>true</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span><span class=nt>use_slots</span><span class=p>:</span><span class=w> </span><span class=kc>true</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span><span class=nt>pg_hba</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span>- <span class=l>local all all trust</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span>- <span class=l>local replication all trust</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span>- <span class=l>host all all 127.0.0.1/32 trust</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span>- <span class=l>host all all ::1/128 trust</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span>- <span class=l>host all all 0.0.0.0/0 scram-sha-256</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span>- <span class=l>host replication all 127.0.0.1/32 trust</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span>- <span class=l>host replication all ::1/128 trust</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span>- <span class=l>host replication replicator 192.168.142.0/24 scram-sha-256</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span><span class=nt>parameters</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=nt>wal_level</span><span class=p>:</span><span class=w> </span><span class=l>logical</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=nt>log_directory</span><span class=p>:</span><span class=w> </span><span class=s2>&#34;pg_log&#34;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=nt>log_destination</span><span class=p>:</span><span class=w> </span><span class=s2>&#34;csvlog&#34;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=nt>hot_standby</span><span class=p>:</span><span class=w> </span><span class=s2>&#34;on&#34;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=nt>wal_keep_segments</span><span class=p>:</span><span class=w> </span><span class=m>1000</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=nt>max_connections</span><span class=p>:</span><span class=w> </span><span class=m>1000</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=nt>max_wal_senders</span><span class=p>:</span><span class=w> </span><span class=m>10</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=nt>max_replication_slots</span><span class=p>:</span><span class=w> </span><span class=m>10</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=nt>wal_log_hints</span><span class=p>:</span><span class=w> </span><span class=s2>&#34;on&#34;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>initdb:  # Note</span><span class=p>:</span><span class=w> </span><span class=l>It needs to be a list (some options need values, others are switches)</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span>- <span class=nt>encoding</span><span class=p>:</span><span class=w> </span><span class=l>UTF8</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span>- <span class=nt>locale</span><span class=p>:</span><span class=w> </span><span class=l>C</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span>- <span class=nt>lc-ctype</span><span class=p>:</span><span class=w> </span><span class=l>zh_CN.UTF-8</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span>- <span class=l>data-checksums</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>users</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>admin</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span><span class=nt>password</span><span class=p>:</span><span class=w> </span><span class=l>admin%123</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span><span class=nt>options</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span>- <span class=l>createrole</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span>- <span class=l>createdb</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=nt>postgresql</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>listen</span><span class=p>:</span><span class=w> </span><span class=m>0.0.0.0</span><span class=p>:</span><span class=m>5432</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>connect_address</span><span class=p>:</span><span class=w> </span><span class=m>192.168.142.11</span><span class=p>:</span><span class=m>5432</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>data_dir</span><span class=p>:</span><span class=w> </span><span class=l>/var/lib/pg13/data</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>bin_dir</span><span class=p>:</span><span class=w> </span><span class=l>/usr/local/pg13/bin</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>pgpass</span><span class=p>:</span><span class=w> </span><span class=l>/var/lib/pg13/.pgpass</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>authentication</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>replication</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span><span class=nt>username</span><span class=p>:</span><span class=w> </span><span class=l>replicator</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span><span class=nt>password</span><span class=p>:</span><span class=w> </span><span class=l>repl@123</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>superuser</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span><span class=nt>username</span><span class=p>:</span><span class=w> </span><span class=l>postgres</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span><span class=nt>password</span><span class=p>:</span><span class=w> </span><span class=m>123456</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>rewind</span><span class=p>:</span><span class=w>  </span><span class=c># Has no effect on postgres 10 and lower</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span><span class=nt>username</span><span class=p>:</span><span class=w> </span><span class=l>postgres</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span><span class=nt>password</span><span class=p>:</span><span class=w> </span><span class=m>123456</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>callbacks</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>on_start</span><span class=p>:</span><span class=w> </span><span class=l>/bin/bash /etc/patroni/loadvip.sh</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>on_stop</span><span class=p>:</span><span class=w> </span><span class=l>/bin/bash /etc/patroni/loadvip.sh</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>on_restart</span><span class=p>:</span><span class=w> </span><span class=l>/bin/bash /etc/patroni/loadvip.sh</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>on_role_change</span><span class=p>:</span><span class=w> </span><span class=l>/bin/bash /etc/patroni/loadvip.sh</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=nt>watchdog</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>mode: automatic # Allowed values</span><span class=p>:</span><span class=w> </span><span class=kc>off</span><span class=p>,</span><span class=w> </span><span class=l>automatic, required</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>device</span><span class=p>:</span><span class=w> </span><span class=l>/dev/watchdog</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>safety_margin</span><span class=p>:</span><span class=w> </span><span class=m>5</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=nt>tags</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>nofailover</span><span class=p>:</span><span class=w> </span><span class=kc>false</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>noloadbalance</span><span class=p>:</span><span class=w> </span><span class=kc>false</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>clonefrom</span><span class=p>:</span><span class=w> </span><span class=kc>false</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>nosync</span><span class=p>:</span><span class=w> </span><span class=kc>false</span><span class=w>
+</span></span></span></code></pre></td></tr></table></div></div><p><strong>另外两台服务器配置项修改点</strong></p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span><span class=lnt>7
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-yaml data-lang=yaml><span class=line><span class=cl><span class=nt>name</span><span class=p>:</span><span class=w> </span><span class=l>pg1 </span><span class=w> </span><span class=c># 不同节点的名称，需要不一样</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=nt>restapi</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>connect_address</span><span class=p>:</span><span class=w> </span><span class=m>192.168.142.11</span><span class=p>:</span><span class=m>8008</span><span class=w> </span><span class=c># 修改 IP 地址</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=nt>postgresql</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>connect_address</span><span class=p>:</span><span class=w> </span><span class=m>192.168.142.11</span><span class=p>:</span><span class=m>5432</span><span class=w>  </span><span class=c># 修改 IP 地址</span><span class=w>
+</span></span></span></code></pre></td></tr></table></div></div><blockquote><p>注意: <code>/etc/patroni</code> 目录权限需要赋于 <code>postgres</code> 用户，<code>patroni</code> 服务日志写在此目录下</p></blockquote><p><em>创建 <code>patroni_callback</code> 脚本 <code>/etc/patroni/loadvip.sh</code>, 通过 <code>patroni_callback</code> 实现 <code>postgresql</code> 集群高可用</em></p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span><span class=lnt>26
+</span><span class=lnt>27
+</span><span class=lnt>28
+</span><span class=lnt>29
+</span><span class=lnt>30
+</span><span class=lnt>31
+</span><span class=lnt>32
+</span><span class=lnt>33
+</span><span class=lnt>34
+</span><span class=lnt>35
+</span><span class=lnt>36
+</span><span class=lnt>37
+</span><span class=lnt>38
+</span><span class=lnt>39
+</span><span class=lnt>40
+</span><span class=lnt>41
+</span><span class=lnt>42
+</span><span class=lnt>43
+</span><span class=lnt>44
+</span><span class=lnt>45
+</span><span class=lnt>46
+</span><span class=lnt>47
+</span><span class=lnt>48
+</span><span class=lnt>49
+</span><span class=lnt>50
+</span><span class=lnt>51
+</span><span class=lnt>52
+</span><span class=lnt>53
+</span><span class=lnt>54
+</span><span class=lnt>55
+</span><span class=lnt>56
+</span><span class=lnt>57
+</span><span class=lnt>58
+</span><span class=lnt>59
+</span><span class=lnt>60
+</span><span class=lnt>61
+</span><span class=lnt>62
+</span><span class=lnt>63
+</span><span class=lnt>64
+</span><span class=lnt>65
+</span><span class=lnt>66
+</span><span class=lnt>67
+</span><span class=lnt>68
+</span><span class=lnt>69
+</span><span class=lnt>70
+</span><span class=lnt>71
+</span><span class=lnt>72
+</span><span class=lnt>73
+</span><span class=lnt>74
+</span><span class=lnt>75
+</span><span class=lnt>76
+</span><span class=lnt>77
+</span><span class=lnt>78
+</span><span class=lnt>79
+</span><span class=lnt>80
+</span><span class=lnt>81
+</span><span class=lnt>82
+</span><span class=lnt>83
+</span><span class=lnt>84
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=cp>#!/bin/bash
+</span></span></span><span class=line><span class=cl><span class=cp></span>
+</span></span><span class=line><span class=cl><span class=nv>VIP</span><span class=o>=</span>192.168.142.10
+</span></span><span class=line><span class=cl><span class=nv>GATEWAY</span><span class=o>=</span>192.168.142.2
+</span></span><span class=line><span class=cl><span class=nv>DEV</span><span class=o>=</span>ens33
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=nv>action</span><span class=o>=</span><span class=nv>$1</span>
+</span></span><span class=line><span class=cl><span class=nv>role</span><span class=o>=</span><span class=nv>$2</span>
+</span></span><span class=line><span class=cl><span class=nv>cluster</span><span class=o>=</span><span class=nv>$3</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>log<span class=o>()</span> <span class=o>{</span>
+</span></span><span class=line><span class=cl>  <span class=nb>echo</span> <span class=s2>&#34;loadvip: </span><span class=nv>$*</span><span class=s2>&#34;</span> <span class=p>|</span> logger
+</span></span><span class=line><span class=cl><span class=o>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>load_vip<span class=o>()</span> <span class=o>{</span>
+</span></span><span class=line><span class=cl>    ip address show <span class=si>${</span><span class=nv>DEV</span><span class=si>}</span><span class=p>|</span> grep -w <span class=si>${</span><span class=nv>VIP</span><span class=si>}</span> &gt;/dev/null
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=k>if</span> <span class=o>[</span> <span class=nv>$?</span> -eq <span class=m>0</span> <span class=o>]</span> <span class=p>;</span> <span class=k>then</span>
+</span></span><span class=line><span class=cl>        log <span class=s2>&#34;vip exists, skip load vip&#34;</span>
+</span></span><span class=line><span class=cl>    <span class=k>else</span>
+</span></span><span class=line><span class=cl>        sudo ip addr add <span class=si>${</span><span class=nv>VIP</span><span class=si>}</span>/32 dev <span class=si>${</span><span class=nv>DEV</span><span class=si>}</span> &gt;/dev/null
+</span></span><span class=line><span class=cl>        <span class=nv>rc</span><span class=o>=</span><span class=nv>$?</span>
+</span></span><span class=line><span class=cl>        <span class=k>if</span> <span class=o>[</span> <span class=nv>$rc</span> -ne <span class=m>0</span> <span class=o>]</span> <span class=p>;</span><span class=k>then</span>
+</span></span><span class=line><span class=cl>            log <span class=s2>&#34;fail to add vip </span><span class=si>${</span><span class=nv>VIP</span><span class=si>}</span><span class=s2> at dev </span><span class=si>${</span><span class=nv>DEV</span><span class=si>}</span><span class=s2> rc=</span><span class=nv>$rc</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl>            <span class=nb>exit</span> <span class=m>1</span>
+</span></span><span class=line><span class=cl>        <span class=k>fi</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        log <span class=s2>&#34;added vip </span><span class=si>${</span><span class=nv>VIP</span><span class=si>}</span><span class=s2> at dev </span><span class=si>${</span><span class=nv>DEV</span><span class=si>}</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        arping -U -I <span class=si>${</span><span class=nv>DEV</span><span class=si>}</span> -s <span class=si>${</span><span class=nv>VIP</span><span class=si>}</span> <span class=si>${</span><span class=nv>GATEWAY</span><span class=si>}</span> -c <span class=m>5</span> &gt;/dev/null
+</span></span><span class=line><span class=cl>        <span class=nv>rc</span><span class=o>=</span><span class=nv>$?</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        <span class=k>if</span> <span class=o>[</span> <span class=nv>$rc</span> -ne <span class=m>0</span> <span class=o>]</span> <span class=p>;</span><span class=k>then</span>
+</span></span><span class=line><span class=cl>            log <span class=s2>&#34;fail to call arping to gateway </span><span class=si>${</span><span class=nv>GATEWAY</span><span class=si>}</span><span class=s2> rc=</span><span class=nv>$rc</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl>            <span class=nb>exit</span> <span class=m>1</span>
+</span></span><span class=line><span class=cl>        <span class=k>fi</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        log <span class=s2>&#34;called arping to gateway </span><span class=si>${</span><span class=nv>GATEWAY</span><span class=si>}</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl>    <span class=k>fi</span>
+</span></span><span class=line><span class=cl><span class=o>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>unload_vip<span class=o>()</span> <span class=o>{</span>
+</span></span><span class=line><span class=cl>    ip address show <span class=si>${</span><span class=nv>DEV</span><span class=si>}</span> <span class=p>|</span> grep -w <span class=si>${</span><span class=nv>VIP</span><span class=si>}</span> &gt;/dev/null
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=k>if</span> <span class=o>[</span> <span class=nv>$?</span> -eq <span class=m>0</span> <span class=o>]</span> <span class=p>;</span><span class=k>then</span>
+</span></span><span class=line><span class=cl>        sudo ip addr del <span class=si>${</span><span class=nv>VIP</span><span class=si>}</span>/32 dev <span class=si>${</span><span class=nv>DEV</span><span class=si>}</span> &gt;/dev/null
+</span></span><span class=line><span class=cl>        <span class=nv>rc</span><span class=o>=</span><span class=nv>$?</span>
+</span></span><span class=line><span class=cl>        
+</span></span><span class=line><span class=cl>        <span class=k>if</span> <span class=o>[</span> <span class=nv>$rc</span> -ne <span class=m>0</span> <span class=o>]</span> <span class=p>;</span><span class=k>then</span>
+</span></span><span class=line><span class=cl>            log <span class=s2>&#34;fail to delete vip </span><span class=si>${</span><span class=nv>VIP</span><span class=si>}</span><span class=s2> at dev </span><span class=si>${</span><span class=nv>DEV</span><span class=si>}</span><span class=s2> rc=</span><span class=nv>$rc</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl>            <span class=nb>exit</span> <span class=m>1</span>
+</span></span><span class=line><span class=cl>        <span class=k>fi</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>        log <span class=s2>&#34;deleted vip </span><span class=si>${</span><span class=nv>VIP</span><span class=si>}</span><span class=s2> at dev </span><span class=si>${</span><span class=nv>DEV</span><span class=si>}</span><span class=s2>&#34;</span>
+</span></span><span class=line><span class=cl>    <span class=k>else</span>
+</span></span><span class=line><span class=cl>        log <span class=s2>&#34;vip not exists, skip delete vip&#34;</span>
+</span></span><span class=line><span class=cl>    <span class=k>fi</span>
+</span></span><span class=line><span class=cl><span class=o>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>log <span class=s2>&#34;loadvip start args:&#39;</span><span class=nv>$*</span><span class=s2>&#39;&#34;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=k>case</span> <span class=nv>$action</span> in
+</span></span><span class=line><span class=cl>  on_start<span class=p>|</span>on_restart<span class=p>|</span>on_role_change<span class=o>)</span>
+</span></span><span class=line><span class=cl>    <span class=k>case</span> <span class=nv>$role</span> in
+</span></span><span class=line><span class=cl>      master<span class=o>)</span>
+</span></span><span class=line><span class=cl>        load_vip
+</span></span><span class=line><span class=cl>        <span class=p>;;</span>
+</span></span><span class=line><span class=cl>      replica<span class=o>)</span>
+</span></span><span class=line><span class=cl>        unload_vip
+</span></span><span class=line><span class=cl>        <span class=p>;;</span>
+</span></span><span class=line><span class=cl>      *<span class=o>)</span>
+</span></span><span class=line><span class=cl>        log <span class=s2>&#34;wrong role &#39;</span><span class=nv>$role</span><span class=s2>&#39;&#34;</span>
+</span></span><span class=line><span class=cl>        <span class=nb>exit</span> <span class=m>1</span>
+</span></span><span class=line><span class=cl>        <span class=p>;;</span>
+</span></span><span class=line><span class=cl>    <span class=k>esac</span>
+</span></span><span class=line><span class=cl>    <span class=p>;;</span>
+</span></span><span class=line><span class=cl>  on_stop<span class=o>)</span>
+</span></span><span class=line><span class=cl>    unload_vip
+</span></span><span class=line><span class=cl>    <span class=p>;;</span>
+</span></span><span class=line><span class=cl>  *<span class=o>)</span>
+</span></span><span class=line><span class=cl>    log <span class=s2>&#34;wrong action &#39;</span><span class=nv>$action</span><span class=s2>&#39;&#34;</span>
+</span></span><span class=line><span class=cl>    <span class=nb>exit</span> <span class=m>1</span>
+</span></span><span class=line><span class=cl>    <span class=p>;;</span>
+</span></span><span class=line><span class=cl><span class=k>esac</span>
+</span></span></code></pre></td></tr></table></div></div><p><em>创建 <code>/usr/lib/systemd/system/patroni.service</code> 服务单元文件</em></p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-ini data-lang=ini><span class=line><span class=cl><span class=k>[Unit]</span>
+</span></span><span class=line><span class=cl><span class=na>Description</span><span class=o>=</span><span class=s>Runners to orchestrate a high-availability PostgreSQL</span>
+</span></span><span class=line><span class=cl><span class=na>After</span><span class=o>=</span><span class=s>syslog.target network.target</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=k>[Service]</span>
+</span></span><span class=line><span class=cl><span class=na>Type</span><span class=o>=</span><span class=s>simple</span>
+</span></span><span class=line><span class=cl><span class=na>User</span><span class=o>=</span><span class=s>postgres</span>
+</span></span><span class=line><span class=cl><span class=na>Group</span><span class=o>=</span><span class=s>postgres</span>
+</span></span><span class=line><span class=cl><span class=na>EnvironmentFile</span><span class=o>=</span><span class=s>-/etc/patroni/patroni_env.conf</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># 使用 watchdog 进行服务监控</span>
+</span></span><span class=line><span class=cl><span class=na>ExecStartPre</span><span class=o>=</span><span class=s>/sbin/modprobe softdog</span>
+</span></span><span class=line><span class=cl><span class=na>ExecStartPre</span><span class=o>=</span><span class=s>/bin/chown 666 /dev/watchdog</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=na>ExecStart</span><span class=o>=</span><span class=s>/usr/local/bin/patroni /etc/patroni/patroni.yml</span>
+</span></span><span class=line><span class=cl><span class=na>ExecReload</span><span class=o>=</span><span class=s>/bin/kill -s HUP $MAINPID</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=na>PermissionsStartOnly</span><span class=o>=</span><span class=s>true</span>
+</span></span><span class=line><span class=cl><span class=na>KillMode</span><span class=o>=</span><span class=s>process</span>
+</span></span><span class=line><span class=cl><span class=na>TimeoutSec</span><span class=o>=</span><span class=s>30</span>
+</span></span><span class=line><span class=cl><span class=na>Restart</span><span class=o>=</span><span class=s>no</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=k>[Install]</span>
+</span></span><span class=line><span class=cl><span class=na>WantedBy</span><span class=o>=</span><span class=s>multi-user.target</span>
+</span></span></code></pre></td></tr></table></div></div><h2 id=启动-postgresql-集群 class=headerLink><a href=#%e5%90%af%e5%8a%a8-postgresql-%e9%9b%86%e7%be%a4 class=header-mark></a>启动 postgresql 集群</h2><p>启动 <code>postgresql</code> 集群很简单，只需运行 <code>patroni</code> 服务即可</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>systemctl start patroni.service
+</span></span><span class=line><span class=cl>systemctl <span class=nb>enable</span> patroni.service
+</span></span></code></pre></td></tr></table></div></div><p><em>查看集群状态</em></p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span><span class=lnt>7
+</span><span class=lnt>8
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=o>[</span>root@localhost ~<span class=o>]</span><span class=c1># patronictl -c /etc/patroni/patroni.yml list</span>
+</span></span><span class=line><span class=cl>+ Cluster: pgcluster <span class=o>(</span>7287503432727295215<span class=o>)</span> ----------+----+-----------+
+</span></span><span class=line><span class=cl><span class=p>|</span> Member <span class=p>|</span> Host           <span class=p>|</span> Role         <span class=p>|</span> State     <span class=p>|</span> TL <span class=p>|</span> Lag in MB <span class=p>|</span>
+</span></span><span class=line><span class=cl>+--------+----------------+--------------+-----------+----+-----------+
+</span></span><span class=line><span class=cl><span class=p>|</span> pg1    <span class=p>|</span> 192.168.142.11 <span class=p>|</span> Replica      <span class=p>|</span> streaming <span class=p>|</span>  <span class=m>2</span> <span class=p>|</span>         <span class=m>0</span> <span class=p>|</span>
+</span></span><span class=line><span class=cl><span class=p>|</span> pg2    <span class=p>|</span> 192.168.142.12 <span class=p>|</span> Leader       <span class=p>|</span> running   <span class=p>|</span>  <span class=m>2</span> <span class=p>|</span>           <span class=p>|</span>
+</span></span><span class=line><span class=cl><span class=p>|</span> pg3    <span class=p>|</span> 192.168.142.13 <span class=p>|</span> Sync Standby <span class=p>|</span> streaming <span class=p>|</span>  <span class=m>2</span> <span class=p>|</span>         <span class=m>0</span> <span class=p>|</span>
+</span></span><span class=line><span class=cl>+--------+----------------+--------------+-----------+----+-----------+
+</span></span></code></pre></td></tr></table></div></div><blockquote><p>参考:</p><ul><li><a href=https://blog.51cto.com/u_13963746/5394725 target=_blank rel="noopener noreferrer">https://blog.51cto.com/u_13963746/5394725</a></li><li><a href=https://www.modb.pro/db/73762 target=_blank rel="noopener noreferrer">https://www.modb.pro/db/73762</a></li></ul></blockquote></div><div class=post-footer id=post-footer><div class=post-info><div class=post-info-line><div class=post-info-mod><span>更新于 2023-10-08</span></div><div class=post-info-license></div></div><div class=post-info-line><div class=post-info-md><span><a class=link-to-mardown href=/posts/postgresql-cluster-patroni/index.md target=_blank rel="noopener noreferrer">阅读原始文档</a></span></div><div class=post-info-share><span><a href=# title="分享到 Twitter" data-sharer=twitter data-url=https://liwanggui.com/posts/postgresql-cluster-patroni/ data-title="PostgreSQL 高可用集群之 patroni" data-hashtags=postgresql,patroni><i class="fab fa-twitter fa-fw"></i></a><a href=# title="分享到 Facebook" data-sharer=facebook data-url=https://liwanggui.com/posts/postgresql-cluster-patroni/ data-hashtag=postgresql><i class="fab fa-facebook-square fa-fw"></i></a><a href=# title="分享到 WhatsApp" data-sharer=whatsapp data-url=https://liwanggui.com/posts/postgresql-cluster-patroni/ data-title="PostgreSQL 高可用集群之 patroni" data-web><i class="fab fa-whatsapp fa-fw"></i></a><a href=# title="分享到 Line" data-sharer=line data-url=https://liwanggui.com/posts/postgresql-cluster-patroni/ data-title="PostgreSQL 高可用集群之 patroni"><i data-svg-src=/lib/simple-icons/icons/line.min.svg></i></a><a href=# title="分享到 微博" data-sharer=weibo data-url=https://liwanggui.com/posts/postgresql-cluster-patroni/ data-title="PostgreSQL 高可用集群之 patroni"><i class="fab fa-weibo fa-fw"></i></a><a href=# title="分享到 Myspace" data-sharer=myspace data-url=https://liwanggui.com/posts/postgresql-cluster-patroni/ data-title="PostgreSQL 高可用集群之 patroni" data-description><i data-svg-src=/lib/simple-icons/icons/myspace.min.svg></i></a><a href=# title="分享到 Blogger" data-sharer=blogger data-url=https://liwanggui.com/posts/postgresql-cluster-patroni/ data-title="PostgreSQL 高可用集群之 patroni" data-description><i class="fab fa-blogger fa-fw"></i></a><a href=# title="分享到 百度" data-sharer=baidu data-url=https://liwanggui.com/posts/postgresql-cluster-patroni/ data-title="PostgreSQL 高可用集群之 patroni"><i data-svg-src=/lib/simple-icons/icons/baidu.min.svg></i></a><a href=# title="分享到 Evernote" data-sharer=evernote data-url=https://liwanggui.com/posts/postgresql-cluster-patroni/ data-title="PostgreSQL 高可用集群之 patroni"><i class="fab fa-evernote fa-fw"></i></a></span></div></div></div><div class=post-info-more><section class=post-tags><i class="fas fa-tags fa-fw"></i>&nbsp;<a href=/tags/postgresql/>postgresql</a>,&nbsp;<a href=/tags/patroni/>patroni</a></section><section><span><a href=javascript:void(0); onclick=window.history.back()>返回</a></span>&nbsp;|&nbsp;<span><a href=/>主页</a></span></section></div><div class=post-nav><a href=/posts/etcd-cluster/ class=prev rel=prev title="部署 etcd 集群"><i class="fas fa-angle-left fa-fw"></i>部署 etcd 集群</a>
+<a href=/posts/pve-reinstall/ class=next rel=next title="PVE 重装后重新挂载 zfs 存储池及找回虚拟机">PVE 重装后重新挂载 zfs 存储池及找回虚拟机<i class="fas fa-angle-right fa-fw"></i></a></div></div><div id=comments><div id=giscus></div><noscript>Please enable JavaScript to view the comments powered by <a href=https://giscus.app/>giscus</a>.</noscript></div></article></div></main><footer class=footer><div class=footer-container><div class=footer-line>由 <a href=https://gohugo.io/ target=_blank rel="noopener noreferrer" title="Hugo 0.101.0">Hugo</a> 强力驱动&nbsp;|&nbsp;主题 - <a href=https://github.com/HEIGE-PCloud/DoIt target=_blank rel="noopener noreferrer" title="DoIt 0.3.0"><i class="far fa-edit fa-fw"></i> DoIt</a></div><div class=footer-line><i class="far fa-copyright fa-fw"></i><span itemprop=copyrightYear>2017 - 2024</span><span class=author itemprop=copyrightHolder>&nbsp;<a href=/about/ target=_blank rel="noopener noreferrer">李王贵</a></span><span class=icp-splitter>&nbsp;|&nbsp;</span><br class=icp-br><span class=icp><a href=https://beian.miit.gov.cn target=_blank>赣ICP备2023001395号</a></span></div><div class=footer-line></div><div class=footer-line></div></div></footer></div><div id=fixed-buttons><a href=#back-to-top id=back-to-top-button class=fixed-button title=回到顶部><i class="fas fa-arrow-up fa-fw"></i>
+</a><a href=# id=view-comments class=fixed-button title=查看评论><i class="fas fa-comment fa-fw"></i></a></div><div id=cookieconsent-container></div><div class=assets><link rel=stylesheet href=/lib/lightgallery/lightgallery.min.css><link rel=stylesheet href=/lib/katex/katex.min.css><link rel=preload as=style onload='this.onload=null,this.rel="stylesheet"' href=/lib/katex/copy-tex.min.css><noscript><link rel=stylesheet href=/lib/katex/copy-tex.min.css></noscript><link rel=stylesheet href=/lib/cookieconsent/cookieconsent.min.css><script type=text/javascript>window.config={code:{copyTitle:"复制到剪贴板",maxShownLines:10},comment:{giscus:{darkTheme:"dark",dataCategory:"Announcements",dataCategoryId:"DIC_kwDOE7mEQ84CY9pq",dataEmitMetadata:"1",dataInputPosition:"top",dataLang:"zh-CN",dataMapping:"pathname",dataReactionsEnabled:"1",dataRepo:"liwanggui/liwanggui.github.io",dataRepoId:"MDEwOlJlcG9zaXRvcnkzMzA5MjUxMjM=",dataStrict:"0",lightTheme:"light"}},cookieconsent:{content:{dismiss:"同意",link:"了解更多",message:"本网站使用 Cookies 来改善您的浏览体验."},enable:!0,palette:{button:{background:"#f0f0f0"},popup:{background:"#1aa3ff"}},theme:"edgeless"},lightGallery:{actualSize:!1,exThumbImage:"data-thumbnail",hideBarsDelay:2e3,selector:".lightgallery",speed:400,thumbContHeight:80,thumbWidth:80,thumbnail:!0},math:{delimiters:[{display:!0,left:"$$",right:"$$"},{display:!0,left:"\\[",right:"\\]"},{display:!1,left:"$",right:"$"},{display:!1,left:"\\(",right:"\\)"}],strict:!1},search:{distance:100,findAllMatches:!1,fuseIndexURL:"/index.json",highlightTag:"em",ignoreFieldNorm:!1,ignoreLocation:!1,isCaseSensitive:!1,location:0,maxResultLength:10,minMatchCharLength:2,noResultsFound:"没有找到结果",snippetLength:50,threshold:.3,type:"fuse",useExtendedSearch:!1},sharerjs:!0,twemoji:!0}</script><script type=text/javascript src=/js/giscus.min.js defer></script><script type=text/javascript src=/lib/twemoji/twemoji.min.js defer></script><script type=text/javascript src=/js/twemoji.min.js defer></script><script type=text/javascript src=/lib/lightgallery/lightgallery.min.js></script><script type=text/javascript src=/lib/lightgallery/lg-thumbnail.min.js></script><script type=text/javascript src=/lib/lightgallery/lg-zoom.min.js></script><script type=text/javascript src=/lib/clipboard/clipboard.min.js></script><script type=text/javascript src=/lib/sharer/sharer.min.js></script><script type=text/javascript src=/lib/katex/katex.min.js defer></script><script type=text/javascript src=/lib/katex/auto-render.min.js defer></script><script type=text/javascript src=/lib/katex/copy-tex.min.js defer></script><script type=text/javascript src=/lib/katex/mhchem.min.js defer></script><script type=text/javascript src=/js/katex.min.js defer></script><script type=text/javascript src=/lib/cookieconsent/cookieconsent.min.js defer></script><script type=text/javascript src=/js/cookieconsent.min.js defer></script><script type=text/javascript src=/js/theme.min.js defer></script></div></body></html>

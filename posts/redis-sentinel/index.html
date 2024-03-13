@@ -1,0 +1,446 @@
+<!doctype html><html lang=zh-cn><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><meta name=robots content="noodp"><title>Redis Sentinel 高可用 - _浅行</title><meta name=Description content="_浅行"><meta property="og:title" content="Redis Sentinel 高可用"><meta property="og:description" content="Redis Replication Replication 原理 副本库通过 slaveof 127.0.0.1 6380 命令, 连接主库, 并发送 SYNC 给主库 主库收到 SYNC, 会立即触发 BGSAVE, 后台保存 RDB, 发送给副本库 副本库接收后会应用 RDB 快照 主库会陆续将中间"><meta property="og:type" content="article"><meta property="og:url" content="https://liwanggui.com/posts/redis-sentinel/"><meta property="og:image" content="https://liwanggui.com/logo.png"><meta property="article:section" content="posts"><meta property="article:published_time" content="2021-03-28T17:08:48+08:00"><meta property="article:modified_time" content="2021-03-28T17:08:48+08:00"><meta name=twitter:card content="summary_large_image"><meta name=twitter:image content="https://liwanggui.com/logo.png"><meta name=twitter:title content="Redis Sentinel 高可用"><meta name=twitter:description content="Redis Replication Replication 原理 副本库通过 slaveof 127.0.0.1 6380 命令, 连接主库, 并发送 SYNC 给主库 主库收到 SYNC, 会立即触发 BGSAVE, 后台保存 RDB, 发送给副本库 副本库接收后会应用 RDB 快照 主库会陆续将中间"><meta name=application-name content="LoveIt"><meta name=apple-mobile-web-app-title content="LoveIt"><meta name=theme-color content="#f8f8f8"><meta name=msapplication-TileColor content="#da532c"><link rel=canonical href=https://liwanggui.com/posts/redis-sentinel/><link rel=prev href=https://liwanggui.com/posts/redis-cli/><link rel=next href=https://liwanggui.com/posts/nginx-install/><link rel=stylesheet href=/lib/normalize/normalize.min.css><link rel=stylesheet href=/css/color.css><link rel=stylesheet href=/css/style.min.css><link rel=preload as=style onload='this.onload=null,this.rel="stylesheet"' href=/lib/fontawesome-free/all.min.css><noscript><link rel=stylesheet href=/lib/fontawesome-free/all.min.css></noscript><link rel=preload as=style onload='this.onload=null,this.rel="stylesheet"' href=/lib/animate/animate.min.css><noscript><link rel=stylesheet href=/lib/animate/animate.min.css></noscript><script type=application/ld+json>{"@context":"http://schema.org","@type":"BlogPosting","headline":"Redis Sentinel 高可用","inLanguage":"zh-CN","mainEntityOfPage":{"@type":"WebPage","@id":"https:\/\/liwanggui.com\/posts\/redis-sentinel\/"},"genre":"posts","keywords":"redis, sentinel","wordcount":2179,"url":"https:\/\/liwanggui.com\/posts\/redis-sentinel\/","datePublished":"2021-03-28T17:08:48+08:00","dateModified":"2021-03-28T17:08:48+08:00","publisher":{"@type":"Organization","name":""},"author":{"@type":"Person","name":"李王贵"},"description":""}</script><script src=//instant.page/5.1.1 defer type=module integrity=sha384-MWfCL6g1OTGsbSwfuMHc8+8J2u71/LA8dzlIN3ycajckxuZZmF+DNjdm7O6H3PSq></script></head><body header-desktop=fixed header-mobile=auto><script type=text/javascript>function setTheme(e){document.body.setAttribute("theme",e),document.documentElement.style.setProperty("color-scheme",e==="light"?"light":"dark")}function saveTheme(e){window.localStorage&&localStorage.setItem("theme",e)}function getMeta(e){const t=document.getElementsByTagName("meta");for(let n=0;n<t.length;n++)if(t[n].getAttribute("name")===e)return t[n];return""}if(window.localStorage&&localStorage.getItem("theme")){let e=localStorage.getItem("theme");e==="light"||e==="dark"||e==="black"?setTheme(e):setTheme(window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light")}else"auto"==="light"||"auto"==="dark"||"auto"==="black"?(setTheme("auto"),saveTheme("auto")):(saveTheme("auto"),setTheme(window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"));let metaColors={light:"#f8f8f8",dark:"#252627",black:"#000000"};getMeta("theme-color").content=metaColors[document.body.getAttribute("theme")]</script><div id=back-to-top></div><div id=mask></div><div class=wrapper><header class=desktop id=header-desktop><div class=header-wrapper><div class=header-title><a href=/ title=_浅行><span class=header-title-pre><i class='far fa-kiss-wink-heart fa-fw'></i></span>_浅行</a></div><div class=menu><div class=menu-inner><a class=menu-item href=/posts/ title=文章列表>文章 </a><a class=menu-item href=/tags/ title=标签云>标签 </a><a class=menu-item href=/categories/ title=分类>分类 </a><a class=menu-item href=https://cook.liwanggui.com/ title=程序员做饭指南 rel="noopener noreferrer" target=_blank>烹饪 </a><a class=menu-item href=/about/index.html title=关于>关于 </a><span class="menu-item delimiter"></span><span class="menu-item search" id=search-desktop>
+<input type=text placeholder=搜索文章标题或内容... id=search-input-desktop>
+<a href=# class="search-button search-toggle" id=search-toggle-desktop title=搜索><i class="fas fa-search fa-fw"></i></a>
+<a href=# class="search-button search-clear" id=search-clear-desktop title=清空><i class="fas fa-times-circle fa-fw"></i></a>
+<span class="search-button search-loading" id=search-loading-desktop><i class="fas fa-spinner fa-fw fa-spin"></i></span>
+</span><a href=# class="menu-item theme-switch" title=切换主题><i class="fas fa-adjust fa-fw"></i></a></div></div></div></header><header class=mobile id=header-mobile><div class=header-container><div class=header-wrapper><div class=header-title><a href=/ title=_浅行><span class=header-title-pre><i class='far fa-kiss-wink-heart fa-fw'></i></span>_浅行</a></div><div class=menu-toggle id=menu-toggle-mobile><span></span><span></span><span></span></div></div><div class=menu id=menu-mobile><div class=search-wrapper><div class="search mobile" id=search-mobile><input type=text placeholder=搜索文章标题或内容... id=search-input-mobile>
+<a href=# class="search-button search-toggle" id=search-toggle-mobile title=搜索><i class="fas fa-search fa-fw"></i></a>
+<a href=# class="search-button search-clear" id=search-clear-mobile title=清空><i class="fas fa-times-circle fa-fw"></i></a>
+<span class="search-button search-loading" id=search-loading-mobile><i class="fas fa-spinner fa-fw fa-spin"></i></span></div><a href=# class=search-cancel id=search-cancel-mobile>取消</a></div><a class=menu-item href=/posts/ title=文章列表>文章</a><a class=menu-item href=/tags/ title=标签云>标签</a><a class=menu-item href=/categories/ title=分类>分类</a><a class=menu-item href=https://cook.liwanggui.com/ title=程序员做饭指南 rel="noopener noreferrer" target=_blank>烹饪</a><a class=menu-item href=/about/index.html title=关于>关于</a><a href=# class="menu-item theme-switch" title=切换主题>
+<i class="fas fa-adjust fa-fw"></i></a></div></div></header><div class="search-dropdown desktop"><div id=search-dropdown-desktop></div></div><div class="search-dropdown mobile"><div id=search-dropdown-mobile></div></div><main class=main><div class=container><div class=toc id=toc-auto><h2 class=toc-title>目录</h2><div class=toc-content id=toc-content-auto><nav id=TableOfContents><ul><li><a href=#redis-replication>Redis Replication</a><ul><li><a href=#replication-原理>Replication 原理</a></li><li><a href=#准备多实例-redis-服务>准备多实例 Redis 服务</a></li><li><a href=#replication-配置>Replication 配置</a></li><li><a href=#检查-replication-状态>检查 Replication 状态</a></li></ul></li><li><a href=#redis-sentinel-高可用>Redis Sentinel 高可用</a><ul><li><a href=#配置-sentinel>配置 sentinel</a></li><li><a href=#连接测试-sentinel>连接测试 sentinel</a><ul><li><a href=#sentinel-管理命令>sentinel 管理命令</a></li><li><a href=#测试主从切换>测试主从切换</a></li><li><a href=#配置多节点-sentinel>配置多节点 sentinel</a></li><li><a href=#客户端连接-redis>客户端连接 redis</a></li></ul></li></ul></li></ul></nav></div></div><script>document.getElementsByTagName("main")[0].setAttribute("pageStyle","normal")</script><script>document.getElementsByTagName("main")[0].setAttribute("autoTOC","true")</script><article class="page single"><h1 class="single-title animate__animated animate__flipInX">Redis Sentinel 高可用</h1><div class=post-meta><div class=post-meta-line><span class=post-author><i class="author fas fa-user-circle fa-fw"></i><a href=/about/ title=Author rel=author class=author>李王贵</a>
+</span>&nbsp;<span class=post-category>收录于 </span>&nbsp;<span class=post-category>类别 <a href=/categories/redis/><i class="far fa-folder fa-fw"></i>redis</a></span></div><div class=post-meta-line><i class="far fa-calendar-alt fa-fw"></i>&nbsp;<time datetime=2021-03-28>2021-03-28</time>&nbsp;<i class="far fa-edit fa-fw"></i>&nbsp;<time datetime=2021-03-28>2021-03-28</time>&nbsp;<i class="fas fa-pencil-alt fa-fw"></i>&nbsp;约 2179 字&nbsp;
+<i class="far fa-clock fa-fw"></i>&nbsp;预计阅读 5 分钟&nbsp;</div></div><div class="details toc" id=toc-static kept><div class="details-summary toc-title"><span>目录</span>
+<span><i class="details-icon fas fa-angle-right"></i></span></div><div class="details-content toc-content" id=toc-content-static><nav id=TableOfContents><ul><li><a href=#redis-replication>Redis Replication</a><ul><li><a href=#replication-原理>Replication 原理</a></li><li><a href=#准备多实例-redis-服务>准备多实例 Redis 服务</a></li><li><a href=#replication-配置>Replication 配置</a></li><li><a href=#检查-replication-状态>检查 Replication 状态</a></li></ul></li><li><a href=#redis-sentinel-高可用>Redis Sentinel 高可用</a><ul><li><a href=#配置-sentinel>配置 sentinel</a></li><li><a href=#连接测试-sentinel>连接测试 sentinel</a><ul><li><a href=#sentinel-管理命令>sentinel 管理命令</a></li><li><a href=#测试主从切换>测试主从切换</a></li><li><a href=#配置多节点-sentinel>配置多节点 sentinel</a></li><li><a href=#客户端连接-redis>客户端连接 redis</a></li></ul></li></ul></li></ul></nav></div></div><div class=content id=content><h2 id=redis-replication class=headerLink><a href=#redis-replication class=header-mark></a>Redis Replication</h2><h3 id=replication-原理 class=headerLink><a href=#replication-%e5%8e%9f%e7%90%86 class=header-mark></a>Replication 原理</h3><ol><li>副本库通过 <code>slaveof 127.0.0.1 6380</code> 命令, 连接主库, 并发送 SYNC 给主库</li><li>主库收到 SYNC, 会立即触发 BGSAVE, 后台保存 RDB, 发送给副本库</li><li>副本库接收后会应用 RDB 快照</li><li>主库会陆续将中间产生的新的操作,保存并发送给副本库</li><li>到此,我们主复制集就正常工作了</li><li>再此以后, 主库只要发生新的操作, 都会以命令传播的形式自动发送给副本库.</li><li>所有复制相关信息, 从 info 信息中都可以查到. 即使重启任何节点, 他的主从关系依然都在.</li><li>如果发生主从关系断开时,从库数据没有任何损坏, 在下次重连之后, 从库发送 PSYNC 给主库</li><li>主库只会将从库缺失部分的数据同步给从库应用, 达到快速恢复主从的目的</li></ol><blockquote><p>使用 <code>slaveof no one</code> 解除主从关系</p></blockquote><h3 id=准备多实例-redis-服务 class=headerLink><a href=#%e5%87%86%e5%a4%87%e5%a4%9a%e5%ae%9e%e4%be%8b-redis-%e6%9c%8d%e5%8a%a1 class=header-mark></a>准备多实例 Redis 服务</h3><p>实验采用单机多实例的方式进行，创建三个实例。端口 <code>6380-6382</code>, 可以使用 redis 源码包中的脚本（<code>install_server.sh</code>）创建</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span><span class=lnt>26
+</span><span class=lnt>27
+</span><span class=lnt>28
+</span><span class=lnt>29
+</span><span class=lnt>30
+</span><span class=lnt>31
+</span><span class=lnt>32
+</span><span class=lnt>33
+</span><span class=lnt>34
+</span><span class=lnt>35
+</span><span class=lnt>36
+</span><span class=lnt>37
+</span><span class=lnt>38
+</span><span class=lnt>39
+</span><span class=lnt>40
+</span><span class=lnt>41
+</span><span class=lnt>42
+</span><span class=lnt>43
+</span><span class=lnt>44
+</span><span class=lnt>45
+</span><span class=lnt>46
+</span><span class=lnt>47
+</span><span class=lnt>48
+</span><span class=lnt>49
+</span><span class=lnt>50
+</span><span class=lnt>51
+</span><span class=lnt>52
+</span><span class=lnt>53
+</span><span class=lnt>54
+</span><span class=lnt>55
+</span><span class=lnt>56
+</span><span class=lnt>57
+</span><span class=lnt>58
+</span><span class=lnt>59
+</span><span class=lnt>60
+</span><span class=lnt>61
+</span><span class=lnt>62
+</span><span class=lnt>63
+</span><span class=lnt>64
+</span><span class=lnt>65
+</span><span class=lnt>66
+</span><span class=lnt>67
+</span><span class=lnt>68
+</span><span class=lnt>69
+</span><span class=lnt>70
+</span><span class=lnt>71
+</span><span class=lnt>72
+</span><span class=lnt>73
+</span><span class=lnt>74
+</span><span class=lnt>75
+</span><span class=lnt>76
+</span><span class=lnt>77
+</span><span class=lnt>78
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=o>[</span>root@localhost utils<span class=o>]</span><span class=c1># bash install_server.sh</span>
+</span></span><span class=line><span class=cl>Welcome to the redis service installer
+</span></span><span class=line><span class=cl>This script will <span class=nb>help</span> you easily <span class=nb>set</span> up a running redis server
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Please <span class=k>select</span> the redis port <span class=k>for</span> this instance: <span class=o>[</span>6379<span class=o>]</span> <span class=m>6380</span>
+</span></span><span class=line><span class=cl>Please <span class=k>select</span> the redis config file name <span class=o>[</span>/data/redis/etc/6380.conf<span class=o>]</span>
+</span></span><span class=line><span class=cl>Selected default - /data/redis/etc/6380.conf
+</span></span><span class=line><span class=cl>Please <span class=k>select</span> the redis log file name <span class=o>[</span>/data/redis/log/redis_6380.log<span class=o>]</span>
+</span></span><span class=line><span class=cl>Selected default - /data/redis/log/redis_6380.log
+</span></span><span class=line><span class=cl>Please <span class=k>select</span> the data directory <span class=k>for</span> this instance <span class=o>[</span>/data/redis/6380<span class=o>]</span>
+</span></span><span class=line><span class=cl>Selected default - /data/redis/6380
+</span></span><span class=line><span class=cl>Please <span class=k>select</span> the redis executable path <span class=o>[</span>/usr/local/bin/redis-server<span class=o>]</span>
+</span></span><span class=line><span class=cl>Selected config:
+</span></span><span class=line><span class=cl>Port           : <span class=m>6380</span>
+</span></span><span class=line><span class=cl>Config file    : /data/redis/etc/6380.conf
+</span></span><span class=line><span class=cl>Log file       : /data/redis/log/redis_6380.log
+</span></span><span class=line><span class=cl>Data dir       : /data/redis/6380
+</span></span><span class=line><span class=cl>Executable     : /usr/local/bin/redis-server
+</span></span><span class=line><span class=cl>Cli Executable : /usr/local/bin/redis-cli
+</span></span><span class=line><span class=cl>Is this ok? Then press ENTER to go on or Ctrl-C to abort.
+</span></span><span class=line><span class=cl>Copied /tmp/6380.conf <span class=o>=</span>&gt; /etc/init.d/redis_6380
+</span></span><span class=line><span class=cl>Installing service...
+</span></span><span class=line><span class=cl>Successfully added to chkconfig!
+</span></span><span class=line><span class=cl>Successfully added to runlevels 345!
+</span></span><span class=line><span class=cl>Starting Redis server...
+</span></span><span class=line><span class=cl>Installation successful!
+</span></span><span class=line><span class=cl><span class=o>[</span>root@localhost utils<span class=o>]</span><span class=c1># bash install_server.sh</span>
+</span></span><span class=line><span class=cl>Welcome to the redis service installer
+</span></span><span class=line><span class=cl>This script will <span class=nb>help</span> you easily <span class=nb>set</span> up a running redis server
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Please <span class=k>select</span> the redis port <span class=k>for</span> this instance: <span class=o>[</span>6379<span class=o>]</span> <span class=m>6381</span>
+</span></span><span class=line><span class=cl>Please <span class=k>select</span> the redis config file name <span class=o>[</span>/data/redis/etc/6381.conf<span class=o>]</span>
+</span></span><span class=line><span class=cl>Selected default - /data/redis/etc/6381.conf
+</span></span><span class=line><span class=cl>Please <span class=k>select</span> the redis log file name <span class=o>[</span>/data/redis/log/redis_6381.log<span class=o>]</span>
+</span></span><span class=line><span class=cl>Selected default - /data/redis/log/redis_6381.log
+</span></span><span class=line><span class=cl>Please <span class=k>select</span> the data directory <span class=k>for</span> this instance <span class=o>[</span>/data/redis/6381<span class=o>]</span>
+</span></span><span class=line><span class=cl>Selected default - /data/redis/6381
+</span></span><span class=line><span class=cl>Please <span class=k>select</span> the redis executable path <span class=o>[</span>/usr/local/bin/redis-server<span class=o>]</span>
+</span></span><span class=line><span class=cl>Selected config:
+</span></span><span class=line><span class=cl>Port           : <span class=m>6381</span>
+</span></span><span class=line><span class=cl>Config file    : /data/redis/etc/6381.conf
+</span></span><span class=line><span class=cl>Log file       : /data/redis/log/redis_6381.log
+</span></span><span class=line><span class=cl>Data dir       : /data/redis/6381
+</span></span><span class=line><span class=cl>Executable     : /usr/local/bin/redis-server
+</span></span><span class=line><span class=cl>Cli Executable : /usr/local/bin/redis-cli
+</span></span><span class=line><span class=cl>Is this ok? Then press ENTER to go on or Ctrl-C to abort.
+</span></span><span class=line><span class=cl>Copied /tmp/6381.conf <span class=o>=</span>&gt; /etc/init.d/redis_6381
+</span></span><span class=line><span class=cl>Installing service...
+</span></span><span class=line><span class=cl>Successfully added to chkconfig!
+</span></span><span class=line><span class=cl>Successfully added to runlevels 345!
+</span></span><span class=line><span class=cl>Starting Redis server...
+</span></span><span class=line><span class=cl>Installation successful!
+</span></span><span class=line><span class=cl><span class=o>[</span>root@localhost utils<span class=o>]</span><span class=c1># bash install_server.sh</span>
+</span></span><span class=line><span class=cl>Welcome to the redis service installer
+</span></span><span class=line><span class=cl>This script will <span class=nb>help</span> you easily <span class=nb>set</span> up a running redis server
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Please <span class=k>select</span> the redis port <span class=k>for</span> this instance: <span class=o>[</span>6379<span class=o>]</span> <span class=m>6382</span>
+</span></span><span class=line><span class=cl>Please <span class=k>select</span> the redis config file name <span class=o>[</span>/data/redis/etc/6382.conf<span class=o>]</span>
+</span></span><span class=line><span class=cl>Selected default - /data/redis/etc/6382.conf
+</span></span><span class=line><span class=cl>Please <span class=k>select</span> the redis log file name <span class=o>[</span>/data/redis/log/redis_6382.log<span class=o>]</span>
+</span></span><span class=line><span class=cl>Selected default - /data/redis/log/redis_6382.log
+</span></span><span class=line><span class=cl>Please <span class=k>select</span> the data directory <span class=k>for</span> this instance <span class=o>[</span>/data/redis/6382<span class=o>]</span>
+</span></span><span class=line><span class=cl>Selected default - /data/redis/6382
+</span></span><span class=line><span class=cl>Please <span class=k>select</span> the redis executable path <span class=o>[</span>/usr/local/bin/redis-server<span class=o>]</span>
+</span></span><span class=line><span class=cl>Selected config:
+</span></span><span class=line><span class=cl>Port           : <span class=m>6382</span>
+</span></span><span class=line><span class=cl>Config file    : /data/redis/etc/6382.conf
+</span></span><span class=line><span class=cl>Log file       : /data/redis/log/redis_6382.log
+</span></span><span class=line><span class=cl>Data dir       : /data/redis/6382
+</span></span><span class=line><span class=cl>Executable     : /usr/local/bin/redis-server
+</span></span><span class=line><span class=cl>Cli Executable : /usr/local/bin/redis-cli
+</span></span><span class=line><span class=cl>Is this ok? Then press ENTER to go on or Ctrl-C to abort.
+</span></span><span class=line><span class=cl>Copied /tmp/6382.conf <span class=o>=</span>&gt; /etc/init.d/redis_6382
+</span></span><span class=line><span class=cl>Installing service...
+</span></span><span class=line><span class=cl>Successfully added to chkconfig!
+</span></span><span class=line><span class=cl>Successfully added to runlevels 345!
+</span></span><span class=line><span class=cl>Starting Redis server...
+</span></span><span class=line><span class=cl>Installation successful!
+</span></span></code></pre></td></tr></table></div></div><blockquote><p>本例为了使用自定义的目录存放 redis 数据及配置文件对 install_server.sh 脚本中的路径做了修改</p></blockquote><h3 id=replication-配置 class=headerLink><a href=#replication-%e9%85%8d%e7%bd%ae class=header-mark></a>Replication 配置</h3><p><code>6380</code> 为主库，<code>6381-6382</code> 为从库，配置如下:</p><p><em>主库配置</em></p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span><span class=lnt>7
+</span><span class=lnt>8
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=o>[</span>root@localhost log<span class=o>]</span><span class=c1># redis-cli -p 6380</span>
+</span></span><span class=line><span class=cl>127.0.0.1:6381&gt; config <span class=nb>set</span> requirepass <span class=m>123</span>
+</span></span><span class=line><span class=cl>OK
+</span></span><span class=line><span class=cl>127.0.0.1:6381&gt; auth <span class=m>123</span>
+</span></span><span class=line><span class=cl>OK
+</span></span><span class=line><span class=cl>127.0.0.1:6381&gt; config <span class=nb>set</span> masterauth <span class=m>123</span>
+</span></span><span class=line><span class=cl>OK
+</span></span><span class=line><span class=cl>127.0.0.1:6381&gt; CONFIG REWRITE
+</span></span></code></pre></td></tr></table></div></div><p><em>从库配置</em></p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=o>[</span>root@localhost log<span class=o>]</span><span class=c1># redis-cli -p 6381</span>
+</span></span><span class=line><span class=cl>127.0.0.1:6381&gt; config <span class=nb>set</span> requirepass <span class=m>123</span>
+</span></span><span class=line><span class=cl>OK
+</span></span><span class=line><span class=cl>127.0.0.1:6381&gt; auth <span class=m>123</span>
+</span></span><span class=line><span class=cl>OK
+</span></span><span class=line><span class=cl>127.0.0.1:6381&gt; config <span class=nb>set</span> masterauth <span class=m>123</span>
+</span></span><span class=line><span class=cl>OK
+</span></span><span class=line><span class=cl>127.0.0.1:6381&gt; CONFIG REWRITE
+</span></span><span class=line><span class=cl>OK
+</span></span><span class=line><span class=cl>127.0.0.1:6381&gt; slaveof 127.0.0.1 <span class=m>6380</span>
+</span></span><span class=line><span class=cl>OK
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=o>[</span>root@localhost log<span class=o>]</span><span class=c1># redis-cli -p 6382</span>
+</span></span><span class=line><span class=cl>127.0.0.1:6381&gt; config <span class=nb>set</span> requirepass <span class=m>123</span>
+</span></span><span class=line><span class=cl>OK
+</span></span><span class=line><span class=cl>127.0.0.1:6381&gt; auth <span class=m>123</span>
+</span></span><span class=line><span class=cl>OK
+</span></span><span class=line><span class=cl>127.0.0.1:6381&gt; config <span class=nb>set</span> masterauth <span class=m>123</span>
+</span></span><span class=line><span class=cl>OK
+</span></span><span class=line><span class=cl>127.0.0.1:6381&gt; CONFIG REWRITE
+</span></span><span class=line><span class=cl>OK
+</span></span><span class=line><span class=cl>127.0.0.1:6381&gt; slaveof 127.0.0.1 <span class=m>6380</span>
+</span></span><span class=line><span class=cl>OK
+</span></span></code></pre></td></tr></table></div></div><blockquote><p>如果想解除主从关系可以使用 <code>slaveof no one</code> 指令</p></blockquote><h3 id=检查-replication-状态 class=headerLink><a href=#%e6%a3%80%e6%9f%a5-replication-%e7%8a%b6%e6%80%81 class=header-mark></a>检查 Replication 状态</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span><span class=lnt>26
+</span><span class=lnt>27
+</span><span class=lnt>28
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=o>[</span>root@localhost etc<span class=o>]</span><span class=c1># redis-cli -p 6380 -a 123 info replication</span>
+</span></span><span class=line><span class=cl><span class=c1># Replication</span>
+</span></span><span class=line><span class=cl>role:master
+</span></span><span class=line><span class=cl>connected_slaves:2
+</span></span><span class=line><span class=cl>slave0:ip<span class=o>=</span>127.0.0.1,port<span class=o>=</span>6381,state<span class=o>=</span>online,offset<span class=o>=</span>3442,lag<span class=o>=</span><span class=m>1</span>
+</span></span><span class=line><span class=cl>slave1:ip<span class=o>=</span>127.0.0.1,port<span class=o>=</span>6382,state<span class=o>=</span>online,offset<span class=o>=</span>3442,lag<span class=o>=</span><span class=m>1</span>
+</span></span><span class=line><span class=cl>master_repl_offset:3575
+</span></span><span class=line><span class=cl>repl_backlog_active:1
+</span></span><span class=line><span class=cl>repl_backlog_size:1048576
+</span></span><span class=line><span class=cl>repl_backlog_first_byte_offset:2
+</span></span><span class=line><span class=cl>repl_backlog_histlen:3574
+</span></span><span class=line><span class=cl><span class=o>[</span>root@localhost etc<span class=o>]</span><span class=c1># redis-cli -p 6381 -a 123 info replication</span>
+</span></span><span class=line><span class=cl><span class=c1># Replication</span>
+</span></span><span class=line><span class=cl>role:slave
+</span></span><span class=line><span class=cl>master_host:127.0.0.1
+</span></span><span class=line><span class=cl>master_port:6380
+</span></span><span class=line><span class=cl>master_link_status:up
+</span></span><span class=line><span class=cl>master_last_io_seconds_ago:0
+</span></span><span class=line><span class=cl>master_sync_in_progress:0
+</span></span><span class=line><span class=cl>slave_repl_offset:6291
+</span></span><span class=line><span class=cl>slave_priority:100
+</span></span><span class=line><span class=cl>slave_read_only:1
+</span></span><span class=line><span class=cl>connected_slaves:0
+</span></span><span class=line><span class=cl>master_repl_offset:0
+</span></span><span class=line><span class=cl>repl_backlog_active:0
+</span></span><span class=line><span class=cl>repl_backlog_size:1048576
+</span></span><span class=line><span class=cl>repl_backlog_first_byte_offset:0
+</span></span><span class=line><span class=cl>repl_backlog_histlen:0
+</span></span></code></pre></td></tr></table></div></div><blockquote><p>可以在主库写入数据然后到从库读取测试同步</p></blockquote><h2 id=redis-sentinel-高可用 class=headerLink><a href=#redis-sentinel-%e9%ab%98%e5%8f%af%e7%94%a8 class=header-mark></a>Redis Sentinel 高可用</h2><p>由于 redis replication 默认状态下如果主库宕机，是不会自动切换主从身份的，需要手动干预，这是生产环境下不允许的。为了解决此问题 redis 引入哨兵模式。</p><p>redis sentinel 有以下作用：</p><ol><li>监控节点</li><li>自动选主，切换主从身份</li><li>从库自动指向新的主库</li><li>对应用透明</li><li>自动处理故障节点</li></ol><h3 id=配置-sentinel class=headerLink><a href=#%e9%85%8d%e7%bd%ae-sentinel class=header-mark></a>配置 sentinel</h3><p><em>准备 sentinel 配置文件</em></p><p>源码包中有示例配置文件可用，直接复制修改即可</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>mkdir /data/sentinel
+</span></span><span class=line><span class=cl>cat &gt; /data/sentinel/26379.conf <span class=s>&lt;&lt;EOF
+</span></span></span><span class=line><span class=cl><span class=s>protected-mode no
+</span></span></span><span class=line><span class=cl><span class=s>daemonize yes
+</span></span></span><span class=line><span class=cl><span class=s>logfile &#34;/data/sentinel/26379.log&#34;
+</span></span></span><span class=line><span class=cl><span class=s>port 26379
+</span></span></span><span class=line><span class=cl><span class=s>dir &#34;/tmp&#34;
+</span></span></span><span class=line><span class=cl><span class=s>sentinel myid 994ea01af0f13692c13eeda116a0668084bb5e68
+</span></span></span><span class=line><span class=cl><span class=s>
+</span></span></span><span class=line><span class=cl><span class=s># mymaster 是一个自定义名称，客户端通过 sentinel 连接 redis 时需要使用
+</span></span></span><span class=line><span class=cl><span class=s># 127.0.0.1 6380  是主节点的 ip 和 端口号
+</span></span></span><span class=line><span class=cl><span class=s># 1 是 sentinel failover 投票数，默认为 sentinel 节点数/2 + 1, 1个节点时为1
+</span></span></span><span class=line><span class=cl><span class=s># 为了能正常投票得出结果 sentinel 节点数得为奇数个
+</span></span></span><span class=line><span class=cl><span class=s>sentinel monitor mymaster 127.0.0.1 6380 1
+</span></span></span><span class=line><span class=cl><span class=s>sentinel down-after-milliseconds mymaster 5000
+</span></span></span><span class=line><span class=cl><span class=s>sentinel auth-pass mymaster 123
+</span></span></span><span class=line><span class=cl><span class=s>sentinel config-epoch mymaster 3
+</span></span></span><span class=line><span class=cl><span class=s>sentinel leader-epoch mymaster 3
+</span></span></span><span class=line><span class=cl><span class=s>sentinel known-slave mymaster 127.0.0.1 6382
+</span></span></span><span class=line><span class=cl><span class=s>sentinel known-slave mymaster 127.0.0.1 6381
+</span></span></span><span class=line><span class=cl><span class=s>sentinel current-epoch 3
+</span></span></span><span class=line><span class=cl><span class=s>EOF</span>
+</span></span></code></pre></td></tr></table></div></div><p><em>启动 sentinel 服务</em></p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>/usr/local/bin/redis-sentinel /data/sentinel/26379.conf
+</span></span></code></pre></td></tr></table></div></div><blockquote><p><code>redis-sentinel</code> 是 <code>redis-server</code> 的软链接</p></blockquote><h3 id=连接测试-sentinel class=headerLink><a href=#%e8%bf%9e%e6%8e%a5%e6%b5%8b%e8%af%95-sentinel class=header-mark></a>连接测试 sentinel</h3><h4 id=sentinel-管理命令 class=headerLink><a href=#sentinel-%e7%ae%a1%e7%90%86%e5%91%bd%e4%bb%a4 class=header-mark></a>sentinel 管理命令</h4><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span><span class=lnt>7
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=o>[</span>root@localhost sentinel<span class=o>]</span><span class=c1># redis-cli -p 26379</span>
+</span></span><span class=line><span class=cl><span class=c1># 列出所有被监视的主服务器</span>
+</span></span><span class=line><span class=cl>127.0.0.1:26379&gt; SENTINEL masters
+</span></span><span class=line><span class=cl><span class=c1># 列出所有被监视的从服务器</span>
+</span></span><span class=line><span class=cl>127.0.0.1:26379&gt; SENTINEL slaves &lt;master name&gt;
+</span></span><span class=line><span class=cl><span class=c1># 强制开启 主从切换, 危险</span>
+</span></span><span class=line><span class=cl>127.0.0.1:26379&gt; SENTINEL failover &lt;master name&gt;
+</span></span></code></pre></td></tr></table></div></div><h4 id=测试主从切换 class=headerLink><a href=#%e6%b5%8b%e8%af%95%e4%b8%bb%e4%bb%8e%e5%88%87%e6%8d%a2 class=header-mark></a>测试主从切换</h4><p><em>模拟故障停止主库</em></p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=o>[</span>root@localhost etc<span class=o>]</span><span class=c1># redis-cli -p 6380 -a 123 shutdown</span>
+</span></span></code></pre></td></tr></table></div></div><p><em>查看 sentinel 日志</em></p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>3963:X 28 Mar 15:31:13.864 # +sdown master mymaster 127.0.0.1 6380
+</span></span><span class=line><span class=cl>3963:X 28 Mar 15:31:13.864 # +odown master mymaster 127.0.0.1 6380 #quorum 1/1
+</span></span><span class=line><span class=cl>3963:X 28 Mar 15:31:13.864 # +new-epoch 6
+</span></span><span class=line><span class=cl>3963:X 28 Mar 15:31:13.864 # +try-failover master mymaster 127.0.0.1 6380
+</span></span><span class=line><span class=cl>3963:X 28 Mar 15:31:13.864 # +vote-for-leader 994ea01af0f13692c13eeda116a0668084bb5e68 6
+</span></span><span class=line><span class=cl>3963:X 28 Mar 15:31:13.864 # +elected-leader master mymaster 127.0.0.1 6380
+</span></span><span class=line><span class=cl>3963:X 28 Mar 15:31:13.864 # +failover-state-select-slave master mymaster 127.0.0.1 6380
+</span></span><span class=line><span class=cl>3963:X 28 Mar 15:31:13.948 # +selected-slave slave 127.0.0.1:6382 127.0.0.1 6382 @ mymaster 127.0.0.1 6380
+</span></span><span class=line><span class=cl>3963:X 28 Mar 15:31:13.948 * +failover-state-send-slaveof-noone slave 127.0.0.1:6382 127.0.0.1 6382 @ mymaster 127.0.0.1 6380
+</span></span><span class=line><span class=cl>3963:X 28 Mar 15:31:14.007 * +failover-state-wait-promotion slave 127.0.0.1:6382 127.0.0.1 6382 @ mymaster 127.0.0.1 6380
+</span></span><span class=line><span class=cl>3963:X 28 Mar 15:31:14.943 # +promoted-slave slave 127.0.0.1:6382 127.0.0.1 6382 @ mymaster 127.0.0.1 6380
+</span></span><span class=line><span class=cl>3963:X 28 Mar 15:31:14.943 # +failover-state-reconf-slaves master mymaster 127.0.0.1 6380
+</span></span><span class=line><span class=cl>3963:X 28 Mar 15:31:15.004 * +slave-reconf-sent slave 127.0.0.1:6381 127.0.0.1 6381 @ mymaster 127.0.0.1 6380
+</span></span><span class=line><span class=cl>3963:X 28 Mar 15:31:15.994 * +slave-reconf-inprog slave 127.0.0.1:6381 127.0.0.1 6381 @ mymaster 127.0.0.1 6380
+</span></span><span class=line><span class=cl>3963:X 28 Mar 15:31:15.994 * +slave-reconf-done slave 127.0.0.1:6381 127.0.0.1 6381 @ mymaster 127.0.0.1 6380
+</span></span><span class=line><span class=cl>3963:X 28 Mar 15:31:16.055 # +failover-end master mymaster 127.0.0.1 6380
+</span></span><span class=line><span class=cl>3963:X 28 Mar 15:31:16.055 # +switch-master mymaster 127.0.0.1 6380 127.0.0.1 6382
+</span></span><span class=line><span class=cl>3963:X 28 Mar 15:31:16.055 * +slave slave 127.0.0.1:6381 127.0.0.1 6381 @ mymaster 127.0.0.1 6382
+</span></span><span class=line><span class=cl>3963:X 28 Mar 15:31:16.055 * +slave slave 127.0.0.1:6380 127.0.0.1 6380 @ mymaster 127.0.0.1 6382
+</span></span><span class=line><span class=cl>3963:X 28 Mar 15:31:21.064 # +sdown slave 127.0.0.1:6380 127.0.0.1 6380 @ mymaster 127.0.0.1 6382
+</span></span></code></pre></td></tr></table></div></div><blockquote><p>可以看到 sentinel 检测到主库服务停止，将 6382 选为主库，进行了切换操作， 6381 也自动与 6382 建立主从关系</p></blockquote><p><em>6380 修复好后，重新启动服务 sentinel 会自动检测到并 6380 加入主从环境中</em></p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=o>[</span>root@localhost etc<span class=o>]</span><span class=c1># /etc/init.d/redis_6380 start</span>
+</span></span><span class=line><span class=cl>Starting Redis server...
+</span></span></code></pre></td></tr></table></div></div><p>此时可以从 sentinel 日志中看到以下信息</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>3963:X 28 Mar 15:35:05.234 # -sdown slave 127.0.0.1:6380 127.0.0.1 6380 @ mymaster 127.0.0.1 6382
+</span></span><span class=line><span class=cl>3963:X 28 Mar 15:35:15.229 * +convert-to-slave slave 127.0.0.1:6380 127.0.0.1 6380 @ mymaster 127.0.0.1 6382
+</span></span></code></pre></td></tr></table></div></div><p><em>sentinel 会自动在 6380 实例的配置文件最后一行加入一行配置</em></p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=o>[</span>root@localhost etc<span class=o>]</span><span class=c1># tail -n 3 6380.conf</span>
+</span></span><span class=line><span class=cl>requirepass <span class=s2>&#34;123&#34;</span>
+</span></span><span class=line><span class=cl>masterauth <span class=s2>&#34;123&#34;</span>
+</span></span><span class=line><span class=cl>slaveof 127.0.0.1 <span class=m>6382</span>
+</span></span></code></pre></td></tr></table></div></div><h4 id=配置多节点-sentinel class=headerLink><a href=#%e9%85%8d%e7%bd%ae%e5%a4%9a%e8%8a%82%e7%82%b9-sentinel class=header-mark></a>配置多节点 sentinel</h4><p>此时 redis 的高可用解决了，但 sentinel 只有一个节点存在单点故障，为了解决这个问题，可以通过部署多个 sentinel 节点解决。
+配置多个 sentinel 节点时需要注意节点数据及配置文件中的 <code>sentinel monitor mymaster 127.0.0.1 6380 1</code> 配置项的最后一个值的配置。</p><h4 id=客户端连接-redis class=headerLink><a href=#%e5%ae%a2%e6%88%b7%e7%ab%af%e8%bf%9e%e6%8e%a5-redis class=header-mark></a>客户端连接 redis</h4><p>以 python 客户端为例说明, 参考文档: <a href=https://pypi.org/project/redis/ target=_blank rel="noopener noreferrer">https://pypi.org/project/redis/</a></p><p><em>安装 redis 库</em></p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>pip install redis
+</span></span></code></pre></td></tr></table></div></div><p><em>连接至单实例 reids</em></p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-python data-lang=python><span class=line><span class=cl><span class=o>&gt;&gt;&gt;</span> <span class=kn>import</span> <span class=nn>redis</span>
+</span></span><span class=line><span class=cl><span class=o>&gt;&gt;&gt;</span> <span class=n>r</span> <span class=o>=</span> <span class=n>redis</span><span class=o>.</span><span class=n>Redis</span><span class=p>(</span><span class=n>host</span><span class=o>=</span><span class=s1>&#39;localhost&#39;</span><span class=p>,</span> <span class=n>port</span><span class=o>=</span><span class=mi>6379</span><span class=p>,</span> <span class=n>db</span><span class=o>=</span><span class=mi>0</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=o>&gt;&gt;&gt;</span> <span class=n>r</span><span class=o>.</span><span class=n>set</span><span class=p>(</span><span class=s1>&#39;foo&#39;</span><span class=p>,</span> <span class=s1>&#39;bar&#39;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=kc>True</span>
+</span></span><span class=line><span class=cl><span class=o>&gt;&gt;&gt;</span> <span class=n>r</span><span class=o>.</span><span class=n>get</span><span class=p>(</span><span class=s1>&#39;foo&#39;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=sa>b</span><span class=s1>&#39;bar&#39;</span>
+</span></span></code></pre></td></tr></table></div></div><p><em>Sentinel 模式</em></p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-python data-lang=python><span class=line><span class=cl><span class=o>&gt;&gt;&gt;</span> <span class=kn>from</span> <span class=nn>redis.sentinel</span> <span class=kn>import</span> <span class=n>Sentinel</span>
+</span></span><span class=line><span class=cl><span class=o>&gt;&gt;&gt;</span> <span class=n>sentinel</span> <span class=o>=</span> <span class=n>Sentinel</span><span class=p>([(</span><span class=s1>&#39;localhost&#39;</span><span class=p>,</span> <span class=mi>26379</span><span class=p>)],</span> <span class=n>socket_timeout</span><span class=o>=</span><span class=mf>0.1</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=o>&gt;&gt;&gt;</span> <span class=n>sentinel</span><span class=o>.</span><span class=n>discover_master</span><span class=p>(</span><span class=s1>&#39;mymaster&#39;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>(</span><span class=s1>&#39;127.0.0.1&#39;</span><span class=p>,</span> <span class=mi>6379</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=o>&gt;&gt;&gt;</span> <span class=n>sentinel</span><span class=o>.</span><span class=n>discover_slaves</span><span class=p>(</span><span class=s1>&#39;mymaster&#39;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>[(</span><span class=s1>&#39;127.0.0.1&#39;</span><span class=p>,</span> <span class=mi>6380</span><span class=p>)]</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=o>&gt;&gt;&gt;</span> <span class=n>master</span> <span class=o>=</span> <span class=n>sentinel</span><span class=o>.</span><span class=n>master_for</span><span class=p>(</span><span class=s1>&#39;mymaster&#39;</span><span class=p>,</span> <span class=n>socket_timeout</span><span class=o>=</span><span class=mf>0.1</span><span class=p>,</span> <span class=n>password</span><span class=o>=</span><span class=s1>&#39;123&#39;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=o>&gt;&gt;&gt;</span> <span class=n>slave</span> <span class=o>=</span> <span class=n>sentinel</span><span class=o>.</span><span class=n>slave_for</span><span class=p>(</span><span class=s1>&#39;mymaster&#39;</span><span class=p>,</span> <span class=n>socket_timeout</span><span class=o>=</span><span class=mf>0.1</span><span class=p>,</span> <span class=n>password</span><span class=o>=</span><span class=s1>&#39;123&#39;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=o>&gt;&gt;&gt;</span> <span class=n>master</span><span class=o>.</span><span class=n>set</span><span class=p>(</span><span class=s1>&#39;foo&#39;</span><span class=p>,</span> <span class=s1>&#39;bar&#39;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=o>&gt;&gt;&gt;</span> <span class=n>slave</span><span class=o>.</span><span class=n>get</span><span class=p>(</span><span class=s1>&#39;foo&#39;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=sa>b</span><span class=s1>&#39;bar&#39;</span>
+</span></span></code></pre></td></tr></table></div></div></div><div class=post-footer id=post-footer><div class=post-info><div class=post-info-line><div class=post-info-mod><span>更新于 2021-03-28</span></div><div class=post-info-license></div></div><div class=post-info-line><div class=post-info-md><span><a class=link-to-mardown href=/posts/redis-sentinel/index.md target=_blank rel="noopener noreferrer">阅读原始文档</a></span></div><div class=post-info-share><span><a href=# title="分享到 Twitter" data-sharer=twitter data-url=https://liwanggui.com/posts/redis-sentinel/ data-title="Redis Sentinel 高可用" data-hashtags=redis,sentinel><i class="fab fa-twitter fa-fw"></i></a><a href=# title="分享到 Facebook" data-sharer=facebook data-url=https://liwanggui.com/posts/redis-sentinel/ data-hashtag=redis><i class="fab fa-facebook-square fa-fw"></i></a><a href=# title="分享到 WhatsApp" data-sharer=whatsapp data-url=https://liwanggui.com/posts/redis-sentinel/ data-title="Redis Sentinel 高可用" data-web><i class="fab fa-whatsapp fa-fw"></i></a><a href=# title="分享到 Line" data-sharer=line data-url=https://liwanggui.com/posts/redis-sentinel/ data-title="Redis Sentinel 高可用"><i data-svg-src=/lib/simple-icons/icons/line.min.svg></i></a><a href=# title="分享到 微博" data-sharer=weibo data-url=https://liwanggui.com/posts/redis-sentinel/ data-title="Redis Sentinel 高可用"><i class="fab fa-weibo fa-fw"></i></a><a href=# title="分享到 Myspace" data-sharer=myspace data-url=https://liwanggui.com/posts/redis-sentinel/ data-title="Redis Sentinel 高可用" data-description><i data-svg-src=/lib/simple-icons/icons/myspace.min.svg></i></a><a href=# title="分享到 Blogger" data-sharer=blogger data-url=https://liwanggui.com/posts/redis-sentinel/ data-title="Redis Sentinel 高可用" data-description><i class="fab fa-blogger fa-fw"></i></a><a href=# title="分享到 百度" data-sharer=baidu data-url=https://liwanggui.com/posts/redis-sentinel/ data-title="Redis Sentinel 高可用"><i data-svg-src=/lib/simple-icons/icons/baidu.min.svg></i></a><a href=# title="分享到 Evernote" data-sharer=evernote data-url=https://liwanggui.com/posts/redis-sentinel/ data-title="Redis Sentinel 高可用"><i class="fab fa-evernote fa-fw"></i></a></span></div></div></div><div class=post-info-more><section class=post-tags><i class="fas fa-tags fa-fw"></i>&nbsp;<a href=/tags/redis/>redis</a>,&nbsp;<a href=/tags/sentinel/>sentinel</a></section><section><span><a href=javascript:void(0); onclick=window.history.back()>返回</a></span>&nbsp;|&nbsp;<span><a href=/>主页</a></span></section></div><div class=post-nav><a href=/posts/redis-cli/ class=prev rel=prev title="Redis 基础操作"><i class="fas fa-angle-left fa-fw"></i>Redis 基础操作</a>
+<a href=/posts/nginx-install/ class=next rel=next title="nginx - 源码编译安装">nginx - 源码编译安装<i class="fas fa-angle-right fa-fw"></i></a></div></div><div id=comments><div id=giscus></div><noscript>Please enable JavaScript to view the comments powered by <a href=https://giscus.app/>giscus</a>.</noscript></div></article></div></main><footer class=footer><div class=footer-container><div class=footer-line>由 <a href=https://gohugo.io/ target=_blank rel="noopener noreferrer" title="Hugo 0.101.0">Hugo</a> 强力驱动&nbsp;|&nbsp;主题 - <a href=https://github.com/HEIGE-PCloud/DoIt target=_blank rel="noopener noreferrer" title="DoIt 0.3.0"><i class="far fa-edit fa-fw"></i> DoIt</a></div><div class=footer-line><i class="far fa-copyright fa-fw"></i><span itemprop=copyrightYear>2017 - 2024</span><span class=author itemprop=copyrightHolder>&nbsp;<a href=/about/ target=_blank rel="noopener noreferrer">李王贵</a></span><span class=icp-splitter>&nbsp;|&nbsp;</span><br class=icp-br><span class=icp><a href=https://beian.miit.gov.cn target=_blank>赣ICP备2023001395号</a></span></div><div class=footer-line></div><div class=footer-line></div></div></footer></div><div id=fixed-buttons><a href=#back-to-top id=back-to-top-button class=fixed-button title=回到顶部><i class="fas fa-arrow-up fa-fw"></i>
+</a><a href=# id=view-comments class=fixed-button title=查看评论><i class="fas fa-comment fa-fw"></i></a></div><div id=cookieconsent-container></div><div class=assets><link rel=stylesheet href=/lib/lightgallery/lightgallery.min.css><link rel=stylesheet href=/lib/katex/katex.min.css><link rel=preload as=style onload='this.onload=null,this.rel="stylesheet"' href=/lib/katex/copy-tex.min.css><noscript><link rel=stylesheet href=/lib/katex/copy-tex.min.css></noscript><link rel=stylesheet href=/lib/cookieconsent/cookieconsent.min.css><script type=text/javascript>window.config={code:{copyTitle:"复制到剪贴板",maxShownLines:10},comment:{giscus:{darkTheme:"dark",dataCategory:"Announcements",dataCategoryId:"DIC_kwDOE7mEQ84CY9pq",dataEmitMetadata:"1",dataInputPosition:"top",dataLang:"zh-CN",dataMapping:"pathname",dataReactionsEnabled:"1",dataRepo:"liwanggui/liwanggui.github.io",dataRepoId:"MDEwOlJlcG9zaXRvcnkzMzA5MjUxMjM=",dataStrict:"0",lightTheme:"light"}},cookieconsent:{content:{dismiss:"同意",link:"了解更多",message:"本网站使用 Cookies 来改善您的浏览体验."},enable:!0,palette:{button:{background:"#f0f0f0"},popup:{background:"#1aa3ff"}},theme:"edgeless"},lightGallery:{actualSize:!1,exThumbImage:"data-thumbnail",hideBarsDelay:2e3,selector:".lightgallery",speed:400,thumbContHeight:80,thumbWidth:80,thumbnail:!0},math:{delimiters:[{display:!0,left:"$$",right:"$$"},{display:!0,left:"\\[",right:"\\]"},{display:!1,left:"$",right:"$"},{display:!1,left:"\\(",right:"\\)"}],strict:!1},search:{distance:100,findAllMatches:!1,fuseIndexURL:"/index.json",highlightTag:"em",ignoreFieldNorm:!1,ignoreLocation:!1,isCaseSensitive:!1,location:0,maxResultLength:10,minMatchCharLength:2,noResultsFound:"没有找到结果",snippetLength:50,threshold:.3,type:"fuse",useExtendedSearch:!1},sharerjs:!0,twemoji:!0}</script><script type=text/javascript src=/js/giscus.min.js defer></script><script type=text/javascript src=/lib/twemoji/twemoji.min.js defer></script><script type=text/javascript src=/js/twemoji.min.js defer></script><script type=text/javascript src=/lib/lightgallery/lightgallery.min.js></script><script type=text/javascript src=/lib/lightgallery/lg-thumbnail.min.js></script><script type=text/javascript src=/lib/lightgallery/lg-zoom.min.js></script><script type=text/javascript src=/lib/clipboard/clipboard.min.js></script><script type=text/javascript src=/lib/sharer/sharer.min.js></script><script type=text/javascript src=/lib/katex/katex.min.js defer></script><script type=text/javascript src=/lib/katex/auto-render.min.js defer></script><script type=text/javascript src=/lib/katex/copy-tex.min.js defer></script><script type=text/javascript src=/lib/katex/mhchem.min.js defer></script><script type=text/javascript src=/js/katex.min.js defer></script><script type=text/javascript src=/lib/cookieconsent/cookieconsent.min.js defer></script><script type=text/javascript src=/js/cookieconsent.min.js defer></script><script type=text/javascript src=/js/theme.min.js defer></script></div></body></html>

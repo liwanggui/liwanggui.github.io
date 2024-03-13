@@ -1,0 +1,595 @@
+<!doctype html><html lang=zh-cn><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><meta name=robots content="noodp"><title>MySQL 基础管理命令 - _浅行</title><meta name=Description content="_浅行"><meta property="og:title" content="MySQL 基础管理命令"><meta property="og:description" content="一、用户权限管理 1. 查看帮助信息使用 mysql 命令连接上 MySQL 服务后可以使用 help 命令查看帮助信息，例如: 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26"><meta property="og:type" content="article"><meta property="og:url" content="https://liwanggui.com/posts/mysql-manage/"><meta property="og:image" content="https://liwanggui.com/logo.png"><meta property="article:section" content="posts"><meta property="article:published_time" content="2021-01-01T12:15:48+08:00"><meta property="article:modified_time" content="2021-01-01T12:15:48+08:00"><meta name=twitter:card content="summary_large_image"><meta name=twitter:image content="https://liwanggui.com/logo.png"><meta name=twitter:title content="MySQL 基础管理命令"><meta name=twitter:description content="一、用户权限管理 1. 查看帮助信息使用 mysql 命令连接上 MySQL 服务后可以使用 help 命令查看帮助信息，例如: 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26"><meta name=application-name content="LoveIt"><meta name=apple-mobile-web-app-title content="LoveIt"><meta name=theme-color content="#f8f8f8"><meta name=msapplication-TileColor content="#da532c"><link rel=canonical href=https://liwanggui.com/posts/mysql-manage/><link rel=prev href=https://liwanggui.com/posts/mysql-multi-instance/><link rel=next href=https://liwanggui.com/posts/mysql-reset-root-password/><link rel=stylesheet href=/lib/normalize/normalize.min.css><link rel=stylesheet href=/css/color.css><link rel=stylesheet href=/css/style.min.css><link rel=preload as=style onload='this.onload=null,this.rel="stylesheet"' href=/lib/fontawesome-free/all.min.css><noscript><link rel=stylesheet href=/lib/fontawesome-free/all.min.css></noscript><link rel=preload as=style onload='this.onload=null,this.rel="stylesheet"' href=/lib/animate/animate.min.css><noscript><link rel=stylesheet href=/lib/animate/animate.min.css></noscript><script type=application/ld+json>{"@context":"http://schema.org","@type":"BlogPosting","headline":"MySQL 基础管理命令","inLanguage":"zh-CN","mainEntityOfPage":{"@type":"WebPage","@id":"https:\/\/liwanggui.com\/posts\/mysql-manage\/"},"genre":"posts","keywords":"mysql","wordcount":2449,"url":"https:\/\/liwanggui.com\/posts\/mysql-manage\/","datePublished":"2021-01-01T12:15:48+08:00","dateModified":"2021-01-01T12:15:48+08:00","publisher":{"@type":"Organization","name":""},"author":{"@type":"Person","name":"李王贵"},"description":""}</script><script src=//instant.page/5.1.1 defer type=module integrity=sha384-MWfCL6g1OTGsbSwfuMHc8+8J2u71/LA8dzlIN3ycajckxuZZmF+DNjdm7O6H3PSq></script></head><body header-desktop=fixed header-mobile=auto><script type=text/javascript>function setTheme(e){document.body.setAttribute("theme",e),document.documentElement.style.setProperty("color-scheme",e==="light"?"light":"dark")}function saveTheme(e){window.localStorage&&localStorage.setItem("theme",e)}function getMeta(e){const t=document.getElementsByTagName("meta");for(let n=0;n<t.length;n++)if(t[n].getAttribute("name")===e)return t[n];return""}if(window.localStorage&&localStorage.getItem("theme")){let e=localStorage.getItem("theme");e==="light"||e==="dark"||e==="black"?setTheme(e):setTheme(window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light")}else"auto"==="light"||"auto"==="dark"||"auto"==="black"?(setTheme("auto"),saveTheme("auto")):(saveTheme("auto"),setTheme(window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"));let metaColors={light:"#f8f8f8",dark:"#252627",black:"#000000"};getMeta("theme-color").content=metaColors[document.body.getAttribute("theme")]</script><div id=back-to-top></div><div id=mask></div><div class=wrapper><header class=desktop id=header-desktop><div class=header-wrapper><div class=header-title><a href=/ title=_浅行><span class=header-title-pre><i class='far fa-kiss-wink-heart fa-fw'></i></span>_浅行</a></div><div class=menu><div class=menu-inner><a class=menu-item href=/posts/ title=文章列表>文章 </a><a class=menu-item href=/tags/ title=标签云>标签 </a><a class=menu-item href=/categories/ title=分类>分类 </a><a class=menu-item href=https://cook.liwanggui.com/ title=程序员做饭指南 rel="noopener noreferrer" target=_blank>烹饪 </a><a class=menu-item href=/about/index.html title=关于>关于 </a><span class="menu-item delimiter"></span><span class="menu-item search" id=search-desktop>
+<input type=text placeholder=搜索文章标题或内容... id=search-input-desktop>
+<a href=# class="search-button search-toggle" id=search-toggle-desktop title=搜索><i class="fas fa-search fa-fw"></i></a>
+<a href=# class="search-button search-clear" id=search-clear-desktop title=清空><i class="fas fa-times-circle fa-fw"></i></a>
+<span class="search-button search-loading" id=search-loading-desktop><i class="fas fa-spinner fa-fw fa-spin"></i></span>
+</span><a href=# class="menu-item theme-switch" title=切换主题><i class="fas fa-adjust fa-fw"></i></a></div></div></div></header><header class=mobile id=header-mobile><div class=header-container><div class=header-wrapper><div class=header-title><a href=/ title=_浅行><span class=header-title-pre><i class='far fa-kiss-wink-heart fa-fw'></i></span>_浅行</a></div><div class=menu-toggle id=menu-toggle-mobile><span></span><span></span><span></span></div></div><div class=menu id=menu-mobile><div class=search-wrapper><div class="search mobile" id=search-mobile><input type=text placeholder=搜索文章标题或内容... id=search-input-mobile>
+<a href=# class="search-button search-toggle" id=search-toggle-mobile title=搜索><i class="fas fa-search fa-fw"></i></a>
+<a href=# class="search-button search-clear" id=search-clear-mobile title=清空><i class="fas fa-times-circle fa-fw"></i></a>
+<span class="search-button search-loading" id=search-loading-mobile><i class="fas fa-spinner fa-fw fa-spin"></i></span></div><a href=# class=search-cancel id=search-cancel-mobile>取消</a></div><a class=menu-item href=/posts/ title=文章列表>文章</a><a class=menu-item href=/tags/ title=标签云>标签</a><a class=menu-item href=/categories/ title=分类>分类</a><a class=menu-item href=https://cook.liwanggui.com/ title=程序员做饭指南 rel="noopener noreferrer" target=_blank>烹饪</a><a class=menu-item href=/about/index.html title=关于>关于</a><a href=# class="menu-item theme-switch" title=切换主题>
+<i class="fas fa-adjust fa-fw"></i></a></div></div></header><div class="search-dropdown desktop"><div id=search-dropdown-desktop></div></div><div class="search-dropdown mobile"><div id=search-dropdown-mobile></div></div><main class=main><div class=container><div class=toc id=toc-auto><h2 class=toc-title>目录</h2><div class=toc-content id=toc-content-auto><nav id=TableOfContents><ul><li><a href=#一用户权限管理>一、用户权限管理</a><ul><li><a href=#1-查看帮助信息>1. 查看帮助信息</a></li><li><a href=#2-用户创建>2. 用户创建</a></li><li><a href=#3-删除用户>3. 删除用户</a></li><li><a href=#4-更改密码>4. 更改密码</a></li><li><a href=#5-查询用户权限>5. 查询用户权限</a></li><li><a href=#6-用户授权>6. 用户授权</a></li><li><a href=#7-用户权限回收>7. 用户权限回收</a></li></ul></li><li><a href=#二数据库>二、数据库</a><ul><li><a href=#1-数据库的基本操作>1. 数据库的基本操作</a></li><li><a href=#2-备份数据库数据及表结构>2. 备份数据库数据及表结构</a></li><li><a href=#3-导出函数或者存储过程>3. 导出函数或者存储过程</a></li><li><a href=#4-恢复数据库数据>4. 恢复数据库数据</a></li></ul></li><li><a href=#三数据表>三、数据表</a><ul><li><a href=#1-表的基本操作>1. 表的基本操作</a></li><li><a href=#2-表-alter-的相关操作>2. 表 <code>alter</code> 的相关操作</a></li></ul></li></ul></nav></div></div><script>document.getElementsByTagName("main")[0].setAttribute("pageStyle","normal")</script><script>document.getElementsByTagName("main")[0].setAttribute("autoTOC","true")</script><article class="page single"><h1 class="single-title animate__animated animate__flipInX">MySQL 基础管理命令</h1><div class=post-meta><div class=post-meta-line><span class=post-author><i class="author fas fa-user-circle fa-fw"></i><a href=/about/ title=Author rel=author class=author>李王贵</a>
+</span>&nbsp;<span class=post-category>收录于 </span>&nbsp;<span class=post-category>类别 <a href=/categories/mysql/><i class="far fa-folder fa-fw"></i>mysql</a></span></div><div class=post-meta-line><i class="far fa-calendar-alt fa-fw"></i>&nbsp;<time datetime=2021-01-01>2021-01-01</time>&nbsp;<i class="far fa-edit fa-fw"></i>&nbsp;<time datetime=2021-01-01>2021-01-01</time>&nbsp;<i class="fas fa-pencil-alt fa-fw"></i>&nbsp;约 2449 字&nbsp;
+<i class="far fa-clock fa-fw"></i>&nbsp;预计阅读 5 分钟&nbsp;</div></div><div class="details toc" id=toc-static kept><div class="details-summary toc-title"><span>目录</span>
+<span><i class="details-icon fas fa-angle-right"></i></span></div><div class="details-content toc-content" id=toc-content-static><nav id=TableOfContents><ul><li><a href=#一用户权限管理>一、用户权限管理</a><ul><li><a href=#1-查看帮助信息>1. 查看帮助信息</a></li><li><a href=#2-用户创建>2. 用户创建</a></li><li><a href=#3-删除用户>3. 删除用户</a></li><li><a href=#4-更改密码>4. 更改密码</a></li><li><a href=#5-查询用户权限>5. 查询用户权限</a></li><li><a href=#6-用户授权>6. 用户授权</a></li><li><a href=#7-用户权限回收>7. 用户权限回收</a></li></ul></li><li><a href=#二数据库>二、数据库</a><ul><li><a href=#1-数据库的基本操作>1. 数据库的基本操作</a></li><li><a href=#2-备份数据库数据及表结构>2. 备份数据库数据及表结构</a></li><li><a href=#3-导出函数或者存储过程>3. 导出函数或者存储过程</a></li><li><a href=#4-恢复数据库数据>4. 恢复数据库数据</a></li></ul></li><li><a href=#三数据表>三、数据表</a><ul><li><a href=#1-表的基本操作>1. 表的基本操作</a></li><li><a href=#2-表-alter-的相关操作>2. 表 <code>alter</code> 的相关操作</a></li></ul></li></ul></nav></div></div><div class=content id=content><h2 id=一用户权限管理 class=headerLink><a href=#%e4%b8%80%e7%94%a8%e6%88%b7%e6%9d%83%e9%99%90%e7%ae%a1%e7%90%86 class=header-mark></a>一、用户权限管理</h2><h3 id=1-查看帮助信息 class=headerLink><a href=#1-%e6%9f%a5%e7%9c%8b%e5%b8%ae%e5%8a%a9%e4%bf%a1%e6%81%af class=header-mark></a>1. 查看帮助信息</h3><p>使用 mysql 命令连接上 MySQL 服务后可以使用 help 命令查看帮助信息，例如:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span><span class=lnt>26
+</span><span class=lnt>27
+</span><span class=lnt>28
+</span><span class=lnt>29
+</span><span class=lnt>30
+</span><span class=lnt>31
+</span><span class=lnt>32
+</span><span class=lnt>33
+</span><span class=lnt>34
+</span><span class=lnt>35
+</span><span class=lnt>36
+</span><span class=lnt>37
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>mysql&gt; help
+</span></span><span class=line><span class=cl>For information about MySQL products and services, visit:
+</span></span><span class=line><span class=cl>   http://www.mysql.com/
+</span></span><span class=line><span class=cl>For developer information, including the MySQL Reference Manual, visit:
+</span></span><span class=line><span class=cl>   http://dev.mysql.com/
+</span></span><span class=line><span class=cl>To buy MySQL Enterprise support, training, or other products, visit:
+</span></span><span class=line><span class=cl>   https://shop.mysql.com/
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>List of all MySQL commands:
+</span></span><span class=line><span class=cl>Note that all text commands must be first on line and end with &#39;;&#39;
+</span></span><span class=line><span class=cl>?         (\?) Synonym for `help&#39;.
+</span></span><span class=line><span class=cl>clear     (\c) Clear the current input statement.
+</span></span><span class=line><span class=cl>connect   (\r) Reconnect to the server. Optional arguments are db and host.
+</span></span><span class=line><span class=cl>delimiter (\d) Set statement delimiter.
+</span></span><span class=line><span class=cl>edit      (\e) Edit command with $EDITOR.
+</span></span><span class=line><span class=cl>ego       (\G) Send command to mysql server, display result vertically.
+</span></span><span class=line><span class=cl>exit      (\q) Exit mysql. Same as quit.
+</span></span><span class=line><span class=cl>go        (\g) Send command to mysql server.
+</span></span><span class=line><span class=cl>help      (\h) Display this help.
+</span></span><span class=line><span class=cl>nopager   (\n) Disable pager, print to stdout.
+</span></span><span class=line><span class=cl>notee     (\t) Don&#39;t write into outfile.
+</span></span><span class=line><span class=cl>pager     (\P) Set PAGER [to_pager]. Print the query results via PAGER.
+</span></span><span class=line><span class=cl>print     (\p) Print current command.
+</span></span><span class=line><span class=cl>prompt    (\R) Change your mysql prompt.
+</span></span><span class=line><span class=cl>quit      (\q) Quit mysql.
+</span></span><span class=line><span class=cl>rehash    (\#) Rebuild completion hash.
+</span></span><span class=line><span class=cl>source    (\.) Execute an SQL script file. Takes a file name as an argument.
+</span></span><span class=line><span class=cl>status    (\s) Get status information from the server.
+</span></span><span class=line><span class=cl>system    (\!) Execute a system shell command.
+</span></span><span class=line><span class=cl>tee       (\T) Set outfile [to_outfile]. Append everything into given outfile.
+</span></span><span class=line><span class=cl>use       (\u) Use another database. Takes database name as argument.
+</span></span><span class=line><span class=cl>charset   (\C) Switch to another charset. Might be needed for processing binlog with multi-byte charsets.
+</span></span><span class=line><span class=cl>warnings  (\W) Show warnings after every statement.
+</span></span><span class=line><span class=cl>nowarning (\w) Don&#39;t show warnings after every statement.
+</span></span><span class=line><span class=cl>resetconnection(\x) Clean session context.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>For server side help, type &#39;help contents&#39;
+</span></span></code></pre></td></tr></table></div></div><p><strong>例如查看 select 语句的用法</strong></p><p>可以使用 <code>help select；</code> 命令查看帮助信息</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span><span class=lnt>26
+</span><span class=lnt>27
+</span><span class=lnt>28
+</span><span class=lnt>29
+</span><span class=lnt>30
+</span><span class=lnt>31
+</span><span class=lnt>32
+</span><span class=lnt>33
+</span><span class=lnt>34
+</span><span class=lnt>35
+</span><span class=lnt>36
+</span><span class=lnt>37
+</span><span class=lnt>38
+</span><span class=lnt>39
+</span><span class=lnt>40
+</span><span class=lnt>41
+</span><span class=lnt>42
+</span><span class=lnt>43
+</span><span class=lnt>44
+</span><span class=lnt>45
+</span><span class=lnt>46
+</span><span class=lnt>47
+</span><span class=lnt>48
+</span><span class=lnt>49
+</span><span class=lnt>50
+</span><span class=lnt>51
+</span><span class=lnt>52
+</span><span class=lnt>53
+</span><span class=lnt>54
+</span><span class=lnt>55
+</span><span class=lnt>56
+</span><span class=lnt>57
+</span><span class=lnt>58
+</span><span class=lnt>59
+</span><span class=lnt>60
+</span><span class=lnt>61
+</span><span class=lnt>62
+</span><span class=lnt>63
+</span><span class=lnt>64
+</span><span class=lnt>65
+</span><span class=lnt>66
+</span><span class=lnt>67
+</span><span class=lnt>68
+</span><span class=lnt>69
+</span><span class=lnt>70
+</span><span class=lnt>71
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>mysql&gt; help select;
+</span></span><span class=line><span class=cl>Name: &#39;SELECT&#39;
+</span></span><span class=line><span class=cl>Description:
+</span></span><span class=line><span class=cl>Syntax:
+</span></span><span class=line><span class=cl>SELECT
+</span></span><span class=line><span class=cl>    [ALL | DISTINCT | DISTINCTROW ]
+</span></span><span class=line><span class=cl>      [HIGH_PRIORITY]
+</span></span><span class=line><span class=cl>      [STRAIGHT_JOIN]
+</span></span><span class=line><span class=cl>      [SQL_SMALL_RESULT] [SQL_BIG_RESULT] [SQL_BUFFER_RESULT]
+</span></span><span class=line><span class=cl>      [SQL_CACHE | SQL_NO_CACHE] [SQL_CALC_FOUND_ROWS]
+</span></span><span class=line><span class=cl>    select_expr [, select_expr ...]
+</span></span><span class=line><span class=cl>    [FROM table_references
+</span></span><span class=line><span class=cl>      [PARTITION partition_list]
+</span></span><span class=line><span class=cl>    [WHERE where_condition]
+</span></span><span class=line><span class=cl>    [GROUP BY {col_name | expr | position}
+</span></span><span class=line><span class=cl>      [ASC | DESC], ... [WITH ROLLUP]]
+</span></span><span class=line><span class=cl>    [HAVING where_condition]
+</span></span><span class=line><span class=cl>    [ORDER BY {col_name | expr | position}
+</span></span><span class=line><span class=cl>      [ASC | DESC], ...]
+</span></span><span class=line><span class=cl>    [LIMIT {[offset,] row_count | row_count OFFSET offset}]
+</span></span><span class=line><span class=cl>    [PROCEDURE procedure_name(argument_list)]
+</span></span><span class=line><span class=cl>    [INTO OUTFILE &#39;file_name&#39;
+</span></span><span class=line><span class=cl>        [CHARACTER SET charset_name]
+</span></span><span class=line><span class=cl>        export_options
+</span></span><span class=line><span class=cl>      | INTO DUMPFILE &#39;file_name&#39;
+</span></span><span class=line><span class=cl>      | INTO var_name [, var_name]]
+</span></span><span class=line><span class=cl>    [FOR UPDATE | LOCK IN SHARE MODE]]
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>SELECT is used to retrieve rows selected from one or more tables, and
+</span></span><span class=line><span class=cl>can include UNION statements and subqueries. See [HELP UNION], and
+</span></span><span class=line><span class=cl>https://dev.mysql.com/doc/refman/5.7/en/subqueries.html.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>The most commonly used clauses of SELECT statements are these:
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>o Each select_expr indicates a column that you want to retrieve. There
+</span></span><span class=line><span class=cl>  must be at least one select_expr.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>o table_references indicates the table or tables from which to retrieve
+</span></span><span class=line><span class=cl>  rows. Its syntax is described in [HELP JOIN].
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>o SELECT supports explicit partition selection using the PARTITION with
+</span></span><span class=line><span class=cl>  a list of partitions or subpartitions (or both) following the name of
+</span></span><span class=line><span class=cl>  the table in a table_reference (see [HELP JOIN]). In this case, rows
+</span></span><span class=line><span class=cl>  are selected only from the partitions listed, and any other
+</span></span><span class=line><span class=cl>  partitions of the table are ignored. For more information and
+</span></span><span class=line><span class=cl>  examples, see
+</span></span><span class=line><span class=cl>  https://dev.mysql.com/doc/refman/5.7/en/partitioning-selection.html.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>  SELECT ... PARTITION from tables using storage engines such as MyISAM
+</span></span><span class=line><span class=cl>  that perform table-level locks (and thus partition locks) lock only
+</span></span><span class=line><span class=cl>  the partitions or subpartitions named by the PARTITION option.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>  For more information, see
+</span></span><span class=line><span class=cl>  https://dev.mysql.com/doc/refman/5.7/en/partitioning-limitations-lock
+</span></span><span class=line><span class=cl>  ing.html.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>o The WHERE clause, if given, indicates the condition or conditions
+</span></span><span class=line><span class=cl>  that rows must satisfy to be selected. where_condition is an
+</span></span><span class=line><span class=cl>  expression that evaluates to true for each row to be selected. The
+</span></span><span class=line><span class=cl>  statement selects all rows if there is no WHERE clause.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>  In the WHERE expression, you can use any of the functions and
+</span></span><span class=line><span class=cl>  operators that MySQL supports, except for aggregate (summary)
+</span></span><span class=line><span class=cl>  functions. See
+</span></span><span class=line><span class=cl>  https://dev.mysql.com/doc/refman/5.7/en/expressions.html, and
+</span></span><span class=line><span class=cl>  https://dev.mysql.com/doc/refman/5.7/en/functions.html.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>SELECT can also be used to retrieve rows computed without reference to
+</span></span><span class=line><span class=cl>any table.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>URL: https://dev.mysql.com/doc/refman/5.7/en/select.html
+</span></span></code></pre></td></tr></table></div></div><h3 id=2-用户创建 class=headerLink><a href=#2-%e7%94%a8%e6%88%b7%e5%88%9b%e5%bb%ba class=header-mark></a>2. 用户创建</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl># 创建用户（默认密码为空）
+</span></span><span class=line><span class=cl>mysql&gt; create user &#39;username&#39;@&#39;host&#39;;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl># 创建用户并设置密码
+</span></span><span class=line><span class=cl>mysql&gt; create user &#39;username&#39;@&#39;host&#39; identified by &#39;password&#39;;
+</span></span></code></pre></td></tr></table></div></div><h3 id=3-删除用户 class=headerLink><a href=#3-%e5%88%a0%e9%99%a4%e7%94%a8%e6%88%b7 class=header-mark></a>3. 删除用户</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>mysql&gt; drop user &#39;username&#39;@&#39;host&#39;;
+</span></span></code></pre></td></tr></table></div></div><h3 id=4-更改密码 class=headerLink><a href=#4-%e6%9b%b4%e6%94%b9%e5%af%86%e7%a0%81 class=header-mark></a>4. 更改密码</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl># 更改密码 （只对当前登录账号有效）
+</span></span><span class=line><span class=cl>mysql&gt; set password=password(&#39;123456&#39;);
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl># 2. 更改指定用户的密码
+</span></span><span class=line><span class=cl>mysql&gt; set password for &#39;username&#39;@&#39;host&#39;=password(&#39;123456&#39;);
+</span></span></code></pre></td></tr></table></div></div><h3 id=5-查询用户权限 class=headerLink><a href=#5-%e6%9f%a5%e8%af%a2%e7%94%a8%e6%88%b7%e6%9d%83%e9%99%90 class=header-mark></a>5. 查询用户权限</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl># 查询当前账号的权限
+</span></span><span class=line><span class=cl>mysql&gt; show grants;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl># 查询指定账号的权限
+</span></span><span class=line><span class=cl>mysql&gt; show grants for &#39;user&#39;@&#39;host&#39;;
+</span></span></code></pre></td></tr></table></div></div><h3 id=6-用户授权 class=headerLink><a href=#6-%e7%94%a8%e6%88%b7%e6%8e%88%e6%9d%83 class=header-mark></a>6. 用户授权</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span><span class=lnt>7
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl># 对用户授权（如果用户存在就增加权限，不存在就创建用户不过密码为空）
+</span></span><span class=line><span class=cl>mysql&gt; grant privileges on databasename.tablename to &#39;username&#39;@&#39;host&#39;;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl># 对用户授权并设置密码（如果用户存在就增加权限，不存在就创建用户）
+</span></span><span class=line><span class=cl># mysql 8.0 版本以后需要先创建用户在授权
+</span></span><span class=line><span class=cl>mysql&gt; grant privileges on databasename.tablename 
+</span></span><span class=line><span class=cl>    -&gt; to &#39;username&#39;@&#39;host&#39; identified by &#39;password&#39;;
+</span></span></code></pre></td></tr></table></div></div><blockquote><p>privileges: 权限列表以逗号隔开，例如： <code>select, insert, update</code><br>注意: 进行数据库基本信息相关更改后请使用 <code>flush privileges;</code> 刷新数据库信息</p></blockquote><h3 id=7-用户权限回收 class=headerLink><a href=#7-%e7%94%a8%e6%88%b7%e6%9d%83%e9%99%90%e5%9b%9e%e6%94%b6 class=header-mark></a>7. 用户权限回收</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>mysql&gt; revoke privilege on databasename.tablename from &#39;user&#39;@&#39;host&#39;;
+</span></span></code></pre></td></tr></table></div></div><blockquote><p>注：数据库名要用反撇号引起，或者不用</p></blockquote><h2 id=二数据库 class=headerLink><a href=#%e4%ba%8c%e6%95%b0%e6%8d%ae%e5%ba%93 class=header-mark></a>二、数据库</h2><h3 id=1-数据库的基本操作 class=headerLink><a href=#1-%e6%95%b0%e6%8d%ae%e5%ba%93%e7%9a%84%e5%9f%ba%e6%9c%ac%e6%93%8d%e4%bd%9c class=header-mark></a>1. 数据库的基本操作</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl># 显示数据库
+</span></span><span class=line><span class=cl>mysql&gt; show databases;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl># 创建数据库
+</span></span><span class=line><span class=cl>mysql&gt; create database DATABASENAME charset utf8mb4;;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl># 查看数据库创建语句
+</span></span><span class=line><span class=cl>mysql&gt; show create database DATABASENAME;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl># 删除数据库
+</span></span><span class=line><span class=cl>mysql&gt; drop database DATABASENAME;
+</span></span></code></pre></td></tr></table></div></div><h3 id=2-备份数据库数据及表结构 class=headerLink><a href=#2-%e5%a4%87%e4%bb%bd%e6%95%b0%e6%8d%ae%e5%ba%93%e6%95%b0%e6%8d%ae%e5%8f%8a%e8%a1%a8%e7%bb%93%e6%9e%84 class=header-mark></a>2. 备份数据库数据及表结构</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl># 备份整个数据库
+</span></span><span class=line><span class=cl>[root@localhost ~]# mysqldump -uroot -p -A &gt; all.sql
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl># 备份整个数据库的结构
+</span></span><span class=line><span class=cl>[root@localhost ~]# mysqldump -uroot -p -A -d &gt; all.sql
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl># 备份单个数据库
+</span></span><span class=line><span class=cl>[root@localhost ~]# mysqldump -uroot -p DATABASENAME &gt; DATABASENAME.sql
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl># 一次备份多个数据库, 同时备份 db1, db2 二个库的数据 (-B, --databases)
+</span></span><span class=line><span class=cl>[root@localhost ~]# mysqldump -uroot -p --databases db1 db2 &gt; dbs.sql
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl># 备份数据库中指定的表
+</span></span><span class=line><span class=cl>[root@localhost ~]# mysqldump -uroot -p DATABASENAME TABLENAME &gt; DATABASENAME_TABLENAME.sql
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl># 一次备份数据库中指定的多张表
+</span></span><span class=line><span class=cl>[root@localhost ~]# mysqldump -uroot -p DATABASENAME t1 t2 &gt; DATABASENAME_ts.sql
+</span></span></code></pre></td></tr></table></div></div><ul><li><code>-B, --databases</code>: 单库备份可以加上 <code>-B</code> 参数，这样备份文件中加会加入 <code>create database ...</code> 及 <code>use DATABASE</code> 语句.</li><li><code>-A</code>, <code>--all-databases</code> : 备份所有数据库</li><li><code>-d</code>, <code>--no-data</code> ：只导出表结构</li></ul><h3 id=3-导出函数或者存储过程 class=headerLink><a href=#3-%e5%af%bc%e5%87%ba%e5%87%bd%e6%95%b0%e6%88%96%e8%80%85%e5%ad%98%e5%82%a8%e8%bf%87%e7%a8%8b class=header-mark></a>3. 导出函数或者存储过程</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>mysqldump -hHOSTNAME -uUSERNAME -pPASSWORD -ntd -R DATABASENAME &gt; DATABASENAME.sql
+</span></span></code></pre></td></tr></table></div></div><ul><li><code>-ntd</code> 是表示导出存储过程；</li><li><code>-R</code> 是表示导出函数</li></ul><h3 id=4-恢复数据库数据 class=headerLink><a href=#4-%e6%81%a2%e5%a4%8d%e6%95%b0%e6%8d%ae%e5%ba%93%e6%95%b0%e6%8d%ae class=header-mark></a>4. 恢复数据库数据</h3><p>** 使用系统命令**</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=o>[</span>root@localhost ~<span class=o>]</span><span class=c1># mysql -uroot DATABASENAME &lt; DATABASENAME.sql</span>
+</span></span></code></pre></td></tr></table></div></div><p><strong>使用 source 命令</strong></p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl># 禁止记录 binlog 日志，恢复数据就没必要记录 binlog 了
+</span></span><span class=line><span class=cl>mysql&gt; set sql_log_bin=0
+</span></span><span class=line><span class=cl>mysql&gt; use lwg;
+</span></span><span class=line><span class=cl>mysql&gt; source /root/lwg.sql;
+</span></span></code></pre></td></tr></table></div></div><blockquote><p>注意: 恢复数据时，如果数据库不存在需要先创建</p></blockquote><h2 id=三数据表 class=headerLink><a href=#%e4%b8%89%e6%95%b0%e6%8d%ae%e8%a1%a8 class=header-mark></a>三、数据表</h2><h3 id=1-表的基本操作 class=headerLink><a href=#1-%e8%a1%a8%e7%9a%84%e5%9f%ba%e6%9c%ac%e6%93%8d%e4%bd%9c class=header-mark></a>1. 表的基本操作</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-mysql data-lang=mysql><span class=line><span class=cl><span class=c1># 查看数据库下所有的表
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=n>mysql</span><span class=o>&gt;</span><span class=w> </span><span class=k>show</span><span class=w> </span><span class=kp>tables</span><span class=p>;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=c1># 创建表
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=n>mysql</span><span class=o>&gt;</span><span class=w> </span><span class=k>CREATE</span><span class=w> </span><span class=k>TABLE</span><span class=w> </span><span class=o>`</span><span class=n>TABLENAME</span><span class=o>`</span><span class=w> </span><span class=p>(</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=o>`</span><span class=n>id</span><span class=o>`</span><span class=w> </span><span class=kt>int</span><span class=p>(</span><span class=mi>10</span><span class=p>)</span><span class=w> </span><span class=k>NOT</span><span class=w> </span><span class=no>NULL</span><span class=w> </span><span class=k>PRIMARY</span><span class=w> </span><span class=k>KEY</span><span class=w> </span><span class=kp>AUTO_INCREMENT</span><span class=p>,</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=o>`</span><span class=k>user</span><span class=o>`</span><span class=w> </span><span class=kt>varchar</span><span class=p>(</span><span class=mi>30</span><span class=p>)</span><span class=w> </span><span class=k>NOT</span><span class=w> </span><span class=no>NULL</span><span class=p>,</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=o>`</span><span class=n>password</span><span class=o>`</span><span class=w> </span><span class=kt>varchar</span><span class=p>(</span><span class=mi>30</span><span class=p>)</span><span class=w> </span><span class=k>NOT</span><span class=w> </span><span class=no>NULL</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=p>)</span><span class=w> </span><span class=kp>ENGINE</span><span class=o>=</span><span class=n>MyISAM</span><span class=w> </span><span class=k>DEFAULT</span><span class=w> </span><span class=kp>CHARSET</span><span class=o>=</span><span class=n>utf8</span><span class=p>;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=c1># 显示表结构
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=n>mysql</span><span class=o>&gt;</span><span class=w> </span><span class=k>desc</span><span class=w> </span><span class=n>TABLENAME</span><span class=p>;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=c1># 显示表创建语句
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=n>mysql</span><span class=o>&gt;</span><span class=w> </span><span class=k>show</span><span class=w> </span><span class=k>create</span><span class=w> </span><span class=k>table</span><span class=w> </span><span class=n>TABLENAME</span><span class=p>;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=c1># 清空表数据
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=n>mysql</span><span class=o>&gt;</span><span class=w> </span><span class=n>truncate</span><span class=w> </span><span class=k>table</span><span class=w> </span><span class=n>TABLENAME</span><span class=p>;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=n>mysql</span><span class=o>&gt;</span><span class=w> </span><span class=k>delete</span><span class=w> </span><span class=k>from</span><span class=w> </span><span class=n>TABLENAME</span><span class=p>;</span><span class=w>
+</span></span></span></code></pre></td></tr></table></div></div><blockquote><p>不带 <code>where</code> 参数的 <code>delete</code> 语句可以删除 <code>mysql</code> 表中所有内容<br>使用 <code>truncate table</code> 也可以清空 <code>mysql</code> 表中所有内容。<br>效率上 <code>truncate</code> 比 <code>delete</code> 快，但 <code>truncate</code> 删除后不记录 <code>mysql</code> 日志，不可以恢复数据。<br><code>delete</code> 的效果有点像将 <code>mysql</code> 表中所有记录一条一条删除到删完，<br>而 <code>truncate</code> 相当于保留 <code>mysql</code> 表的结构，重新创建了这个表，所有的状态都相当于新表。<br>所以 <code>delete</code> 不会重置 ID 列，而 <code>truncat</code> 会重置。<br><code>delete</code> 删除是逻辑上的删除，并不会真正的释放硬盘空间，而 <code>truncat</code> 是物理上的删除操作会真正的释放硬盘空间<br></p></blockquote><h3 id=2-表-alter-的相关操作 class=headerLink><a href=#2-%e8%a1%a8-alter-%e7%9a%84%e7%9b%b8%e5%85%b3%e6%93%8d%e4%bd%9c class=header-mark></a>2. 表 <code>alter</code> 的相关操作</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>  1
+</span><span class=lnt>  2
+</span><span class=lnt>  3
+</span><span class=lnt>  4
+</span><span class=lnt>  5
+</span><span class=lnt>  6
+</span><span class=lnt>  7
+</span><span class=lnt>  8
+</span><span class=lnt>  9
+</span><span class=lnt> 10
+</span><span class=lnt> 11
+</span><span class=lnt> 12
+</span><span class=lnt> 13
+</span><span class=lnt> 14
+</span><span class=lnt> 15
+</span><span class=lnt> 16
+</span><span class=lnt> 17
+</span><span class=lnt> 18
+</span><span class=lnt> 19
+</span><span class=lnt> 20
+</span><span class=lnt> 21
+</span><span class=lnt> 22
+</span><span class=lnt> 23
+</span><span class=lnt> 24
+</span><span class=lnt> 25
+</span><span class=lnt> 26
+</span><span class=lnt> 27
+</span><span class=lnt> 28
+</span><span class=lnt> 29
+</span><span class=lnt> 30
+</span><span class=lnt> 31
+</span><span class=lnt> 32
+</span><span class=lnt> 33
+</span><span class=lnt> 34
+</span><span class=lnt> 35
+</span><span class=lnt> 36
+</span><span class=lnt> 37
+</span><span class=lnt> 38
+</span><span class=lnt> 39
+</span><span class=lnt> 40
+</span><span class=lnt> 41
+</span><span class=lnt> 42
+</span><span class=lnt> 43
+</span><span class=lnt> 44
+</span><span class=lnt> 45
+</span><span class=lnt> 46
+</span><span class=lnt> 47
+</span><span class=lnt> 48
+</span><span class=lnt> 49
+</span><span class=lnt> 50
+</span><span class=lnt> 51
+</span><span class=lnt> 52
+</span><span class=lnt> 53
+</span><span class=lnt> 54
+</span><span class=lnt> 55
+</span><span class=lnt> 56
+</span><span class=lnt> 57
+</span><span class=lnt> 58
+</span><span class=lnt> 59
+</span><span class=lnt> 60
+</span><span class=lnt> 61
+</span><span class=lnt> 62
+</span><span class=lnt> 63
+</span><span class=lnt> 64
+</span><span class=lnt> 65
+</span><span class=lnt> 66
+</span><span class=lnt> 67
+</span><span class=lnt> 68
+</span><span class=lnt> 69
+</span><span class=lnt> 70
+</span><span class=lnt> 71
+</span><span class=lnt> 72
+</span><span class=lnt> 73
+</span><span class=lnt> 74
+</span><span class=lnt> 75
+</span><span class=lnt> 76
+</span><span class=lnt> 77
+</span><span class=lnt> 78
+</span><span class=lnt> 79
+</span><span class=lnt> 80
+</span><span class=lnt> 81
+</span><span class=lnt> 82
+</span><span class=lnt> 83
+</span><span class=lnt> 84
+</span><span class=lnt> 85
+</span><span class=lnt> 86
+</span><span class=lnt> 87
+</span><span class=lnt> 88
+</span><span class=lnt> 89
+</span><span class=lnt> 90
+</span><span class=lnt> 91
+</span><span class=lnt> 92
+</span><span class=lnt> 93
+</span><span class=lnt> 94
+</span><span class=lnt> 95
+</span><span class=lnt> 96
+</span><span class=lnt> 97
+</span><span class=lnt> 98
+</span><span class=lnt> 99
+</span><span class=lnt>100
+</span><span class=lnt>101
+</span><span class=lnt>102
+</span><span class=lnt>103
+</span><span class=lnt>104
+</span><span class=lnt>105
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-mysql data-lang=mysql><span class=line><span class=cl><span class=c1># 增加一个字段(一列),并放到第一列的位置 (first)
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=n>mysql</span><span class=o>&gt;</span><span class=w> </span><span class=k>desc</span><span class=w> </span><span class=n>users</span><span class=p>;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=o>+------------+----------+------+-----+---------+-------+</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=o>|</span><span class=w> </span><span class=n>Field</span><span class=w>      </span><span class=o>|</span><span class=w> </span><span class=n>Type</span><span class=w>     </span><span class=o>|</span><span class=w> </span><span class=no>Null</span><span class=w> </span><span class=o>|</span><span class=w> </span><span class=k>Key</span><span class=w> </span><span class=o>|</span><span class=w> </span><span class=k>Default</span><span class=w> </span><span class=o>|</span><span class=w> </span><span class=n>Extra</span><span class=w> </span><span class=o>|</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=o>+------------+----------+------+-----+---------+-------+</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=o>|</span><span class=w> </span><span class=n>username</span><span class=w>   </span><span class=o>|</span><span class=w> </span><span class=kt>char</span><span class=p>(</span><span class=mi>30</span><span class=p>)</span><span class=w> </span><span class=o>|</span><span class=w> </span><span class=n>NO</span><span class=w>   </span><span class=o>|</span><span class=w> </span><span class=n>PRI</span><span class=w> </span><span class=o>|</span><span class=w> </span><span class=no>NULL</span><span class=w>    </span><span class=o>|</span><span class=w>       </span><span class=o>|</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=o>|</span><span class=w> </span><span class=n>userpasswd</span><span class=w> </span><span class=o>|</span><span class=w> </span><span class=kt>char</span><span class=p>(</span><span class=mi>20</span><span class=p>)</span><span class=w> </span><span class=o>|</span><span class=w> </span><span class=n>NO</span><span class=w>   </span><span class=o>|</span><span class=w>     </span><span class=o>|</span><span class=w> </span><span class=mi>123456</span><span class=w>  </span><span class=o>|</span><span class=w>       </span><span class=o>|</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=o>+------------+----------+------+-----+---------+-------+</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=mi>2</span><span class=w> </span><span class=n>rows</span><span class=w> </span><span class=k>in</span><span class=w> </span><span class=kt>set</span><span class=w> </span><span class=p>(</span><span class=mi>0</span><span class=p>.</span><span class=mi>00</span><span class=w> </span><span class=n>sec</span><span class=p>)</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=n>mysql</span><span class=o>&gt;</span><span class=w> </span><span class=k>alter</span><span class=w> </span><span class=k>table</span><span class=w> </span><span class=n>users</span><span class=w> </span><span class=k>add</span><span class=w> </span><span class=k>column</span><span class=w> </span><span class=n>id</span><span class=w> </span><span class=kt>int</span><span class=w> </span><span class=k>not</span><span class=w> </span><span class=no>null</span><span class=w> </span><span class=n>first</span><span class=p>;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=n>Query</span><span class=w> </span><span class=n>OK</span><span class=p>,</span><span class=w> </span><span class=mi>0</span><span class=w> </span><span class=n>rows</span><span class=w> </span><span class=nf>affected</span><span class=w> </span><span class=p>(</span><span class=mi>0</span><span class=p>.</span><span class=mi>08</span><span class=w> </span><span class=n>sec</span><span class=p>)</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=n>Records</span><span class=p>:</span><span class=w> </span><span class=mi>0</span><span class=w>  </span><span class=n>Duplicates</span><span class=p>:</span><span class=w> </span><span class=mi>0</span><span class=w>  </span><span class=n>Warnings</span><span class=p>:</span><span class=w> </span><span class=mi>0</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=n>mysql</span><span class=o>&gt;</span><span class=w> </span><span class=k>desc</span><span class=w> </span><span class=n>users</span><span class=p>;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=o>+------------+----------+------+-----+---------+-------+</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=o>|</span><span class=w> </span><span class=n>Field</span><span class=w>      </span><span class=o>|</span><span class=w> </span><span class=n>Type</span><span class=w>     </span><span class=o>|</span><span class=w> </span><span class=no>Null</span><span class=w> </span><span class=o>|</span><span class=w> </span><span class=k>Key</span><span class=w> </span><span class=o>|</span><span class=w> </span><span class=k>Default</span><span class=w> </span><span class=o>|</span><span class=w> </span><span class=n>Extra</span><span class=w> </span><span class=o>|</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=o>+------------+----------+------+-----+---------+-------+</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=o>|</span><span class=w> </span><span class=n>id</span><span class=w>         </span><span class=o>|</span><span class=w> </span><span class=kt>int</span><span class=p>(</span><span class=mi>11</span><span class=p>)</span><span class=w>  </span><span class=o>|</span><span class=w> </span><span class=n>NO</span><span class=w>   </span><span class=o>|</span><span class=w>     </span><span class=o>|</span><span class=w> </span><span class=no>NULL</span><span class=w>    </span><span class=o>|</span><span class=w>       </span><span class=o>|</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=o>|</span><span class=w> </span><span class=n>username</span><span class=w>   </span><span class=o>|</span><span class=w> </span><span class=kt>char</span><span class=p>(</span><span class=mi>30</span><span class=p>)</span><span class=w> </span><span class=o>|</span><span class=w> </span><span class=n>NO</span><span class=w>   </span><span class=o>|</span><span class=w> </span><span class=n>PRI</span><span class=w> </span><span class=o>|</span><span class=w> </span><span class=no>NULL</span><span class=w>    </span><span class=o>|</span><span class=w>       </span><span class=o>|</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=o>|</span><span class=w> </span><span class=n>userpasswd</span><span class=w> </span><span class=o>|</span><span class=w> </span><span class=kt>char</span><span class=p>(</span><span class=mi>20</span><span class=p>)</span><span class=w> </span><span class=o>|</span><span class=w> </span><span class=n>NO</span><span class=w>   </span><span class=o>|</span><span class=w>     </span><span class=o>|</span><span class=w> </span><span class=mi>123456</span><span class=w>  </span><span class=o>|</span><span class=w>       </span><span class=o>|</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=o>+------------+----------+------+-----+---------+-------+</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=mi>3</span><span class=w> </span><span class=n>rows</span><span class=w> </span><span class=k>in</span><span class=w> </span><span class=kt>set</span><span class=w> </span><span class=p>(</span><span class=mi>0</span><span class=p>.</span><span class=mi>00</span><span class=w> </span><span class=n>sec</span><span class=p>)</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=c1># 删除一个字段
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=n>mysql</span><span class=o>&gt;</span><span class=w> </span><span class=k>alter</span><span class=w> </span><span class=k>table</span><span class=w> </span><span class=n>users</span><span class=w> </span><span class=k>drop</span><span class=w> </span><span class=n>userpasswd</span><span class=p>;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=n>Query</span><span class=w> </span><span class=n>OK</span><span class=p>,</span><span class=w> </span><span class=mi>0</span><span class=w> </span><span class=n>rows</span><span class=w> </span><span class=nf>affected</span><span class=w> </span><span class=p>(</span><span class=mi>0</span><span class=p>.</span><span class=mi>05</span><span class=w> </span><span class=n>sec</span><span class=p>)</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=n>Records</span><span class=p>:</span><span class=w> </span><span class=mi>0</span><span class=w>  </span><span class=n>Duplicates</span><span class=p>:</span><span class=w> </span><span class=mi>0</span><span class=w>  </span><span class=n>Warnings</span><span class=p>:</span><span class=w> </span><span class=mi>0</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=n>mysql</span><span class=o>&gt;</span><span class=w> </span><span class=k>desc</span><span class=w> </span><span class=n>users</span><span class=p>;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=o>+----------+----------+------+-----+---------+-------+</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=o>|</span><span class=w> </span><span class=n>Field</span><span class=w>    </span><span class=o>|</span><span class=w> </span><span class=n>Type</span><span class=w>     </span><span class=o>|</span><span class=w> </span><span class=no>Null</span><span class=w> </span><span class=o>|</span><span class=w> </span><span class=k>Key</span><span class=w> </span><span class=o>|</span><span class=w> </span><span class=k>Default</span><span class=w> </span><span class=o>|</span><span class=w> </span><span class=n>Extra</span><span class=w> </span><span class=o>|</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=o>+----------+----------+------+-----+---------+-------+</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=o>|</span><span class=w> </span><span class=n>id</span><span class=w>       </span><span class=o>|</span><span class=w> </span><span class=kt>int</span><span class=p>(</span><span class=mi>11</span><span class=p>)</span><span class=w>  </span><span class=o>|</span><span class=w> </span><span class=n>NO</span><span class=w>   </span><span class=o>|</span><span class=w>     </span><span class=o>|</span><span class=w> </span><span class=no>NULL</span><span class=w>    </span><span class=o>|</span><span class=w>       </span><span class=o>|</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=o>|</span><span class=w> </span><span class=n>username</span><span class=w> </span><span class=o>|</span><span class=w> </span><span class=kt>char</span><span class=p>(</span><span class=mi>30</span><span class=p>)</span><span class=w> </span><span class=o>|</span><span class=w> </span><span class=n>NO</span><span class=w>   </span><span class=o>|</span><span class=w> </span><span class=n>PRI</span><span class=w> </span><span class=o>|</span><span class=w> </span><span class=no>NULL</span><span class=w>    </span><span class=o>|</span><span class=w>       </span><span class=o>|</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=o>+----------+----------+------+-----+---------+-------+</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=mi>2</span><span class=w> </span><span class=n>rows</span><span class=w> </span><span class=k>in</span><span class=w> </span><span class=kt>set</span><span class=w> </span><span class=p>(</span><span class=mi>0</span><span class=p>.</span><span class=mi>00</span><span class=w> </span><span class=n>sec</span><span class=p>)</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=c1># 更改列的字段类型
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=n>mysql</span><span class=o>&gt;</span><span class=w> </span><span class=k>alter</span><span class=w> </span><span class=k>table</span><span class=w> </span><span class=n>users</span><span class=w> </span><span class=n>modify</span><span class=w> </span><span class=n>username</span><span class=w> </span><span class=kt>varchar</span><span class=p>(</span><span class=mi>100</span><span class=p>);</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=n>Query</span><span class=w> </span><span class=n>OK</span><span class=p>,</span><span class=w> </span><span class=mi>2</span><span class=w> </span><span class=n>rows</span><span class=w> </span><span class=nf>affected</span><span class=w> </span><span class=p>(</span><span class=mi>0</span><span class=p>.</span><span class=mi>14</span><span class=w> </span><span class=n>sec</span><span class=p>)</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=n>Records</span><span class=p>:</span><span class=w> </span><span class=mi>2</span><span class=w>  </span><span class=n>Duplicates</span><span class=p>:</span><span class=w> </span><span class=mi>0</span><span class=w>  </span><span class=n>Warnings</span><span class=p>:</span><span class=w> </span><span class=mi>0</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=n>mysql</span><span class=o>&gt;</span><span class=w> </span><span class=k>desc</span><span class=w> </span><span class=n>users</span><span class=p>;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=o>+----------+--------------+------+-----+---------+-------+</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=o>|</span><span class=w> </span><span class=n>Field</span><span class=w>    </span><span class=o>|</span><span class=w> </span><span class=n>Type</span><span class=w>         </span><span class=o>|</span><span class=w> </span><span class=no>Null</span><span class=w> </span><span class=o>|</span><span class=w> </span><span class=k>Key</span><span class=w> </span><span class=o>|</span><span class=w> </span><span class=k>Default</span><span class=w> </span><span class=o>|</span><span class=w> </span><span class=n>Extra</span><span class=w> </span><span class=o>|</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=o>+----------+--------------+------+-----+---------+-------+</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=o>|</span><span class=w> </span><span class=n>id</span><span class=w>       </span><span class=o>|</span><span class=w> </span><span class=kt>int</span><span class=p>(</span><span class=mi>11</span><span class=p>)</span><span class=w>      </span><span class=o>|</span><span class=w> </span><span class=n>NO</span><span class=w>   </span><span class=o>|</span><span class=w>     </span><span class=o>|</span><span class=w> </span><span class=no>NULL</span><span class=w>    </span><span class=o>|</span><span class=w>       </span><span class=o>|</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=o>|</span><span class=w> </span><span class=n>username</span><span class=w> </span><span class=o>|</span><span class=w> </span><span class=kt>varchar</span><span class=p>(</span><span class=mi>100</span><span class=p>)</span><span class=w> </span><span class=o>|</span><span class=w> </span><span class=n>NO</span><span class=w>   </span><span class=o>|</span><span class=w> </span><span class=n>PRI</span><span class=w> </span><span class=o>|</span><span class=w>         </span><span class=o>|</span><span class=w>       </span><span class=o>|</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=o>+----------+--------------+------+-----+---------+-------+</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=mi>2</span><span class=w> </span><span class=n>rows</span><span class=w> </span><span class=k>in</span><span class=w> </span><span class=kt>set</span><span class=w> </span><span class=p>(</span><span class=mi>0</span><span class=p>.</span><span class=mi>00</span><span class=w> </span><span class=n>sec</span><span class=p>)</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=c1># 更改列名及字段类型
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=n>mysql</span><span class=o>&gt;</span><span class=w> </span><span class=k>alter</span><span class=w> </span><span class=k>table</span><span class=w> </span><span class=n>users</span><span class=w> </span><span class=k>change</span><span class=w> </span><span class=n>username</span><span class=w> </span><span class=k>user</span><span class=w> </span><span class=kt>varchar</span><span class=p>(</span><span class=mi>20</span><span class=p>);</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=n>Query</span><span class=w> </span><span class=n>OK</span><span class=p>,</span><span class=w> </span><span class=mi>2</span><span class=w> </span><span class=n>rows</span><span class=w> </span><span class=nf>affected</span><span class=w> </span><span class=p>(</span><span class=mi>0</span><span class=p>.</span><span class=mi>03</span><span class=w> </span><span class=n>sec</span><span class=p>)</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=n>Records</span><span class=p>:</span><span class=w> </span><span class=mi>2</span><span class=w>  </span><span class=n>Duplicates</span><span class=p>:</span><span class=w> </span><span class=mi>0</span><span class=w>  </span><span class=n>Warnings</span><span class=p>:</span><span class=w> </span><span class=mi>0</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=n>mysql</span><span class=o>&gt;</span><span class=w> </span><span class=k>desc</span><span class=w> </span><span class=n>users</span><span class=p>;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=o>+-------+-------------+------+-----+---------+-------+</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=o>|</span><span class=w> </span><span class=n>Field</span><span class=w> </span><span class=o>|</span><span class=w> </span><span class=n>Type</span><span class=w>        </span><span class=o>|</span><span class=w> </span><span class=no>Null</span><span class=w> </span><span class=o>|</span><span class=w> </span><span class=k>Key</span><span class=w> </span><span class=o>|</span><span class=w> </span><span class=k>Default</span><span class=w> </span><span class=o>|</span><span class=w> </span><span class=n>Extra</span><span class=w> </span><span class=o>|</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=o>+-------+-------------+------+-----+---------+-------+</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=o>|</span><span class=w> </span><span class=n>id</span><span class=w>    </span><span class=o>|</span><span class=w> </span><span class=kt>int</span><span class=p>(</span><span class=mi>11</span><span class=p>)</span><span class=w>     </span><span class=o>|</span><span class=w> </span><span class=n>NO</span><span class=w>   </span><span class=o>|</span><span class=w>     </span><span class=o>|</span><span class=w> </span><span class=no>NULL</span><span class=w>    </span><span class=o>|</span><span class=w>       </span><span class=o>|</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=o>|</span><span class=w> </span><span class=k>user</span><span class=w>  </span><span class=o>|</span><span class=w> </span><span class=kt>varchar</span><span class=p>(</span><span class=mi>20</span><span class=p>)</span><span class=w> </span><span class=o>|</span><span class=w> </span><span class=n>NO</span><span class=w>   </span><span class=o>|</span><span class=w> </span><span class=n>PRI</span><span class=w> </span><span class=o>|</span><span class=w>         </span><span class=o>|</span><span class=w>       </span><span class=o>|</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=o>+-------+-------------+------+-----+---------+-------+</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=mi>2</span><span class=w> </span><span class=n>rows</span><span class=w> </span><span class=k>in</span><span class=w> </span><span class=kt>set</span><span class=w> </span><span class=p>(</span><span class=mi>0</span><span class=p>.</span><span class=mi>00</span><span class=w> </span><span class=n>sec</span><span class=p>)</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=c1># 修改表的存储引擎
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=n>mysql</span><span class=o>&gt;</span><span class=w> </span><span class=k>show</span><span class=w> </span><span class=k>create</span><span class=w> </span><span class=k>table</span><span class=w> </span><span class=n>users</span><span class=p>;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=o>+-------+---------------------------------------+</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=o>|</span><span class=w> </span><span class=k>Table</span><span class=w> </span><span class=o>|</span><span class=w> </span><span class=k>Create</span><span class=w> </span><span class=k>Table</span><span class=w>                          </span><span class=o>|</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=o>+-------+---------------------------------------+</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=o>|</span><span class=w> </span><span class=n>users</span><span class=w> </span><span class=o>|</span><span class=w> </span><span class=k>CREATE</span><span class=w> </span><span class=k>TABLE</span><span class=w> </span><span class=o>`</span><span class=n>users</span><span class=o>`</span><span class=w> </span><span class=p>(</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=o>`</span><span class=n>id</span><span class=o>`</span><span class=w> </span><span class=kt>int</span><span class=p>(</span><span class=mi>11</span><span class=p>)</span><span class=w> </span><span class=k>NOT</span><span class=w> </span><span class=no>NULL</span><span class=p>,</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=o>`</span><span class=k>user</span><span class=o>`</span><span class=w> </span><span class=kt>varchar</span><span class=p>(</span><span class=mi>20</span><span class=p>)</span><span class=w> </span><span class=k>NOT</span><span class=w> </span><span class=no>NULL</span><span class=w> </span><span class=k>DEFAULT</span><span class=w> </span><span class=s1>&#39;&#39;</span><span class=p>,</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=k>PRIMARY</span><span class=w> </span><span class=k>KEY</span><span class=w> </span><span class=p>(</span><span class=o>`</span><span class=k>user</span><span class=o>`</span><span class=p>)</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=p>)</span><span class=w> </span><span class=kp>ENGINE</span><span class=o>=</span><span class=n>InnoDB</span><span class=w> </span><span class=k>DEFAULT</span><span class=w> </span><span class=kp>CHARSET</span><span class=o>=</span><span class=n>utf8</span><span class=w> </span><span class=o>|</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=o>+-------+---------------------------------------+</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=mi>1</span><span class=w> </span><span class=n>row</span><span class=w> </span><span class=k>in</span><span class=w> </span><span class=kt>set</span><span class=w> </span><span class=p>(</span><span class=mi>0</span><span class=p>.</span><span class=mi>00</span><span class=w> </span><span class=n>sec</span><span class=p>)</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=n>mysql</span><span class=o>&gt;</span><span class=w> </span><span class=k>alter</span><span class=w> </span><span class=k>table</span><span class=w> </span><span class=n>users</span><span class=w> </span><span class=kp>ENGINE</span><span class=o>=</span><span class=n>myisam</span><span class=p>;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=n>Query</span><span class=w> </span><span class=n>OK</span><span class=p>,</span><span class=w> </span><span class=mi>2</span><span class=w> </span><span class=n>rows</span><span class=w> </span><span class=nf>affected</span><span class=w> </span><span class=p>(</span><span class=mi>0</span><span class=p>.</span><span class=mi>01</span><span class=w> </span><span class=n>sec</span><span class=p>)</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=n>Records</span><span class=p>:</span><span class=w> </span><span class=mi>2</span><span class=w>  </span><span class=n>Duplicates</span><span class=p>:</span><span class=w> </span><span class=mi>0</span><span class=w>  </span><span class=n>Warnings</span><span class=p>:</span><span class=w> </span><span class=mi>0</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=c1># 这里我们使用另一种方法查询表的默认引擎
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=n>mysql</span><span class=o>&gt;</span><span class=w> </span><span class=k>show</span><span class=w> </span><span class=k>table</span><span class=w> </span><span class=n>status</span><span class=w> </span><span class=k>from</span><span class=w> </span><span class=n>lwg</span><span class=w> </span><span class=k>where</span><span class=w> </span><span class=n>name</span><span class=o>=</span><span class=s1>&#39;users&#39;</span><span class=err>\</span><span class=n>G</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=o>***************************</span><span class=w> </span><span class=mi>1</span><span class=p>.</span><span class=w> </span><span class=n>row</span><span class=w> </span><span class=o>***************************</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>           </span><span class=n>Name</span><span class=p>:</span><span class=w> </span><span class=n>users</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>         </span><span class=kp>Engine</span><span class=p>:</span><span class=w> </span><span class=n>MyISAM</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=n>Version</span><span class=p>:</span><span class=w> </span><span class=mi>10</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>     </span><span class=n>Row_format</span><span class=p>:</span><span class=w> </span><span class=n>Dynamic</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>           </span><span class=n>Rows</span><span class=p>:</span><span class=w> </span><span class=mi>2</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w> </span><span class=n>Avg_row_length</span><span class=p>:</span><span class=w> </span><span class=mi>20</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=n>Data_length</span><span class=p>:</span><span class=w> </span><span class=mi>40</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=n>Max_data_length</span><span class=p>:</span><span class=w> </span><span class=mi>281474976710655</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>   </span><span class=n>Index_length</span><span class=p>:</span><span class=w> </span><span class=mi>2048</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span><span class=n>Data_free</span><span class=p>:</span><span class=w> </span><span class=mi>0</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w> </span><span class=kp>Auto_increment</span><span class=p>:</span><span class=w> </span><span class=no>NULL</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=n>Create_time</span><span class=p>:</span><span class=w> </span><span class=mi>2017</span><span class=o>-</span><span class=mi>08</span><span class=o>-</span><span class=mi>25</span><span class=w> </span><span class=mi>04</span><span class=p>:</span><span class=mi>15</span><span class=p>:</span><span class=mi>46</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=n>Update_time</span><span class=p>:</span><span class=w> </span><span class=mi>2017</span><span class=o>-</span><span class=mi>08</span><span class=o>-</span><span class=mi>25</span><span class=w> </span><span class=mi>04</span><span class=p>:</span><span class=mi>15</span><span class=p>:</span><span class=mi>46</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>     </span><span class=n>Check_time</span><span class=p>:</span><span class=w> </span><span class=no>NULL</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span><span class=n>Collation</span><span class=p>:</span><span class=w> </span><span class=n>utf8_general_ci</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>       </span><span class=n>Checksum</span><span class=p>:</span><span class=w> </span><span class=no>NULL</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w> </span><span class=n>Create_options</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=n>Comment</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=mi>1</span><span class=w> </span><span class=n>row</span><span class=w> </span><span class=k>in</span><span class=w> </span><span class=kt>set</span><span class=w> </span><span class=p>(</span><span class=mi>0</span><span class=p>.</span><span class=mi>00</span><span class=w> </span><span class=n>sec</span><span class=p>)</span><span class=w>
+</span></span></span></code></pre></td></tr></table></div></div></div><div class=post-footer id=post-footer><div class=post-info><div class=post-info-line><div class=post-info-mod><span>更新于 2021-01-01</span></div><div class=post-info-license></div></div><div class=post-info-line><div class=post-info-md><span><a class=link-to-mardown href=/posts/mysql-manage/index.md target=_blank rel="noopener noreferrer">阅读原始文档</a></span></div><div class=post-info-share><span><a href=# title="分享到 Twitter" data-sharer=twitter data-url=https://liwanggui.com/posts/mysql-manage/ data-title="MySQL 基础管理命令" data-hashtags=mysql><i class="fab fa-twitter fa-fw"></i></a><a href=# title="分享到 Facebook" data-sharer=facebook data-url=https://liwanggui.com/posts/mysql-manage/ data-hashtag=mysql><i class="fab fa-facebook-square fa-fw"></i></a><a href=# title="分享到 WhatsApp" data-sharer=whatsapp data-url=https://liwanggui.com/posts/mysql-manage/ data-title="MySQL 基础管理命令" data-web><i class="fab fa-whatsapp fa-fw"></i></a><a href=# title="分享到 Line" data-sharer=line data-url=https://liwanggui.com/posts/mysql-manage/ data-title="MySQL 基础管理命令"><i data-svg-src=/lib/simple-icons/icons/line.min.svg></i></a><a href=# title="分享到 微博" data-sharer=weibo data-url=https://liwanggui.com/posts/mysql-manage/ data-title="MySQL 基础管理命令"><i class="fab fa-weibo fa-fw"></i></a><a href=# title="分享到 Myspace" data-sharer=myspace data-url=https://liwanggui.com/posts/mysql-manage/ data-title="MySQL 基础管理命令" data-description><i data-svg-src=/lib/simple-icons/icons/myspace.min.svg></i></a><a href=# title="分享到 Blogger" data-sharer=blogger data-url=https://liwanggui.com/posts/mysql-manage/ data-title="MySQL 基础管理命令" data-description><i class="fab fa-blogger fa-fw"></i></a><a href=# title="分享到 百度" data-sharer=baidu data-url=https://liwanggui.com/posts/mysql-manage/ data-title="MySQL 基础管理命令"><i data-svg-src=/lib/simple-icons/icons/baidu.min.svg></i></a><a href=# title="分享到 Evernote" data-sharer=evernote data-url=https://liwanggui.com/posts/mysql-manage/ data-title="MySQL 基础管理命令"><i class="fab fa-evernote fa-fw"></i></a></span></div></div></div><div class=post-info-more><section class=post-tags><i class="fas fa-tags fa-fw"></i>&nbsp;<a href=/tags/mysql/>mysql</a></section><section><span><a href=javascript:void(0); onclick=window.history.back()>返回</a></span>&nbsp;|&nbsp;<span><a href=/>主页</a></span></section></div><div class=post-nav><a href=/posts/mysql-multi-instance/ class=prev rel=prev title="MySQL 多实例安装"><i class="fas fa-angle-left fa-fw"></i>MySQL 多实例安装</a>
+<a href=/posts/mysql-reset-root-password/ class=next rel=next title="MySQL root 密码重置">MySQL root 密码重置<i class="fas fa-angle-right fa-fw"></i></a></div></div><div id=comments><div id=giscus></div><noscript>Please enable JavaScript to view the comments powered by <a href=https://giscus.app/>giscus</a>.</noscript></div></article></div></main><footer class=footer><div class=footer-container><div class=footer-line>由 <a href=https://gohugo.io/ target=_blank rel="noopener noreferrer" title="Hugo 0.101.0">Hugo</a> 强力驱动&nbsp;|&nbsp;主题 - <a href=https://github.com/HEIGE-PCloud/DoIt target=_blank rel="noopener noreferrer" title="DoIt 0.3.0"><i class="far fa-edit fa-fw"></i> DoIt</a></div><div class=footer-line><i class="far fa-copyright fa-fw"></i><span itemprop=copyrightYear>2017 - 2024</span><span class=author itemprop=copyrightHolder>&nbsp;<a href=/about/ target=_blank rel="noopener noreferrer">李王贵</a></span><span class=icp-splitter>&nbsp;|&nbsp;</span><br class=icp-br><span class=icp><a href=https://beian.miit.gov.cn target=_blank>赣ICP备2023001395号</a></span></div><div class=footer-line></div><div class=footer-line></div></div></footer></div><div id=fixed-buttons><a href=#back-to-top id=back-to-top-button class=fixed-button title=回到顶部><i class="fas fa-arrow-up fa-fw"></i>
+</a><a href=# id=view-comments class=fixed-button title=查看评论><i class="fas fa-comment fa-fw"></i></a></div><div id=cookieconsent-container></div><div class=assets><link rel=stylesheet href=/lib/lightgallery/lightgallery.min.css><link rel=stylesheet href=/lib/katex/katex.min.css><link rel=preload as=style onload='this.onload=null,this.rel="stylesheet"' href=/lib/katex/copy-tex.min.css><noscript><link rel=stylesheet href=/lib/katex/copy-tex.min.css></noscript><link rel=stylesheet href=/lib/cookieconsent/cookieconsent.min.css><script type=text/javascript>window.config={code:{copyTitle:"复制到剪贴板",maxShownLines:10},comment:{giscus:{darkTheme:"dark",dataCategory:"Announcements",dataCategoryId:"DIC_kwDOE7mEQ84CY9pq",dataEmitMetadata:"1",dataInputPosition:"top",dataLang:"zh-CN",dataMapping:"pathname",dataReactionsEnabled:"1",dataRepo:"liwanggui/liwanggui.github.io",dataRepoId:"MDEwOlJlcG9zaXRvcnkzMzA5MjUxMjM=",dataStrict:"0",lightTheme:"light"}},cookieconsent:{content:{dismiss:"同意",link:"了解更多",message:"本网站使用 Cookies 来改善您的浏览体验."},enable:!0,palette:{button:{background:"#f0f0f0"},popup:{background:"#1aa3ff"}},theme:"edgeless"},lightGallery:{actualSize:!1,exThumbImage:"data-thumbnail",hideBarsDelay:2e3,selector:".lightgallery",speed:400,thumbContHeight:80,thumbWidth:80,thumbnail:!0},math:{delimiters:[{display:!0,left:"$$",right:"$$"},{display:!0,left:"\\[",right:"\\]"},{display:!1,left:"$",right:"$"},{display:!1,left:"\\(",right:"\\)"}],strict:!1},search:{distance:100,findAllMatches:!1,fuseIndexURL:"/index.json",highlightTag:"em",ignoreFieldNorm:!1,ignoreLocation:!1,isCaseSensitive:!1,location:0,maxResultLength:10,minMatchCharLength:2,noResultsFound:"没有找到结果",snippetLength:50,threshold:.3,type:"fuse",useExtendedSearch:!1},sharerjs:!0,twemoji:!0}</script><script type=text/javascript src=/js/giscus.min.js defer></script><script type=text/javascript src=/lib/twemoji/twemoji.min.js defer></script><script type=text/javascript src=/js/twemoji.min.js defer></script><script type=text/javascript src=/lib/lightgallery/lightgallery.min.js></script><script type=text/javascript src=/lib/lightgallery/lg-thumbnail.min.js></script><script type=text/javascript src=/lib/lightgallery/lg-zoom.min.js></script><script type=text/javascript src=/lib/clipboard/clipboard.min.js></script><script type=text/javascript src=/lib/sharer/sharer.min.js></script><script type=text/javascript src=/lib/katex/katex.min.js defer></script><script type=text/javascript src=/lib/katex/auto-render.min.js defer></script><script type=text/javascript src=/lib/katex/copy-tex.min.js defer></script><script type=text/javascript src=/lib/katex/mhchem.min.js defer></script><script type=text/javascript src=/js/katex.min.js defer></script><script type=text/javascript src=/lib/cookieconsent/cookieconsent.min.js defer></script><script type=text/javascript src=/js/cookieconsent.min.js defer></script><script type=text/javascript src=/js/theme.min.js defer></script></div></body></html>

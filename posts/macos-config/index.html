@@ -1,0 +1,196 @@
+<!doctype html><html lang=zh-cn><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><meta name=robots content="noodp"><title>macOS 开发配置 - _浅行</title><meta name=Description content="_浅行"><meta property="og:title" content="macOS 开发配置"><meta property="og:description" content="XCode从 App store 或苹果开发者网站安装 Xcode 紧接着，安装 Xcode command line tools，运行： 1 xcode-select --install 运行命令后，按照指引，你将完成 Xcode command line tools 安装。 注: 如果你不是一"><meta property="og:type" content="article"><meta property="og:url" content="https://liwanggui.com/posts/macos-config/"><meta property="og:image" content="https://liwanggui.com/logo.png"><meta property="article:section" content="posts"><meta property="article:published_time" content="2021-06-12T18:39:34+08:00"><meta property="article:modified_time" content="2021-06-12T18:39:34+08:00"><meta name=twitter:card content="summary_large_image"><meta name=twitter:image content="https://liwanggui.com/logo.png"><meta name=twitter:title content="macOS 开发配置"><meta name=twitter:description content="XCode从 App store 或苹果开发者网站安装 Xcode 紧接着，安装 Xcode command line tools，运行： 1 xcode-select --install 运行命令后，按照指引，你将完成 Xcode command line tools 安装。 注: 如果你不是一"><meta name=application-name content="LoveIt"><meta name=apple-mobile-web-app-title content="LoveIt"><meta name=theme-color content="#f8f8f8"><meta name=msapplication-TileColor content="#da532c"><link rel=canonical href=https://liwanggui.com/posts/macos-config/><link rel=prev href=https://liwanggui.com/posts/centos7-reset-password/><link rel=next href=https://liwanggui.com/posts/macos-cli/><link rel=stylesheet href=/lib/normalize/normalize.min.css><link rel=stylesheet href=/css/color.css><link rel=stylesheet href=/css/style.min.css><link rel=preload as=style onload='this.onload=null,this.rel="stylesheet"' href=/lib/fontawesome-free/all.min.css><noscript><link rel=stylesheet href=/lib/fontawesome-free/all.min.css></noscript><link rel=preload as=style onload='this.onload=null,this.rel="stylesheet"' href=/lib/animate/animate.min.css><noscript><link rel=stylesheet href=/lib/animate/animate.min.css></noscript><script type=application/ld+json>{"@context":"http://schema.org","@type":"BlogPosting","headline":"macOS 开发配置","inLanguage":"zh-CN","mainEntityOfPage":{"@type":"WebPage","@id":"https:\/\/liwanggui.com\/posts\/macos-config\/"},"genre":"posts","keywords":"macOS","wordcount":1280,"url":"https:\/\/liwanggui.com\/posts\/macos-config\/","datePublished":"2021-06-12T18:39:34+08:00","dateModified":"2021-06-12T18:39:34+08:00","publisher":{"@type":"Organization","name":""},"author":{"@type":"Person","name":"李王贵"},"description":""}</script><script src=//instant.page/5.1.1 defer type=module integrity=sha384-MWfCL6g1OTGsbSwfuMHc8+8J2u71/LA8dzlIN3ycajckxuZZmF+DNjdm7O6H3PSq></script></head><body header-desktop=fixed header-mobile=auto><script type=text/javascript>function setTheme(e){document.body.setAttribute("theme",e),document.documentElement.style.setProperty("color-scheme",e==="light"?"light":"dark")}function saveTheme(e){window.localStorage&&localStorage.setItem("theme",e)}function getMeta(e){const t=document.getElementsByTagName("meta");for(let n=0;n<t.length;n++)if(t[n].getAttribute("name")===e)return t[n];return""}if(window.localStorage&&localStorage.getItem("theme")){let e=localStorage.getItem("theme");e==="light"||e==="dark"||e==="black"?setTheme(e):setTheme(window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light")}else"auto"==="light"||"auto"==="dark"||"auto"==="black"?(setTheme("auto"),saveTheme("auto")):(saveTheme("auto"),setTheme(window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"));let metaColors={light:"#f8f8f8",dark:"#252627",black:"#000000"};getMeta("theme-color").content=metaColors[document.body.getAttribute("theme")]</script><div id=back-to-top></div><div id=mask></div><div class=wrapper><header class=desktop id=header-desktop><div class=header-wrapper><div class=header-title><a href=/ title=_浅行><span class=header-title-pre><i class='far fa-kiss-wink-heart fa-fw'></i></span>_浅行</a></div><div class=menu><div class=menu-inner><a class=menu-item href=/posts/ title=文章列表>文章 </a><a class=menu-item href=/tags/ title=标签云>标签 </a><a class=menu-item href=/categories/ title=分类>分类 </a><a class=menu-item href=https://cook.liwanggui.com/ title=程序员做饭指南 rel="noopener noreferrer" target=_blank>烹饪 </a><a class=menu-item href=/about/index.html title=关于>关于 </a><span class="menu-item delimiter"></span><span class="menu-item search" id=search-desktop>
+<input type=text placeholder=搜索文章标题或内容... id=search-input-desktop>
+<a href=# class="search-button search-toggle" id=search-toggle-desktop title=搜索><i class="fas fa-search fa-fw"></i></a>
+<a href=# class="search-button search-clear" id=search-clear-desktop title=清空><i class="fas fa-times-circle fa-fw"></i></a>
+<span class="search-button search-loading" id=search-loading-desktop><i class="fas fa-spinner fa-fw fa-spin"></i></span>
+</span><a href=# class="menu-item theme-switch" title=切换主题><i class="fas fa-adjust fa-fw"></i></a></div></div></div></header><header class=mobile id=header-mobile><div class=header-container><div class=header-wrapper><div class=header-title><a href=/ title=_浅行><span class=header-title-pre><i class='far fa-kiss-wink-heart fa-fw'></i></span>_浅行</a></div><div class=menu-toggle id=menu-toggle-mobile><span></span><span></span><span></span></div></div><div class=menu id=menu-mobile><div class=search-wrapper><div class="search mobile" id=search-mobile><input type=text placeholder=搜索文章标题或内容... id=search-input-mobile>
+<a href=# class="search-button search-toggle" id=search-toggle-mobile title=搜索><i class="fas fa-search fa-fw"></i></a>
+<a href=# class="search-button search-clear" id=search-clear-mobile title=清空><i class="fas fa-times-circle fa-fw"></i></a>
+<span class="search-button search-loading" id=search-loading-mobile><i class="fas fa-spinner fa-fw fa-spin"></i></span></div><a href=# class=search-cancel id=search-cancel-mobile>取消</a></div><a class=menu-item href=/posts/ title=文章列表>文章</a><a class=menu-item href=/tags/ title=标签云>标签</a><a class=menu-item href=/categories/ title=分类>分类</a><a class=menu-item href=https://cook.liwanggui.com/ title=程序员做饭指南 rel="noopener noreferrer" target=_blank>烹饪</a><a class=menu-item href=/about/index.html title=关于>关于</a><a href=# class="menu-item theme-switch" title=切换主题>
+<i class="fas fa-adjust fa-fw"></i></a></div></div></header><div class="search-dropdown desktop"><div id=search-dropdown-desktop></div></div><div class="search-dropdown mobile"><div id=search-dropdown-mobile></div></div><main class=main><div class=container><div class=toc id=toc-auto><h2 class=toc-title>目录</h2><div class=toc-content id=toc-content-auto><nav id=TableOfContents><ul><li><a href=#xcode>XCode</a></li><li><a href=#配置-git>配置 git</a></li><li><a href=#安装-homebrew>安装 Homebrew</a></li><li><a href=#iterm2>iTerm2</a><ul><li><a href=#配置-zmodemlrzsz>配置 zmodem（lrzsz）</a></li><li><a href=#常用快捷键>常用快捷键</a></li></ul></li><li><a href=#oh-my-zsh>oh-my-zsh</a><ul><li><a href=#安装-zsh-zsh-completions>安装 zsh zsh-completions</a></li><li><a href=#安装-ohmyzsh>安装 ohmyzsh</a></li><li><a href=#配置从当前位置删除到行首-ctrl--u>配置从当前位置删除到行首， ctrl + u</a></li></ul></li><li><a href=#新增命令无法自动识别解决方法>新增命令无法自动识别解决方法</a></li><li><a href=#配置-vim>配置 vim</a></li><li><a href=#解决-macos-ventura-下-ssh-无法使用-rsa-密钥验证>解决 macOS Ventura 下 ssh 无法使用 rsa 密钥验证</a></li><li><a href=#macos-英文目录显示为中文>macOS 英文目录显示为中文</a></li></ul></nav></div></div><script>document.getElementsByTagName("main")[0].setAttribute("pageStyle","normal")</script><script>document.getElementsByTagName("main")[0].setAttribute("autoTOC","true")</script><article class="page single"><h1 class="single-title animate__animated animate__flipInX">macOS 开发配置</h1><div class=post-meta><div class=post-meta-line><span class=post-author><i class="author fas fa-user-circle fa-fw"></i><a href=/about/ title=Author rel=author class=author>李王贵</a>
+</span>&nbsp;<span class=post-category>收录于 </span>&nbsp;<span class=post-category>类别 <a href=/categories/macos/><i class="far fa-folder fa-fw"></i>macOS</a></span></div><div class=post-meta-line><i class="far fa-calendar-alt fa-fw"></i>&nbsp;<time datetime=2021-06-12>2021-06-12</time>&nbsp;<i class="far fa-edit fa-fw"></i>&nbsp;<time datetime=2021-06-12>2021-06-12</time>&nbsp;<i class="fas fa-pencil-alt fa-fw"></i>&nbsp;约 1280 字&nbsp;
+<i class="far fa-clock fa-fw"></i>&nbsp;预计阅读 3 分钟&nbsp;</div></div><div class="details toc" id=toc-static kept><div class="details-summary toc-title"><span>目录</span>
+<span><i class="details-icon fas fa-angle-right"></i></span></div><div class="details-content toc-content" id=toc-content-static><nav id=TableOfContents><ul><li><a href=#xcode>XCode</a></li><li><a href=#配置-git>配置 git</a></li><li><a href=#安装-homebrew>安装 Homebrew</a></li><li><a href=#iterm2>iTerm2</a><ul><li><a href=#配置-zmodemlrzsz>配置 zmodem（lrzsz）</a></li><li><a href=#常用快捷键>常用快捷键</a></li></ul></li><li><a href=#oh-my-zsh>oh-my-zsh</a><ul><li><a href=#安装-zsh-zsh-completions>安装 zsh zsh-completions</a></li><li><a href=#安装-ohmyzsh>安装 ohmyzsh</a></li><li><a href=#配置从当前位置删除到行首-ctrl--u>配置从当前位置删除到行首， ctrl + u</a></li></ul></li><li><a href=#新增命令无法自动识别解决方法>新增命令无法自动识别解决方法</a></li><li><a href=#配置-vim>配置 vim</a></li><li><a href=#解决-macos-ventura-下-ssh-无法使用-rsa-密钥验证>解决 macOS Ventura 下 ssh 无法使用 rsa 密钥验证</a></li><li><a href=#macos-英文目录显示为中文>macOS 英文目录显示为中文</a></li></ul></nav></div></div><div class=content id=content><h2 id=xcode class=headerLink><a href=#xcode class=header-mark></a>XCode</h2><p>从 <code>App store</code> 或苹果开发者网站安装 <a href=https://developer.apple.com/xcode/ target=_blank rel="noopener noreferrer">Xcode</a></p><p>紧接着，安装 <code>Xcode command line tools</code>，运行：</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>xcode-select --install
+</span></span></code></pre></td></tr></table></div></div><p>运行命令后，按照指引，你将完成 <code>Xcode command line tools</code> 安装。</p><blockquote><p>注: 如果你不是一名 iOS 或 OSX 开发者，可以跳过安装 XCode 的过程，直接安装 <code>Xcode command line tools</code>。安装完成后，你将可以直接在 <code>terminal</code> 中使用主要的命令，比如：<code>make</code>, <code>GCC</code>, <code>clang</code>, <code>perl</code>, <code>svn</code>, <code>git</code>, <code>size</code>, <code>strip</code>, <code>strings</code>, <code>libtool</code>, <code>cpp</code> 等等。</p></blockquote><blockquote><p>如果你想了解 <code>Xcode command line tools</code> 包含多少可用的命令，可以到 <code>/Library/Developer/CommandLineTools/</code> 查看。</p></blockquote><h2 id=配置-git class=headerLink><a href=#%e9%85%8d%e7%bd%ae-git class=header-mark></a>配置 git</h2><p><em>GitHub git 帮助文档:</em> <a href=https://docs.github.com/en/get-started/quickstart/set-up-git target=_blank rel="noopener noreferrer">https://docs.github.com/en/get-started/quickstart/set-up-git</a></p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span><span class=lnt>7
+</span><span class=lnt>8
+</span><span class=lnt>9
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=c1># 配置 github 加速, 仅适用于 https </span>
+</span></span><span class=line><span class=cl>git config --global url.<span class=s2>&#34;https://gh.wglee.org/github.com&#34;</span>.insteadOf <span class=s2>&#34;https://github.com&#34;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># 配置用户信息</span>
+</span></span><span class=line><span class=cl>git config --global user.name <span class=s2>&#34;Your Name Here&#34;</span>
+</span></span><span class=line><span class=cl>git config --global user.email <span class=s2>&#34;your_email@youremail.com&#34;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># 如果你不想每次都输入用户名和密码的话, 执行下面命令</span>
+</span></span><span class=line><span class=cl>git config --global credential.helper osxkeychain
+</span></span></code></pre></td></tr></table></div></div><blockquote><p>这些配置信息将会添加进 <code>~/.gitconfig</code> 文件中.</p></blockquote><p>创建一个新文件 <code>~/.gitignore</code> ，并将以下内容添加进去，这样全部 git 仓库将会忽略以下内容所提及的文件。</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span><span class=lnt>26
+</span><span class=lnt>27
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl># Folder view configuration files
+</span></span><span class=line><span class=cl>.DS_Store
+</span></span><span class=line><span class=cl>Desktop.ini
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>$RECYCLE.BIN/
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl># Thumbnail cache files
+</span></span><span class=line><span class=cl>._*
+</span></span><span class=line><span class=cl>Thumbs.db
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl># Files that might appear on external disks
+</span></span><span class=line><span class=cl>.Spotlight-V100
+</span></span><span class=line><span class=cl>.Trashes
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl># Compiled Python files
+</span></span><span class=line><span class=cl>*.pyc
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl># Compiled C++ files
+</span></span><span class=line><span class=cl>*.out
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl># Application specific files
+</span></span><span class=line><span class=cl>venv
+</span></span><span class=line><span class=cl>node_modules
+</span></span><span class=line><span class=cl>.sass-cache
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl># vscode
+</span></span><span class=line><span class=cl>.vscode/
+</span></span></code></pre></td></tr></table></div></div><h2 id=安装-homebrew class=headerLink><a href=#%e5%ae%89%e8%a3%85-homebrew class=header-mark></a>安装 Homebrew</h2><blockquote><p>官网地址: <a href=https://brew.sh/ target=_blank rel="noopener noreferrer">https://brew.sh/</a></p></blockquote><p>在安装 Homebrew 之前，需要将 Xcode Command Line Tools 安装完成</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>/usr/bin/ruby -e <span class=s2>&#34;</span><span class=k>$(</span>curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install<span class=k>)</span><span class=s2>&#34;</span>
+</span></span></code></pre></td></tr></table></div></div><p>安装完成后执行以下命令</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>brew doctor
+</span></span></code></pre></td></tr></table></div></div><blockquote><p>安装完成后，Homebrew 会将本地 /usr/local 初始化为 git 的工作树，并将目录所有者变更为当前所操作的用户，将来 brew 的相关操作不需要 sudo</p></blockquote><h2 id=iterm2 class=headerLink><a href=#iterm2 class=header-mark></a>iTerm2</h2><blockquote><p>iTerm2 下载地址： <a href=https://iterm2.com/downloads.html target=_blank rel="noopener noreferrer">https://iterm2.com/downloads.html</a></p></blockquote><blockquote><p>终端配色仓库: <a href=https://github.com/altercation/solarized/tree/master/iterm2-colors-solarized target=_blank rel="noopener noreferrer">https://github.com/altercation/solarized/tree/master/iterm2-colors-solarized</a></p></blockquote><p>下载后，解压将 <code>iTerm</code> 拖拽进入 <code>Application</code> 文件夹中。 然后，你可以在 <code>Launchpad</code> 中启动 <code>iTerm</code></p><h3 id=配置-zmodemlrzsz class=headerLink><a href=#%e9%85%8d%e7%bd%ae-zmodemlrzsz class=header-mark></a>配置 zmodem（lrzsz）</h3><p><code>iTerm</code> 默认终端是不支持 <code>sz</code> <code>rz</code> 命令的，<code>iterm2</code> 终端可以配置支持 <code>sz</code> <code>rz</code> 命令，配置方法如下：</p><p><em>1. 安装 lrzsz</em></p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>brew install lrzsz
+</span></span></code></pre></td></tr></table></div></div><p><em>2. 安装 iterm2-zmodem 脚本</em></p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>git clone https://github.com/aikuyun/iterm2-zmodem.git
+</span></span><span class=line><span class=cl>cp iterm2-zmodem/iterm2*.sh /usr/local/bin/
+</span></span><span class=line><span class=cl>chmod +x /usr/local/bin/iterm2*.sh
+</span></span></code></pre></td></tr></table></div></div><p><em>3. 配置 iterm2 Triggers</em></p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>Regular expression: <span class=se>\*\*</span>B0100
+</span></span><span class=line><span class=cl>    Action: Run Silent Coprocess
+</span></span><span class=line><span class=cl>    Parameters: /usr/local/bin/iterm2-send-zmodem.sh
+</span></span><span class=line><span class=cl>Regular expression: <span class=se>\*\*</span>B00000000000000
+</span></span><span class=line><span class=cl>    Action: Run Silent Coprocess
+</span></span><span class=line><span class=cl>    Parameters: /usr/local/bin/iterm2-recv-zmodem.sh 
+</span></span></code></pre></td></tr></table></div></div><p>按 <code>command</code> + <code>,</code> 打开配置面板，然后点击 “<code>Profiles</code>”, “<code>Advanced</code>”， “<code>Triggers -> Edit</code>”</p><blockquote><p>Tips: 正常连接服务器就可以使用 <code>sz</code> <code>rz</code> 命令了
+通过添加 profile 配置主机列表</p></blockquote><h3 id=常用快捷键 class=headerLink><a href=#%e5%b8%b8%e7%94%a8%e5%bf%ab%e6%8d%b7%e9%94%ae class=header-mark></a>常用快捷键</h3><ul><li><code>command + d</code> 横向分屏</li><li><code>command + shift + d</code> 水平分屏</li><li><code>command + enter</code> 全屏，取消全屏</li><li><code>command + ;</code> 打开输入历史记录</li><li><code>command + f</code> 打开搜索框</li><li><code>option + command + i</code> 分屏时同时操作多个窗口，重复取消</li></ul><h2 id=oh-my-zsh class=headerLink><a href=#oh-my-zsh class=header-mark></a>oh-my-zsh</h2><h3 id=安装-zsh-zsh-completions class=headerLink><a href=#%e5%ae%89%e8%a3%85-zsh-zsh-completions class=header-mark></a>安装 zsh zsh-completions</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>brew install zsh zsh-completions
+</span></span></code></pre></td></tr></table></div></div><blockquote><p>注: 如果 zsh 已安装可以跳过</p></blockquote><h3 id=安装-ohmyzsh class=headerLink><a href=#%e5%ae%89%e8%a3%85-ohmyzsh class=header-mark></a>安装 ohmyzsh</h3><blockquote><p>官方站点: <a href=https://ohmyz.sh/ target=_blank rel="noopener noreferrer">https://ohmyz.sh/</a></p></blockquote><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>sh -c <span class=s2>&#34;</span><span class=k>$(</span>curl -fsSL https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh<span class=k>)</span><span class=s2>&#34;</span>
+</span></span></code></pre></td></tr></table></div></div><blockquote><p>zsh 主题配置项: <code>ZSH_THEME="ys"</code></p></blockquote><h3 id=配置从当前位置删除到行首-ctrl--u class=headerLink><a href=#%e9%85%8d%e7%bd%ae%e4%bb%8e%e5%bd%93%e5%89%8d%e4%bd%8d%e7%bd%ae%e5%88%a0%e9%99%a4%e5%88%b0%e8%a1%8c%e9%a6%96-ctrl--u class=header-mark></a>配置从当前位置删除到行首， ctrl + u</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span><span class=lnt>7
+</span><span class=lnt>8
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>cat &gt;&gt; ~/.zshrc <span class=s>&lt;&lt;EOF
+</span></span></span><span class=line><span class=cl><span class=s># 恢复 Crtl + U 快捷键功能
+</span></span></span><span class=line><span class=cl><span class=s>bindkey \^U backward-kill-line
+</span></span></span><span class=line><span class=cl><span class=s># zsh 默认自动给没有换行符的字符串添加一个百分号%（root 用户是 # 号），同时另起一行显示新的提示符
+</span></span></span><span class=line><span class=cl><span class=s># 去掉末尾自动添加的符号 (% or #)， 
+</span></span></span><span class=line><span class=cl><span class=s>unsetopt prompt_cr prompt_sp
+</span></span></span><span class=line><span class=cl><span class=s>EOF</span>
+</span></span><span class=line><span class=cl><span class=nb>source</span>  ~/.zshrc
+</span></span></code></pre></td></tr></table></div></div><h2 id=新增命令无法自动识别解决方法 class=headerLink><a href=#%e6%96%b0%e5%a2%9e%e5%91%bd%e4%bb%a4%e6%97%a0%e6%b3%95%e8%87%aa%e5%8a%a8%e8%af%86%e5%88%ab%e8%a7%a3%e5%86%b3%e6%96%b9%e6%b3%95 class=header-mark></a>新增命令无法自动识别解决方法</h2><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>rehash  <span class=c1># 执行 rehash 后就可以了</span>
+</span></span></code></pre></td></tr></table></div></div><h2 id=配置-vim class=headerLink><a href=#%e9%85%8d%e7%bd%ae-vim class=header-mark></a>配置 vim</h2><p>创建 <code>~/.vimrc</code> 配置文件</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>syntax on
+</span></span><span class=line><span class=cl><span class=nb>set</span> autoread
+</span></span><span class=line><span class=cl><span class=nb>set</span> ruler
+</span></span><span class=line><span class=cl><span class=nb>set</span> <span class=nv>encoding</span><span class=o>=</span>utf-8
+</span></span><span class=line><span class=cl><span class=nb>set</span> <span class=nv>clipboard</span><span class=o>=</span>unnamed
+</span></span><span class=line><span class=cl><span class=nb>set</span> <span class=nv>laststatus</span><span class=o>=</span><span class=m>2</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=s2>&#34; 将制表符转为空格
+</span></span></span><span class=line><span class=cl><span class=s2>set expandtab
+</span></span></span><span class=line><span class=cl><span class=s2>set tabstop=4
+</span></span></span><span class=line><span class=cl><span class=s2>set shiftwidth=4
+</span></span></span><span class=line><span class=cl><span class=s2>set softtabstop=4
+</span></span></span><span class=line><span class=cl><span class=s2>
+</span></span></span><span class=line><span class=cl><span class=s2>set autoindent
+</span></span></span><span class=line><span class=cl><span class=s2>set cindent
+</span></span></span><span class=line><span class=cl><span class=s2>set hlsearch
+</span></span></span><span class=line><span class=cl><span class=s2>set backspace=2
+</span></span></span><span class=line><span class=cl><span class=s2>
+</span></span></span><span class=line><span class=cl><span class=s2>&#34;</span> 配置 yaml 文件缩进为二空格
+</span></span><span class=line><span class=cl>autocmd FileType yaml setlocal autoindent <span class=nv>tabstop</span><span class=o>=</span><span class=m>2</span> <span class=nv>shiftwidth</span><span class=o>=</span><span class=m>2</span> expandtab
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=s2>&#34; 记录上次编辑位置
+</span></span></span><span class=line><span class=cl><span class=s2>au BufReadPost * if line(&#34;</span><span class=s1>&#39;\&#34;&#34;) &gt; 1 &amp;&amp; line(&#34;&#39;</span><span class=se>\&#34;</span><span class=s2>&#34;) &lt;= line(&#34;$&#34;) | exe &#34;</span>normal! g<span class=err>&#39;</span><span class=se>\&#34;</span><span class=s2>&#34; | endif
+</span></span></span></code></pre></td></tr></table></div></div><h2 id=解决-macos-ventura-下-ssh-无法使用-rsa-密钥验证 class=headerLink><a href=#%e8%a7%a3%e5%86%b3-macos-ventura-%e4%b8%8b-ssh-%e6%97%a0%e6%b3%95%e4%bd%bf%e7%94%a8-rsa-%e5%af%86%e9%92%a5%e9%aa%8c%e8%af%81 class=header-mark></a>解决 macOS Ventura 下 ssh 无法使用 rsa 密钥验证</h2><p>在 <code>~/.ssh/config</code> 配置文件中加入以下配置项即可、</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>Host *
+</span></span><span class=line><span class=cl>    HostkeyAlgorithms +ssh-rsa
+</span></span><span class=line><span class=cl>    PubkeyAcceptedAlgorithms +ssh-rsa
+</span></span></code></pre></td></tr></table></div></div><h2 id=macos-英文目录显示为中文 class=headerLink><a href=#macos-%e8%8b%b1%e6%96%87%e7%9b%ae%e5%bd%95%e6%98%be%e7%a4%ba%e4%b8%ba%e4%b8%ad%e6%96%87 class=header-mark></a>macOS 英文目录显示为中文</h2><blockquote><p>以目录名为 <code>Code</code> 进行讲解</p></blockquote><ol><li>在英文目录下新建 <code>.localized</code> 隐藏目录</li><li>进入<code>localized</code> 目录创建 <code>zh_CN.strings</code> 文件, 输入 &ldquo;english&rdquo; = &ldquo;中文&rdquo;;</li></ol><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>mkdir -p Code/.localized
+</span></span><span class=line><span class=cl>cat Code/.localized/zh_CN.strings
+</span></span><span class=line><span class=cl><span class=s2>&#34;Code&#34;</span> <span class=o>=</span> <span class=s2>&#34;代码&#34;</span><span class=p>;</span>
+</span></span></code></pre></td></tr></table></div></div><blockquote><p>注意: 不能少了分号</p></blockquote><ol start=3><li>最后将目录名改为以 <code>.localized</code> 结尾即可</li></ol><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>mv Code Code.localized
+</span></span></code></pre></td></tr></table></div></div><blockquote><p>参考文档: <a href=https://www.bookstack.cn/read/Mac-dev-setup/README.md target=_blank rel="noopener noreferrer">https://www.bookstack.cn/read/Mac-dev-setup/README.md</a></p></blockquote></div><div class=post-footer id=post-footer><div class=post-info><div class=post-info-line><div class=post-info-mod><span>更新于 2021-06-12</span></div><div class=post-info-license></div></div><div class=post-info-line><div class=post-info-md><span><a class=link-to-mardown href=/posts/macos-config/index.md target=_blank rel="noopener noreferrer">阅读原始文档</a></span></div><div class=post-info-share><span><a href=# title="分享到 Twitter" data-sharer=twitter data-url=https://liwanggui.com/posts/macos-config/ data-title="macOS 开发配置" data-hashtags=macOS><i class="fab fa-twitter fa-fw"></i></a><a href=# title="分享到 Facebook" data-sharer=facebook data-url=https://liwanggui.com/posts/macos-config/ data-hashtag=macOS><i class="fab fa-facebook-square fa-fw"></i></a><a href=# title="分享到 WhatsApp" data-sharer=whatsapp data-url=https://liwanggui.com/posts/macos-config/ data-title="macOS 开发配置" data-web><i class="fab fa-whatsapp fa-fw"></i></a><a href=# title="分享到 Line" data-sharer=line data-url=https://liwanggui.com/posts/macos-config/ data-title="macOS 开发配置"><i data-svg-src=/lib/simple-icons/icons/line.min.svg></i></a><a href=# title="分享到 微博" data-sharer=weibo data-url=https://liwanggui.com/posts/macos-config/ data-title="macOS 开发配置"><i class="fab fa-weibo fa-fw"></i></a><a href=# title="分享到 Myspace" data-sharer=myspace data-url=https://liwanggui.com/posts/macos-config/ data-title="macOS 开发配置" data-description><i data-svg-src=/lib/simple-icons/icons/myspace.min.svg></i></a><a href=# title="分享到 Blogger" data-sharer=blogger data-url=https://liwanggui.com/posts/macos-config/ data-title="macOS 开发配置" data-description><i class="fab fa-blogger fa-fw"></i></a><a href=# title="分享到 百度" data-sharer=baidu data-url=https://liwanggui.com/posts/macos-config/ data-title="macOS 开发配置"><i data-svg-src=/lib/simple-icons/icons/baidu.min.svg></i></a><a href=# title="分享到 Evernote" data-sharer=evernote data-url=https://liwanggui.com/posts/macos-config/ data-title="macOS 开发配置"><i class="fab fa-evernote fa-fw"></i></a></span></div></div></div><div class=post-info-more><section class=post-tags><i class="fas fa-tags fa-fw"></i>&nbsp;<a href=/tags/macos/>macOS</a></section><section><span><a href=javascript:void(0); onclick=window.history.back()>返回</a></span>&nbsp;|&nbsp;<span><a href=/>主页</a></span></section></div><div class=post-nav><a href=/posts/centos7-reset-password/ class=prev rel=prev title="CentOS 7 重置 root 密码"><i class="fas fa-angle-left fa-fw"></i>CentOS 7 重置 root 密码</a>
+<a href=/posts/macos-cli/ class=next rel=next title="macOS 命令行">macOS 命令行<i class="fas fa-angle-right fa-fw"></i></a></div></div><div id=comments><div id=giscus></div><noscript>Please enable JavaScript to view the comments powered by <a href=https://giscus.app/>giscus</a>.</noscript></div></article></div></main><footer class=footer><div class=footer-container><div class=footer-line>由 <a href=https://gohugo.io/ target=_blank rel="noopener noreferrer" title="Hugo 0.101.0">Hugo</a> 强力驱动&nbsp;|&nbsp;主题 - <a href=https://github.com/HEIGE-PCloud/DoIt target=_blank rel="noopener noreferrer" title="DoIt 0.3.0"><i class="far fa-edit fa-fw"></i> DoIt</a></div><div class=footer-line><i class="far fa-copyright fa-fw"></i><span itemprop=copyrightYear>2017 - 2024</span><span class=author itemprop=copyrightHolder>&nbsp;<a href=/about/ target=_blank rel="noopener noreferrer">李王贵</a></span><span class=icp-splitter>&nbsp;|&nbsp;</span><br class=icp-br><span class=icp><a href=https://beian.miit.gov.cn target=_blank>赣ICP备2023001395号</a></span></div><div class=footer-line></div><div class=footer-line></div></div></footer></div><div id=fixed-buttons><a href=#back-to-top id=back-to-top-button class=fixed-button title=回到顶部><i class="fas fa-arrow-up fa-fw"></i>
+</a><a href=# id=view-comments class=fixed-button title=查看评论><i class="fas fa-comment fa-fw"></i></a></div><div id=cookieconsent-container></div><div class=assets><link rel=stylesheet href=/lib/lightgallery/lightgallery.min.css><link rel=stylesheet href=/lib/katex/katex.min.css><link rel=preload as=style onload='this.onload=null,this.rel="stylesheet"' href=/lib/katex/copy-tex.min.css><noscript><link rel=stylesheet href=/lib/katex/copy-tex.min.css></noscript><link rel=stylesheet href=/lib/cookieconsent/cookieconsent.min.css><script type=text/javascript>window.config={code:{copyTitle:"复制到剪贴板",maxShownLines:10},comment:{giscus:{darkTheme:"dark",dataCategory:"Announcements",dataCategoryId:"DIC_kwDOE7mEQ84CY9pq",dataEmitMetadata:"1",dataInputPosition:"top",dataLang:"zh-CN",dataMapping:"pathname",dataReactionsEnabled:"1",dataRepo:"liwanggui/liwanggui.github.io",dataRepoId:"MDEwOlJlcG9zaXRvcnkzMzA5MjUxMjM=",dataStrict:"0",lightTheme:"light"}},cookieconsent:{content:{dismiss:"同意",link:"了解更多",message:"本网站使用 Cookies 来改善您的浏览体验."},enable:!0,palette:{button:{background:"#f0f0f0"},popup:{background:"#1aa3ff"}},theme:"edgeless"},lightGallery:{actualSize:!1,exThumbImage:"data-thumbnail",hideBarsDelay:2e3,selector:".lightgallery",speed:400,thumbContHeight:80,thumbWidth:80,thumbnail:!0},math:{delimiters:[{display:!0,left:"$$",right:"$$"},{display:!0,left:"\\[",right:"\\]"},{display:!1,left:"$",right:"$"},{display:!1,left:"\\(",right:"\\)"}],strict:!1},search:{distance:100,findAllMatches:!1,fuseIndexURL:"/index.json",highlightTag:"em",ignoreFieldNorm:!1,ignoreLocation:!1,isCaseSensitive:!1,location:0,maxResultLength:10,minMatchCharLength:2,noResultsFound:"没有找到结果",snippetLength:50,threshold:.3,type:"fuse",useExtendedSearch:!1},sharerjs:!0,twemoji:!0}</script><script type=text/javascript src=/js/giscus.min.js defer></script><script type=text/javascript src=/lib/twemoji/twemoji.min.js defer></script><script type=text/javascript src=/js/twemoji.min.js defer></script><script type=text/javascript src=/lib/lightgallery/lightgallery.min.js></script><script type=text/javascript src=/lib/lightgallery/lg-thumbnail.min.js></script><script type=text/javascript src=/lib/lightgallery/lg-zoom.min.js></script><script type=text/javascript src=/lib/clipboard/clipboard.min.js></script><script type=text/javascript src=/lib/sharer/sharer.min.js></script><script type=text/javascript src=/lib/katex/katex.min.js defer></script><script type=text/javascript src=/lib/katex/auto-render.min.js defer></script><script type=text/javascript src=/lib/katex/copy-tex.min.js defer></script><script type=text/javascript src=/lib/katex/mhchem.min.js defer></script><script type=text/javascript src=/js/katex.min.js defer></script><script type=text/javascript src=/lib/cookieconsent/cookieconsent.min.js defer></script><script type=text/javascript src=/js/cookieconsent.min.js defer></script><script type=text/javascript src=/js/theme.min.js defer></script></div></body></html>

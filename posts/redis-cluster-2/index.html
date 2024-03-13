@@ -1,0 +1,665 @@
+<!doctype html><html lang=zh-cn><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><meta name=robots content="noodp"><title>Redis 5.x 分片集群部署 - _浅行</title><meta name=Description content="_浅行"><meta property="og:title" content="Redis 5.x 分片集群部署"><meta property="og:description" content="Redis 5.x 及以上版本配置分片集群不需要在使用 redis-trib.rb 脚本，默认 redis-cli 已集成集群配置指令 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35"><meta property="og:type" content="article"><meta property="og:url" content="https://liwanggui.com/posts/redis-cluster-2/"><meta property="og:image" content="https://liwanggui.com/logo.png"><meta property="article:section" content="posts"><meta property="article:published_time" content="2022-03-25T16:56:26+08:00"><meta property="article:modified_time" content="2022-03-25T16:56:26+08:00"><meta name=twitter:card content="summary_large_image"><meta name=twitter:image content="https://liwanggui.com/logo.png"><meta name=twitter:title content="Redis 5.x 分片集群部署"><meta name=twitter:description content="Redis 5.x 及以上版本配置分片集群不需要在使用 redis-trib.rb 脚本，默认 redis-cli 已集成集群配置指令 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35"><meta name=application-name content="LoveIt"><meta name=apple-mobile-web-app-title content="LoveIt"><meta name=theme-color content="#f8f8f8"><meta name=msapplication-TileColor content="#da532c"><link rel=canonical href=https://liwanggui.com/posts/redis-cluster-2/><link rel=prev href=https://liwanggui.com/posts/redis-cluster-1/><link rel=next href=https://liwanggui.com/posts/firewalld/><link rel=stylesheet href=/lib/normalize/normalize.min.css><link rel=stylesheet href=/css/color.css><link rel=stylesheet href=/css/style.min.css><link rel=preload as=style onload='this.onload=null,this.rel="stylesheet"' href=/lib/fontawesome-free/all.min.css><noscript><link rel=stylesheet href=/lib/fontawesome-free/all.min.css></noscript><link rel=preload as=style onload='this.onload=null,this.rel="stylesheet"' href=/lib/animate/animate.min.css><noscript><link rel=stylesheet href=/lib/animate/animate.min.css></noscript><script type=application/ld+json>{"@context":"http://schema.org","@type":"BlogPosting","headline":"Redis 5.x 分片集群部署","inLanguage":"zh-CN","mainEntityOfPage":{"@type":"WebPage","@id":"https:\/\/liwanggui.com\/posts\/redis-cluster-2\/"},"genre":"posts","keywords":"redis","wordcount":2024,"url":"https:\/\/liwanggui.com\/posts\/redis-cluster-2\/","datePublished":"2022-03-25T16:56:26+08:00","dateModified":"2022-03-25T16:56:26+08:00","publisher":{"@type":"Organization","name":""},"author":{"@type":"Person","name":"李王贵"},"description":""}</script><script src=//instant.page/5.1.1 defer type=module integrity=sha384-MWfCL6g1OTGsbSwfuMHc8+8J2u71/LA8dzlIN3ycajckxuZZmF+DNjdm7O6H3PSq></script></head><body header-desktop=fixed header-mobile=auto><script type=text/javascript>function setTheme(e){document.body.setAttribute("theme",e),document.documentElement.style.setProperty("color-scheme",e==="light"?"light":"dark")}function saveTheme(e){window.localStorage&&localStorage.setItem("theme",e)}function getMeta(e){const t=document.getElementsByTagName("meta");for(let n=0;n<t.length;n++)if(t[n].getAttribute("name")===e)return t[n];return""}if(window.localStorage&&localStorage.getItem("theme")){let e=localStorage.getItem("theme");e==="light"||e==="dark"||e==="black"?setTheme(e):setTheme(window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light")}else"auto"==="light"||"auto"==="dark"||"auto"==="black"?(setTheme("auto"),saveTheme("auto")):(saveTheme("auto"),setTheme(window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"));let metaColors={light:"#f8f8f8",dark:"#252627",black:"#000000"};getMeta("theme-color").content=metaColors[document.body.getAttribute("theme")]</script><div id=back-to-top></div><div id=mask></div><div class=wrapper><header class=desktop id=header-desktop><div class=header-wrapper><div class=header-title><a href=/ title=_浅行><span class=header-title-pre><i class='far fa-kiss-wink-heart fa-fw'></i></span>_浅行</a></div><div class=menu><div class=menu-inner><a class=menu-item href=/posts/ title=文章列表>文章 </a><a class=menu-item href=/tags/ title=标签云>标签 </a><a class=menu-item href=/categories/ title=分类>分类 </a><a class=menu-item href=https://cook.liwanggui.com/ title=程序员做饭指南 rel="noopener noreferrer" target=_blank>烹饪 </a><a class=menu-item href=/about/index.html title=关于>关于 </a><span class="menu-item delimiter"></span><span class="menu-item search" id=search-desktop>
+<input type=text placeholder=搜索文章标题或内容... id=search-input-desktop>
+<a href=# class="search-button search-toggle" id=search-toggle-desktop title=搜索><i class="fas fa-search fa-fw"></i></a>
+<a href=# class="search-button search-clear" id=search-clear-desktop title=清空><i class="fas fa-times-circle fa-fw"></i></a>
+<span class="search-button search-loading" id=search-loading-desktop><i class="fas fa-spinner fa-fw fa-spin"></i></span>
+</span><a href=# class="menu-item theme-switch" title=切换主题><i class="fas fa-adjust fa-fw"></i></a></div></div></div></header><header class=mobile id=header-mobile><div class=header-container><div class=header-wrapper><div class=header-title><a href=/ title=_浅行><span class=header-title-pre><i class='far fa-kiss-wink-heart fa-fw'></i></span>_浅行</a></div><div class=menu-toggle id=menu-toggle-mobile><span></span><span></span><span></span></div></div><div class=menu id=menu-mobile><div class=search-wrapper><div class="search mobile" id=search-mobile><input type=text placeholder=搜索文章标题或内容... id=search-input-mobile>
+<a href=# class="search-button search-toggle" id=search-toggle-mobile title=搜索><i class="fas fa-search fa-fw"></i></a>
+<a href=# class="search-button search-clear" id=search-clear-mobile title=清空><i class="fas fa-times-circle fa-fw"></i></a>
+<span class="search-button search-loading" id=search-loading-mobile><i class="fas fa-spinner fa-fw fa-spin"></i></span></div><a href=# class=search-cancel id=search-cancel-mobile>取消</a></div><a class=menu-item href=/posts/ title=文章列表>文章</a><a class=menu-item href=/tags/ title=标签云>标签</a><a class=menu-item href=/categories/ title=分类>分类</a><a class=menu-item href=https://cook.liwanggui.com/ title=程序员做饭指南 rel="noopener noreferrer" target=_blank>烹饪</a><a class=menu-item href=/about/index.html title=关于>关于</a><a href=# class="menu-item theme-switch" title=切换主题>
+<i class="fas fa-adjust fa-fw"></i></a></div></div></header><div class="search-dropdown desktop"><div id=search-dropdown-desktop></div></div><div class="search-dropdown mobile"><div id=search-dropdown-mobile></div></div><main class=main><div class=container><div class=toc id=toc-auto><h2 class=toc-title>目录</h2><div class=toc-content id=toc-content-auto><nav id=TableOfContents><ul><li><a href=#配置集群>配置集群</a></li><li><a href=#增加节点>增加节点</a></li></ul></nav></div></div><script>document.getElementsByTagName("main")[0].setAttribute("pageStyle","normal")</script><script>document.getElementsByTagName("main")[0].setAttribute("autoTOC","true")</script><article class="page single"><h1 class="single-title animate__animated animate__flipInX">Redis 5.x 分片集群部署</h1><div class=post-meta><div class=post-meta-line><span class=post-author><i class="author fas fa-user-circle fa-fw"></i><a href=/about/ title=Author rel=author class=author>李王贵</a>
+</span>&nbsp;<span class=post-category>收录于 </span>&nbsp;<span class=post-category>类别 <a href=/categories/redis/><i class="far fa-folder fa-fw"></i>redis</a></span></div><div class=post-meta-line><i class="far fa-calendar-alt fa-fw"></i>&nbsp;<time datetime=2022-03-25>2022-03-25</time>&nbsp;<i class="far fa-edit fa-fw"></i>&nbsp;<time datetime=2022-03-25>2022-03-25</time>&nbsp;<i class="fas fa-pencil-alt fa-fw"></i>&nbsp;约 2024 字&nbsp;
+<i class="far fa-clock fa-fw"></i>&nbsp;预计阅读 5 分钟&nbsp;</div></div><div class="details toc" id=toc-static kept><div class="details-summary toc-title"><span>目录</span>
+<span><i class="details-icon fas fa-angle-right"></i></span></div><div class="details-content toc-content" id=toc-content-static><nav id=TableOfContents><ul><li><a href=#配置集群>配置集群</a></li><li><a href=#增加节点>增加节点</a></li></ul></nav></div></div><div class=content id=content><p>Redis 5.x 及以上版本配置分片集群不需要在使用 <code>redis-trib.rb</code> 脚本，默认 <code>redis-cli</code> 已集成集群配置指令</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span><span class=lnt>26
+</span><span class=lnt>27
+</span><span class=lnt>28
+</span><span class=lnt>29
+</span><span class=lnt>30
+</span><span class=lnt>31
+</span><span class=lnt>32
+</span><span class=lnt>33
+</span><span class=lnt>34
+</span><span class=lnt>35
+</span><span class=lnt>36
+</span><span class=lnt>37
+</span><span class=lnt>38
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=o>[</span>root@localhost ~<span class=o>]</span><span class=c1># redis-cli --cluster help</span>
+</span></span><span class=line><span class=cl>Cluster Manager Commands:
+</span></span><span class=line><span class=cl>  create         host1:port1 ... hostN:portN
+</span></span><span class=line><span class=cl>                 --cluster-replicas &lt;arg&gt;
+</span></span><span class=line><span class=cl>  check          host:port
+</span></span><span class=line><span class=cl>                 --cluster-search-multiple-owners
+</span></span><span class=line><span class=cl>  info           host:port
+</span></span><span class=line><span class=cl>  fix            host:port
+</span></span><span class=line><span class=cl>                 --cluster-search-multiple-owners
+</span></span><span class=line><span class=cl>  reshard        host:port
+</span></span><span class=line><span class=cl>                 --cluster-from &lt;arg&gt;
+</span></span><span class=line><span class=cl>                 --cluster-to &lt;arg&gt;
+</span></span><span class=line><span class=cl>                 --cluster-slots &lt;arg&gt;
+</span></span><span class=line><span class=cl>                 --cluster-yes
+</span></span><span class=line><span class=cl>                 --cluster-timeout &lt;arg&gt;
+</span></span><span class=line><span class=cl>                 --cluster-pipeline &lt;arg&gt;
+</span></span><span class=line><span class=cl>                 --cluster-replace
+</span></span><span class=line><span class=cl>  rebalance      host:port
+</span></span><span class=line><span class=cl>                 --cluster-weight &lt;<span class=nv>node1</span><span class=o>=</span>w1...nodeN<span class=o>=</span>wN&gt;
+</span></span><span class=line><span class=cl>                 --cluster-use-empty-masters
+</span></span><span class=line><span class=cl>                 --cluster-timeout &lt;arg&gt;
+</span></span><span class=line><span class=cl>                 --cluster-simulate
+</span></span><span class=line><span class=cl>                 --cluster-pipeline &lt;arg&gt;
+</span></span><span class=line><span class=cl>                 --cluster-threshold &lt;arg&gt;
+</span></span><span class=line><span class=cl>                 --cluster-replace
+</span></span><span class=line><span class=cl>  add-node       new_host:new_port existing_host:existing_port
+</span></span><span class=line><span class=cl>                 --cluster-slave
+</span></span><span class=line><span class=cl>                 --cluster-master-id &lt;arg&gt;
+</span></span><span class=line><span class=cl>  del-node       host:port node_id
+</span></span><span class=line><span class=cl>  call           host:port <span class=nb>command</span> arg arg .. arg
+</span></span><span class=line><span class=cl>  set-timeout    host:port milliseconds
+</span></span><span class=line><span class=cl>  import         host:port
+</span></span><span class=line><span class=cl>                 --cluster-from &lt;arg&gt;
+</span></span><span class=line><span class=cl>                 --cluster-copy
+</span></span><span class=line><span class=cl>                 --cluster-replace
+</span></span><span class=line><span class=cl>  <span class=nb>help</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>For check, fix, reshard, del-node, set-timeout you can specify the host and port of any working node in the cluster.
+</span></span></code></pre></td></tr></table></div></div><h2 id=配置集群 class=headerLink><a href=#%e9%85%8d%e7%bd%ae%e9%9b%86%e7%be%a4 class=header-mark></a>配置集群</h2><p><em>准备 6 个 redis 实例：</em></p><ul><li>127.0.0.1:6000</li><li>127.0.0.1:6001</li><li>127.0.0.1:7000</li><li>127.0.0.1:7001</li><li>127.0.0.1:8000</li><li>127.0.0.1:8001</li></ul><p><em>配置集群</em></p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span><span class=lnt>26
+</span><span class=lnt>27
+</span><span class=lnt>28
+</span><span class=lnt>29
+</span><span class=lnt>30
+</span><span class=lnt>31
+</span><span class=lnt>32
+</span><span class=lnt>33
+</span><span class=lnt>34
+</span><span class=lnt>35
+</span><span class=lnt>36
+</span><span class=lnt>37
+</span><span class=lnt>38
+</span><span class=lnt>39
+</span><span class=lnt>40
+</span><span class=lnt>41
+</span><span class=lnt>42
+</span><span class=lnt>43
+</span><span class=lnt>44
+</span><span class=lnt>45
+</span><span class=lnt>46
+</span><span class=lnt>47
+</span><span class=lnt>48
+</span><span class=lnt>49
+</span><span class=lnt>50
+</span><span class=lnt>51
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=o>[</span>root@localhost redis<span class=o>]</span><span class=c1># redis-cli --cluster create --cluster-replicas 1 127.0.0.1:6000 127.0.0.1:7000 127.0.0.1:8000 127.0.0.1:6001 127.0.0.1:7001 127.0.0.1:8001</span>
+</span></span><span class=line><span class=cl>&gt;&gt;&gt; Performing <span class=nb>hash</span> slots allocation on <span class=m>6</span> nodes...
+</span></span><span class=line><span class=cl>Master<span class=o>[</span>0<span class=o>]</span> -&gt; Slots <span class=m>0</span> - <span class=m>5460</span>
+</span></span><span class=line><span class=cl>Master<span class=o>[</span>1<span class=o>]</span> -&gt; Slots <span class=m>5461</span> - <span class=m>10922</span>
+</span></span><span class=line><span class=cl>Master<span class=o>[</span>2<span class=o>]</span> -&gt; Slots <span class=m>10923</span> - <span class=m>16383</span>
+</span></span><span class=line><span class=cl>Adding replica 127.0.0.1:7001 to 127.0.0.1:6000
+</span></span><span class=line><span class=cl>Adding replica 127.0.0.1:8001 to 127.0.0.1:7000
+</span></span><span class=line><span class=cl>Adding replica 127.0.0.1:6001 to 127.0.0.1:8000
+</span></span><span class=line><span class=cl>&gt;&gt;&gt; Trying to optimize slaves allocation <span class=k>for</span> anti-affinity
+</span></span><span class=line><span class=cl><span class=o>[</span>WARNING<span class=o>]</span> Some slaves are in the same host as their master
+</span></span><span class=line><span class=cl>M: c9f7d10dc6d4f471a9d5660b67c44699474bba9b 127.0.0.1:6000
+</span></span><span class=line><span class=cl>   slots:<span class=o>[</span>0-5460<span class=o>]</span> <span class=o>(</span><span class=m>5461</span> slots<span class=o>)</span> master
+</span></span><span class=line><span class=cl>M: cf12b1d7074b1ef58d9f2cd8b3c50d9bdd53c125 127.0.0.1:7000
+</span></span><span class=line><span class=cl>   slots:<span class=o>[</span>5461-10922<span class=o>]</span> <span class=o>(</span><span class=m>5462</span> slots<span class=o>)</span> master
+</span></span><span class=line><span class=cl>M: e64e780e3a83e871daca04ddf7d4489624d97054 127.0.0.1:8000
+</span></span><span class=line><span class=cl>   slots:<span class=o>[</span>10923-16383<span class=o>]</span> <span class=o>(</span><span class=m>5461</span> slots<span class=o>)</span> master
+</span></span><span class=line><span class=cl>S: 08f1fa2ecd26f2916092695a3aa5bcb4185c1eee 127.0.0.1:6001
+</span></span><span class=line><span class=cl>   replicates cf12b1d7074b1ef58d9f2cd8b3c50d9bdd53c125
+</span></span><span class=line><span class=cl>S: 2f90e0f293fcf95dada5ec3414d46f90411cd987 127.0.0.1:7001
+</span></span><span class=line><span class=cl>   replicates e64e780e3a83e871daca04ddf7d4489624d97054
+</span></span><span class=line><span class=cl>S: 2d555ec571b26fe24012f126b600b2d742233574 127.0.0.1:8001
+</span></span><span class=line><span class=cl>   replicates c9f7d10dc6d4f471a9d5660b67c44699474bba9b
+</span></span><span class=line><span class=cl>Can I <span class=nb>set</span> the above configuration? <span class=o>(</span><span class=nb>type</span> <span class=s1>&#39;yes&#39;</span> to accept<span class=o>)</span>: yes <span class=c1># 输入 yes 后继续</span>
+</span></span><span class=line><span class=cl>&gt;&gt;&gt; Nodes configuration updated
+</span></span><span class=line><span class=cl>&gt;&gt;&gt; Assign a different config epoch to each node
+</span></span><span class=line><span class=cl>&gt;&gt;&gt; Sending CLUSTER MEET messages to join the cluster
+</span></span><span class=line><span class=cl>Waiting <span class=k>for</span> the cluster to join
+</span></span><span class=line><span class=cl>..
+</span></span><span class=line><span class=cl>&gt;&gt;&gt; Performing Cluster Check <span class=o>(</span>using node 127.0.0.1:6000<span class=o>)</span>
+</span></span><span class=line><span class=cl>M: c9f7d10dc6d4f471a9d5660b67c44699474bba9b 127.0.0.1:6000
+</span></span><span class=line><span class=cl>   slots:<span class=o>[</span>0-5460<span class=o>]</span> <span class=o>(</span><span class=m>5461</span> slots<span class=o>)</span> master
+</span></span><span class=line><span class=cl>   <span class=m>1</span> additional replica<span class=o>(</span>s<span class=o>)</span>
+</span></span><span class=line><span class=cl>S: 2f90e0f293fcf95dada5ec3414d46f90411cd987 127.0.0.1:7001
+</span></span><span class=line><span class=cl>   slots: <span class=o>(</span><span class=m>0</span> slots<span class=o>)</span> slave
+</span></span><span class=line><span class=cl>   replicates e64e780e3a83e871daca04ddf7d4489624d97054
+</span></span><span class=line><span class=cl>S: 2d555ec571b26fe24012f126b600b2d742233574 127.0.0.1:8001
+</span></span><span class=line><span class=cl>   slots: <span class=o>(</span><span class=m>0</span> slots<span class=o>)</span> slave
+</span></span><span class=line><span class=cl>   replicates c9f7d10dc6d4f471a9d5660b67c44699474bba9b
+</span></span><span class=line><span class=cl>S: 08f1fa2ecd26f2916092695a3aa5bcb4185c1eee 127.0.0.1:6001
+</span></span><span class=line><span class=cl>   slots: <span class=o>(</span><span class=m>0</span> slots<span class=o>)</span> slave
+</span></span><span class=line><span class=cl>   replicates cf12b1d7074b1ef58d9f2cd8b3c50d9bdd53c125
+</span></span><span class=line><span class=cl>M: e64e780e3a83e871daca04ddf7d4489624d97054 127.0.0.1:8000
+</span></span><span class=line><span class=cl>   slots:<span class=o>[</span>10923-16383<span class=o>]</span> <span class=o>(</span><span class=m>5461</span> slots<span class=o>)</span> master
+</span></span><span class=line><span class=cl>   <span class=m>1</span> additional replica<span class=o>(</span>s<span class=o>)</span>
+</span></span><span class=line><span class=cl>M: cf12b1d7074b1ef58d9f2cd8b3c50d9bdd53c125 127.0.0.1:7000
+</span></span><span class=line><span class=cl>   slots:<span class=o>[</span>5461-10922<span class=o>]</span> <span class=o>(</span><span class=m>5462</span> slots<span class=o>)</span> master
+</span></span><span class=line><span class=cl>   <span class=m>1</span> additional replica<span class=o>(</span>s<span class=o>)</span>
+</span></span><span class=line><span class=cl><span class=o>[</span>OK<span class=o>]</span> All nodes agree about slots configuration.
+</span></span><span class=line><span class=cl>&gt;&gt;&gt; Check <span class=k>for</span> open slots...
+</span></span><span class=line><span class=cl>&gt;&gt;&gt; Check slots coverage...
+</span></span><span class=line><span class=cl><span class=o>[</span>OK<span class=o>]</span> All <span class=m>16384</span> slots covered.
+</span></span></code></pre></td></tr></table></div></div><blockquote><p>提示: 使用方法和 <code>redis-trib.rb</code> 脚本类似</p></blockquote><p><em>检查集群状态</em></p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span><span class=lnt>26
+</span><span class=lnt>27
+</span><span class=lnt>28
+</span><span class=lnt>29
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=o>[</span>root@localhost redis<span class=o>]</span><span class=c1># redis-cli --cluster check  127.0.0.1:6000</span>
+</span></span><span class=line><span class=cl>127.0.0.1:6000 <span class=o>(</span>c9f7d10d...<span class=o>)</span> -&gt; <span class=m>0</span> keys <span class=p>|</span> <span class=m>5461</span> slots <span class=p>|</span> <span class=m>1</span> slaves.
+</span></span><span class=line><span class=cl>127.0.0.1:8000 <span class=o>(</span>e64e780e...<span class=o>)</span> -&gt; <span class=m>0</span> keys <span class=p>|</span> <span class=m>5461</span> slots <span class=p>|</span> <span class=m>1</span> slaves.
+</span></span><span class=line><span class=cl>127.0.0.1:7000 <span class=o>(</span>cf12b1d7...<span class=o>)</span> -&gt; <span class=m>0</span> keys <span class=p>|</span> <span class=m>5462</span> slots <span class=p>|</span> <span class=m>1</span> slaves.
+</span></span><span class=line><span class=cl><span class=o>[</span>OK<span class=o>]</span> <span class=m>0</span> keys in <span class=m>3</span> masters.
+</span></span><span class=line><span class=cl>0.00 keys per slot on average.
+</span></span><span class=line><span class=cl>&gt;&gt;&gt; Performing Cluster Check <span class=o>(</span>using node 127.0.0.1:6000<span class=o>)</span>
+</span></span><span class=line><span class=cl>M: c9f7d10dc6d4f471a9d5660b67c44699474bba9b 127.0.0.1:6000
+</span></span><span class=line><span class=cl>   slots:<span class=o>[</span>0-5460<span class=o>]</span> <span class=o>(</span><span class=m>5461</span> slots<span class=o>)</span> master
+</span></span><span class=line><span class=cl>   <span class=m>1</span> additional replica<span class=o>(</span>s<span class=o>)</span>
+</span></span><span class=line><span class=cl>S: 2f90e0f293fcf95dada5ec3414d46f90411cd987 127.0.0.1:7001
+</span></span><span class=line><span class=cl>   slots: <span class=o>(</span><span class=m>0</span> slots<span class=o>)</span> slave
+</span></span><span class=line><span class=cl>   replicates e64e780e3a83e871daca04ddf7d4489624d97054
+</span></span><span class=line><span class=cl>S: 2d555ec571b26fe24012f126b600b2d742233574 127.0.0.1:8001
+</span></span><span class=line><span class=cl>   slots: <span class=o>(</span><span class=m>0</span> slots<span class=o>)</span> slave
+</span></span><span class=line><span class=cl>   replicates c9f7d10dc6d4f471a9d5660b67c44699474bba9b
+</span></span><span class=line><span class=cl>S: 08f1fa2ecd26f2916092695a3aa5bcb4185c1eee 127.0.0.1:6001
+</span></span><span class=line><span class=cl>   slots: <span class=o>(</span><span class=m>0</span> slots<span class=o>)</span> slave
+</span></span><span class=line><span class=cl>   replicates cf12b1d7074b1ef58d9f2cd8b3c50d9bdd53c125
+</span></span><span class=line><span class=cl>M: e64e780e3a83e871daca04ddf7d4489624d97054 127.0.0.1:8000
+</span></span><span class=line><span class=cl>   slots:<span class=o>[</span>10923-16383<span class=o>]</span> <span class=o>(</span><span class=m>5461</span> slots<span class=o>)</span> master
+</span></span><span class=line><span class=cl>   <span class=m>1</span> additional replica<span class=o>(</span>s<span class=o>)</span>
+</span></span><span class=line><span class=cl>M: cf12b1d7074b1ef58d9f2cd8b3c50d9bdd53c125 127.0.0.1:7000
+</span></span><span class=line><span class=cl>   slots:<span class=o>[</span>5461-10922<span class=o>]</span> <span class=o>(</span><span class=m>5462</span> slots<span class=o>)</span> master
+</span></span><span class=line><span class=cl>   <span class=m>1</span> additional replica<span class=o>(</span>s<span class=o>)</span>
+</span></span><span class=line><span class=cl><span class=o>[</span>OK<span class=o>]</span> All nodes agree about slots configuration.
+</span></span><span class=line><span class=cl>&gt;&gt;&gt; Check <span class=k>for</span> open slots...
+</span></span><span class=line><span class=cl>&gt;&gt;&gt; Check slots coverage...
+</span></span><span class=line><span class=cl><span class=o>[</span>OK<span class=o>]</span> All <span class=m>16384</span> slots covered.
+</span></span></code></pre></td></tr></table></div></div><p><em>连接 redis 查看状态</em></p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=o>[</span>root@localhost redis<span class=o>]</span><span class=c1># redis-cli -p 6000</span>
+</span></span><span class=line><span class=cl>127.0.0.1:6000&gt; CLUSTER NODES
+</span></span><span class=line><span class=cl>2f90e0f293fcf95dada5ec3414d46f90411cd987 127.0.0.1:7001@17001 slave e64e780e3a83e871daca04ddf7d4489624d97054 <span class=m>0</span> <span class=m>1648198606347</span> <span class=m>5</span> connected
+</span></span><span class=line><span class=cl>2d555ec571b26fe24012f126b600b2d742233574 127.0.0.1:8001@18001 slave c9f7d10dc6d4f471a9d5660b67c44699474bba9b <span class=m>0</span> <span class=m>1648198608000</span> <span class=m>6</span> connected
+</span></span><span class=line><span class=cl>c9f7d10dc6d4f471a9d5660b67c44699474bba9b 127.0.0.1:6000@16000 myself,master - <span class=m>0</span> <span class=m>1648198608000</span> <span class=m>1</span> connected 0-5460
+</span></span><span class=line><span class=cl>08f1fa2ecd26f2916092695a3aa5bcb4185c1eee 127.0.0.1:6001@16001 slave cf12b1d7074b1ef58d9f2cd8b3c50d9bdd53c125 <span class=m>0</span> <span class=m>1648198609379</span> <span class=m>4</span> connected
+</span></span><span class=line><span class=cl>e64e780e3a83e871daca04ddf7d4489624d97054 127.0.0.1:8000@18000 master - <span class=m>0</span> <span class=m>1648198607364</span> <span class=m>3</span> connected 10923-16383
+</span></span><span class=line><span class=cl>cf12b1d7074b1ef58d9f2cd8b3c50d9bdd53c125 127.0.0.1:7000@17000 master - <span class=m>0</span> <span class=m>1648198608369</span> <span class=m>2</span> connected 5461-10922
+</span></span><span class=line><span class=cl>127.0.0.1:6000&gt; CLUSTER INFO
+</span></span><span class=line><span class=cl>cluster_state:ok
+</span></span><span class=line><span class=cl>cluster_slots_assigned:16384
+</span></span><span class=line><span class=cl>cluster_slots_ok:16384
+</span></span><span class=line><span class=cl>cluster_slots_pfail:0
+</span></span><span class=line><span class=cl>cluster_slots_fail:0
+</span></span><span class=line><span class=cl>cluster_known_nodes:6
+</span></span><span class=line><span class=cl>cluster_size:3
+</span></span><span class=line><span class=cl>cluster_current_epoch:6
+</span></span><span class=line><span class=cl>cluster_my_epoch:1
+</span></span><span class=line><span class=cl>cluster_stats_messages_ping_sent:822
+</span></span><span class=line><span class=cl>cluster_stats_messages_pong_sent:873
+</span></span><span class=line><span class=cl>cluster_stats_messages_sent:1695
+</span></span><span class=line><span class=cl>cluster_stats_messages_ping_received:868
+</span></span><span class=line><span class=cl>cluster_stats_messages_pong_received:822
+</span></span><span class=line><span class=cl>cluster_stats_messages_meet_received:5
+</span></span><span class=line><span class=cl>cluster_stats_messages_received:1695
+</span></span></code></pre></td></tr></table></div></div><p><em>测试集群数据的读写</em></p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=o>[</span>root@localhost redis<span class=o>]</span><span class=c1># redis-cli -c -p 6000</span>
+</span></span><span class=line><span class=cl>127.0.0.1:6000&gt; <span class=nb>set</span> hello world
+</span></span><span class=line><span class=cl>OK
+</span></span><span class=line><span class=cl>127.0.0.1:6000&gt; <span class=nb>set</span> email test@adminc.om
+</span></span><span class=line><span class=cl>-&gt; Redirected to slot <span class=o>[</span>10780<span class=o>]</span> located at 127.0.0.1:7000
+</span></span><span class=line><span class=cl>OK
+</span></span><span class=line><span class=cl>127.0.0.1:7000&gt; get hello
+</span></span><span class=line><span class=cl>-&gt; Redirected to slot <span class=o>[</span>866<span class=o>]</span> located at 127.0.0.1:6000
+</span></span><span class=line><span class=cl><span class=s2>&#34;world&#34;</span>
+</span></span><span class=line><span class=cl>127.0.0.1:6000&gt; get email
+</span></span><span class=line><span class=cl>-&gt; Redirected to slot <span class=o>[</span>10780<span class=o>]</span> located at 127.0.0.1:7000
+</span></span><span class=line><span class=cl><span class=s2>&#34;test@adminc.om&#34;</span>
+</span></span></code></pre></td></tr></table></div></div><blockquote><p>提示: 使用 <code>redis-cli</code> 连接集群时加上 <code>-c</code> 参数，这样在操作时就会自动切换 <code>redis</code> 实例</p></blockquote><h2 id=增加节点 class=headerLink><a href=#%e5%a2%9e%e5%8a%a0%e8%8a%82%e7%82%b9 class=header-mark></a>增加节点</h2><p>先创建两个 redis 实例</p><ul><li>127.0.0.1:9000</li><li>127.0.0.1:9001</li></ul><p><em>将 <code>127.0.0.1:9000</code> 加入为主节点</em></p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span><span class=lnt>26
+</span><span class=lnt>27
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=o>[</span>root@localhost redis<span class=o>]</span><span class=c1># redis-cli --cluster add-node 127.0.0.1:9000 127.0.0.1:6000</span>
+</span></span><span class=line><span class=cl>&gt;&gt;&gt; Adding node 127.0.0.1:9000 to cluster 127.0.0.1:6000
+</span></span><span class=line><span class=cl>&gt;&gt;&gt; Performing Cluster Check <span class=o>(</span>using node 127.0.0.1:6000<span class=o>)</span>
+</span></span><span class=line><span class=cl>M: c9f7d10dc6d4f471a9d5660b67c44699474bba9b 127.0.0.1:6000
+</span></span><span class=line><span class=cl>   slots:<span class=o>[</span>0-5460<span class=o>]</span> <span class=o>(</span><span class=m>5461</span> slots<span class=o>)</span> master
+</span></span><span class=line><span class=cl>   <span class=m>1</span> additional replica<span class=o>(</span>s<span class=o>)</span>
+</span></span><span class=line><span class=cl>S: 2f90e0f293fcf95dada5ec3414d46f90411cd987 127.0.0.1:7001
+</span></span><span class=line><span class=cl>   slots: <span class=o>(</span><span class=m>0</span> slots<span class=o>)</span> slave
+</span></span><span class=line><span class=cl>   replicates e64e780e3a83e871daca04ddf7d4489624d97054
+</span></span><span class=line><span class=cl>M: cf12b1d7074b1ef58d9f2cd8b3c50d9bdd53c125 127.0.0.1:7000
+</span></span><span class=line><span class=cl>   slots:<span class=o>[</span>5461-10922<span class=o>]</span> <span class=o>(</span><span class=m>5462</span> slots<span class=o>)</span> master
+</span></span><span class=line><span class=cl>   <span class=m>1</span> additional replica<span class=o>(</span>s<span class=o>)</span>
+</span></span><span class=line><span class=cl>M: e64e780e3a83e871daca04ddf7d4489624d97054 127.0.0.1:8000
+</span></span><span class=line><span class=cl>   slots:<span class=o>[</span>10923-16383<span class=o>]</span> <span class=o>(</span><span class=m>5461</span> slots<span class=o>)</span> master
+</span></span><span class=line><span class=cl>   <span class=m>1</span> additional replica<span class=o>(</span>s<span class=o>)</span>
+</span></span><span class=line><span class=cl>S: 08f1fa2ecd26f2916092695a3aa5bcb4185c1eee 127.0.0.1:6001
+</span></span><span class=line><span class=cl>   slots: <span class=o>(</span><span class=m>0</span> slots<span class=o>)</span> slave
+</span></span><span class=line><span class=cl>   replicates cf12b1d7074b1ef58d9f2cd8b3c50d9bdd53c125
+</span></span><span class=line><span class=cl>S: 2d555ec571b26fe24012f126b600b2d742233574 127.0.0.1:8001
+</span></span><span class=line><span class=cl>   slots: <span class=o>(</span><span class=m>0</span> slots<span class=o>)</span> slave
+</span></span><span class=line><span class=cl>   replicates c9f7d10dc6d4f471a9d5660b67c44699474bba9b
+</span></span><span class=line><span class=cl><span class=o>[</span>OK<span class=o>]</span> All nodes agree about slots configuration.
+</span></span><span class=line><span class=cl>&gt;&gt;&gt; Check <span class=k>for</span> open slots...
+</span></span><span class=line><span class=cl>&gt;&gt;&gt; Check slots coverage...
+</span></span><span class=line><span class=cl><span class=o>[</span>OK<span class=o>]</span> All <span class=m>16384</span> slots covered.
+</span></span><span class=line><span class=cl>&gt;&gt;&gt; Send CLUSTER MEET to node 127.0.0.1:9000 to make it join the cluster.
+</span></span><span class=line><span class=cl><span class=o>[</span>OK<span class=o>]</span> New node added correctly.
+</span></span></code></pre></td></tr></table></div></div><p><em>检查集群状态</em></p><p>可以看到 <code>127.0.0.1:9000</code> 为主节点，哈希槽数当前为 <code>0</code></p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span><span class=lnt>26
+</span><span class=lnt>27
+</span><span class=lnt>28
+</span><span class=lnt>29
+</span><span class=lnt>30
+</span><span class=lnt>31
+</span><span class=lnt>32
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=o>[</span>root@localhost redis<span class=o>]</span><span class=c1># redis-cli --cluster check 127.0.0.1:6000</span>
+</span></span><span class=line><span class=cl>127.0.0.1:6000 <span class=o>(</span>c9f7d10d...<span class=o>)</span> -&gt; <span class=m>0</span> keys <span class=p>|</span> <span class=m>5461</span> slots <span class=p>|</span> <span class=m>1</span> slaves.
+</span></span><span class=line><span class=cl>127.0.0.1:9000 <span class=o>(</span>b0a13bf5...<span class=o>)</span> -&gt; <span class=m>0</span> keys <span class=p>|</span> <span class=m>0</span> slots <span class=p>|</span> <span class=m>0</span> slaves.
+</span></span><span class=line><span class=cl>127.0.0.1:7000 <span class=o>(</span>cf12b1d7...<span class=o>)</span> -&gt; <span class=m>0</span> keys <span class=p>|</span> <span class=m>5462</span> slots <span class=p>|</span> <span class=m>1</span> slaves.
+</span></span><span class=line><span class=cl>127.0.0.1:8000 <span class=o>(</span>e64e780e...<span class=o>)</span> -&gt; <span class=m>0</span> keys <span class=p>|</span> <span class=m>5461</span> slots <span class=p>|</span> <span class=m>1</span> slaves.
+</span></span><span class=line><span class=cl><span class=o>[</span>OK<span class=o>]</span> <span class=m>0</span> keys in <span class=m>4</span> masters.
+</span></span><span class=line><span class=cl>0.00 keys per slot on average.
+</span></span><span class=line><span class=cl>&gt;&gt;&gt; Performing Cluster Check <span class=o>(</span>using node 127.0.0.1:6000<span class=o>)</span>
+</span></span><span class=line><span class=cl>M: c9f7d10dc6d4f471a9d5660b67c44699474bba9b 127.0.0.1:6000
+</span></span><span class=line><span class=cl>   slots:<span class=o>[</span>0-5460<span class=o>]</span> <span class=o>(</span><span class=m>5461</span> slots<span class=o>)</span> master
+</span></span><span class=line><span class=cl>   <span class=m>1</span> additional replica<span class=o>(</span>s<span class=o>)</span>
+</span></span><span class=line><span class=cl>M: b0a13bf57d4e514cffa305c44d41a5a92858eb9a 127.0.0.1:9000
+</span></span><span class=line><span class=cl>   slots: <span class=o>(</span><span class=m>0</span> slots<span class=o>)</span> master
+</span></span><span class=line><span class=cl>S: 2f90e0f293fcf95dada5ec3414d46f90411cd987 127.0.0.1:7001
+</span></span><span class=line><span class=cl>   slots: <span class=o>(</span><span class=m>0</span> slots<span class=o>)</span> slave
+</span></span><span class=line><span class=cl>   replicates e64e780e3a83e871daca04ddf7d4489624d97054
+</span></span><span class=line><span class=cl>M: cf12b1d7074b1ef58d9f2cd8b3c50d9bdd53c125 127.0.0.1:7000
+</span></span><span class=line><span class=cl>   slots:<span class=o>[</span>5461-10922<span class=o>]</span> <span class=o>(</span><span class=m>5462</span> slots<span class=o>)</span> master
+</span></span><span class=line><span class=cl>   <span class=m>1</span> additional replica<span class=o>(</span>s<span class=o>)</span>
+</span></span><span class=line><span class=cl>M: e64e780e3a83e871daca04ddf7d4489624d97054 127.0.0.1:8000
+</span></span><span class=line><span class=cl>   slots:<span class=o>[</span>10923-16383<span class=o>]</span> <span class=o>(</span><span class=m>5461</span> slots<span class=o>)</span> master
+</span></span><span class=line><span class=cl>   <span class=m>1</span> additional replica<span class=o>(</span>s<span class=o>)</span>
+</span></span><span class=line><span class=cl>S: 08f1fa2ecd26f2916092695a3aa5bcb4185c1eee 127.0.0.1:6001
+</span></span><span class=line><span class=cl>   slots: <span class=o>(</span><span class=m>0</span> slots<span class=o>)</span> slave
+</span></span><span class=line><span class=cl>   replicates cf12b1d7074b1ef58d9f2cd8b3c50d9bdd53c125
+</span></span><span class=line><span class=cl>S: 2d555ec571b26fe24012f126b600b2d742233574 127.0.0.1:8001
+</span></span><span class=line><span class=cl>   slots: <span class=o>(</span><span class=m>0</span> slots<span class=o>)</span> slave
+</span></span><span class=line><span class=cl>   replicates c9f7d10dc6d4f471a9d5660b67c44699474bba9b
+</span></span><span class=line><span class=cl><span class=o>[</span>OK<span class=o>]</span> All nodes agree about slots configuration.
+</span></span><span class=line><span class=cl>&gt;&gt;&gt; Check <span class=k>for</span> open slots...
+</span></span><span class=line><span class=cl>&gt;&gt;&gt; Check slots coverage...
+</span></span><span class=line><span class=cl><span class=o>[</span>OK<span class=o>]</span> All <span class=m>16384</span> slots covered.
+</span></span></code></pre></td></tr></table></div></div><p><em>为 <code>127.0.0.1:9000</code> 分配哈希槽</em></p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span><span class=lnt>26
+</span><span class=lnt>27
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=o>[</span>root@localhost redis<span class=o>]</span><span class=c1># redis-cli --cluster reshard 127.0.0.1:6000</span>
+</span></span><span class=line><span class=cl>&gt;&gt;&gt; Performing Cluster Check <span class=o>(</span>using node 127.0.0.1:6000<span class=o>)</span>
+</span></span><span class=line><span class=cl>M: c9f7d10dc6d4f471a9d5660b67c44699474bba9b 127.0.0.1:6000
+</span></span><span class=line><span class=cl>   slots:<span class=o>[</span>0-5460<span class=o>]</span> <span class=o>(</span><span class=m>5461</span> slots<span class=o>)</span> master
+</span></span><span class=line><span class=cl>   <span class=m>1</span> additional replica<span class=o>(</span>s<span class=o>)</span>
+</span></span><span class=line><span class=cl>M: b0a13bf57d4e514cffa305c44d41a5a92858eb9a 127.0.0.1:9000
+</span></span><span class=line><span class=cl>   slots: <span class=o>(</span><span class=m>0</span> slots<span class=o>)</span> master
+</span></span><span class=line><span class=cl>S: 2f90e0f293fcf95dada5ec3414d46f90411cd987 127.0.0.1:7001
+</span></span><span class=line><span class=cl>   slots: <span class=o>(</span><span class=m>0</span> slots<span class=o>)</span> slave
+</span></span><span class=line><span class=cl>   replicates e64e780e3a83e871daca04ddf7d4489624d97054
+</span></span><span class=line><span class=cl>M: cf12b1d7074b1ef58d9f2cd8b3c50d9bdd53c125 127.0.0.1:7000
+</span></span><span class=line><span class=cl>   slots:<span class=o>[</span>5461-10922<span class=o>]</span> <span class=o>(</span><span class=m>5462</span> slots<span class=o>)</span> master
+</span></span><span class=line><span class=cl>   <span class=m>1</span> additional replica<span class=o>(</span>s<span class=o>)</span>
+</span></span><span class=line><span class=cl>M: e64e780e3a83e871daca04ddf7d4489624d97054 127.0.0.1:8000
+</span></span><span class=line><span class=cl>   slots:<span class=o>[</span>10923-16383<span class=o>]</span> <span class=o>(</span><span class=m>5461</span> slots<span class=o>)</span> master
+</span></span><span class=line><span class=cl>   <span class=m>1</span> additional replica<span class=o>(</span>s<span class=o>)</span>
+</span></span><span class=line><span class=cl>S: 08f1fa2ecd26f2916092695a3aa5bcb4185c1eee 127.0.0.1:6001
+</span></span><span class=line><span class=cl>   slots: <span class=o>(</span><span class=m>0</span> slots<span class=o>)</span> slave
+</span></span><span class=line><span class=cl>   replicates cf12b1d7074b1ef58d9f2cd8b3c50d9bdd53c125
+</span></span><span class=line><span class=cl>S: 2d555ec571b26fe24012f126b600b2d742233574 127.0.0.1:8001
+</span></span><span class=line><span class=cl>   slots: <span class=o>(</span><span class=m>0</span> slots<span class=o>)</span> slave
+</span></span><span class=line><span class=cl>   replicates c9f7d10dc6d4f471a9d5660b67c44699474bba9b
+</span></span><span class=line><span class=cl><span class=o>[</span>OK<span class=o>]</span> All nodes agree about slots configuration.
+</span></span><span class=line><span class=cl>&gt;&gt;&gt; Check <span class=k>for</span> open slots...
+</span></span><span class=line><span class=cl>&gt;&gt;&gt; Check slots coverage...
+</span></span><span class=line><span class=cl><span class=o>[</span>OK<span class=o>]</span> All <span class=m>16384</span> slots covered.
+</span></span><span class=line><span class=cl>How many slots <span class=k>do</span> you want to move <span class=o>(</span>from <span class=m>1</span> to 16384<span class=o>)</span>? <span class=m>4096</span>
+</span></span></code></pre></td></tr></table></div></div><blockquote><p>这里我们分配 4096 个哈希槽</p></blockquote><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>What is the receiving node ID? b0a13bf57d4e514cffa305c44d41a5a92858eb9a
+</span></span></code></pre></td></tr></table></div></div><blockquote><p>输入 <code>127.0.0.1:9000</code> 实例的 ID</p></blockquote><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>What is the receiving node ID? b0a13bf57d4e514cffa305c44d41a5a92858eb9a
+</span></span><span class=line><span class=cl>Please enter all the <span class=nb>source</span> node IDs.
+</span></span><span class=line><span class=cl>  Type <span class=s1>&#39;all&#39;</span> to use all the nodes as <span class=nb>source</span> nodes <span class=k>for</span> the <span class=nb>hash</span> slots.
+</span></span><span class=line><span class=cl>  Type <span class=s1>&#39;done&#39;</span> once you entered all the <span class=nb>source</span> nodes IDs.
+</span></span><span class=line><span class=cl>Source node <span class=c1>#1: all</span>
+</span></span></code></pre></td></tr></table></div></div><blockquote><p>输入 all , 从所有实例中转移哈希槽至 <code>127.0.0.1:9000</code> 实例</p></blockquote><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>    Moving slot <span class=m>12284</span> from e64e780e3a83e871daca04ddf7d4489624d97054
+</span></span><span class=line><span class=cl>    Moving slot <span class=m>12285</span> from e64e780e3a83e871daca04ddf7d4489624d97054
+</span></span><span class=line><span class=cl>    Moving slot <span class=m>12286</span> from e64e780e3a83e871daca04ddf7d4489624d97054
+</span></span><span class=line><span class=cl>    Moving slot <span class=m>12287</span> from e64e780e3a83e871daca04ddf7d4489624d97054
+</span></span><span class=line><span class=cl>Do you want to proceed with the proposed reshard plan <span class=o>(</span>yes/no<span class=o>)</span>? yes
+</span></span></code></pre></td></tr></table></div></div><blockquote><p>输入 yes 开始配置</p></blockquote><p><em>完成后我们检查集群状态</em></p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span><span class=lnt>26
+</span><span class=lnt>27
+</span><span class=lnt>28
+</span><span class=lnt>29
+</span><span class=lnt>30
+</span><span class=lnt>31
+</span><span class=lnt>32
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=o>[</span>root@localhost redis<span class=o>]</span><span class=c1># redis-cli --cluster check 127.0.0.1:6000</span>
+</span></span><span class=line><span class=cl>127.0.0.1:6000 <span class=o>(</span>c9f7d10d...<span class=o>)</span> -&gt; <span class=m>0</span> keys <span class=p>|</span> <span class=m>4096</span> slots <span class=p>|</span> <span class=m>1</span> slaves.
+</span></span><span class=line><span class=cl>127.0.0.1:9000 <span class=o>(</span>b0a13bf5...<span class=o>)</span> -&gt; <span class=m>0</span> keys <span class=p>|</span> <span class=m>4096</span> slots <span class=p>|</span> <span class=m>0</span> slaves.
+</span></span><span class=line><span class=cl>127.0.0.1:7000 <span class=o>(</span>cf12b1d7...<span class=o>)</span> -&gt; <span class=m>0</span> keys <span class=p>|</span> <span class=m>4096</span> slots <span class=p>|</span> <span class=m>1</span> slaves.
+</span></span><span class=line><span class=cl>127.0.0.1:8000 <span class=o>(</span>e64e780e...<span class=o>)</span> -&gt; <span class=m>0</span> keys <span class=p>|</span> <span class=m>4096</span> slots <span class=p>|</span> <span class=m>1</span> slaves.
+</span></span><span class=line><span class=cl><span class=o>[</span>OK<span class=o>]</span> <span class=m>0</span> keys in <span class=m>4</span> masters.
+</span></span><span class=line><span class=cl>0.00 keys per slot on average.
+</span></span><span class=line><span class=cl>&gt;&gt;&gt; Performing Cluster Check <span class=o>(</span>using node 127.0.0.1:6000<span class=o>)</span>
+</span></span><span class=line><span class=cl>M: c9f7d10dc6d4f471a9d5660b67c44699474bba9b 127.0.0.1:6000
+</span></span><span class=line><span class=cl>   slots:<span class=o>[</span>1365-5460<span class=o>]</span> <span class=o>(</span><span class=m>4096</span> slots<span class=o>)</span> master
+</span></span><span class=line><span class=cl>   <span class=m>1</span> additional replica<span class=o>(</span>s<span class=o>)</span>
+</span></span><span class=line><span class=cl>M: b0a13bf57d4e514cffa305c44d41a5a92858eb9a 127.0.0.1:9000
+</span></span><span class=line><span class=cl>   slots:<span class=o>[</span>0-1364<span class=o>]</span>,<span class=o>[</span>5461-6826<span class=o>]</span>,<span class=o>[</span>10923-12287<span class=o>]</span> <span class=o>(</span><span class=m>4096</span> slots<span class=o>)</span> master
+</span></span><span class=line><span class=cl>S: 2f90e0f293fcf95dada5ec3414d46f90411cd987 127.0.0.1:7001
+</span></span><span class=line><span class=cl>   slots: <span class=o>(</span><span class=m>0</span> slots<span class=o>)</span> slave
+</span></span><span class=line><span class=cl>   replicates e64e780e3a83e871daca04ddf7d4489624d97054
+</span></span><span class=line><span class=cl>M: cf12b1d7074b1ef58d9f2cd8b3c50d9bdd53c125 127.0.0.1:7000
+</span></span><span class=line><span class=cl>   slots:<span class=o>[</span>6827-10922<span class=o>]</span> <span class=o>(</span><span class=m>4096</span> slots<span class=o>)</span> master
+</span></span><span class=line><span class=cl>   <span class=m>1</span> additional replica<span class=o>(</span>s<span class=o>)</span>
+</span></span><span class=line><span class=cl>M: e64e780e3a83e871daca04ddf7d4489624d97054 127.0.0.1:8000
+</span></span><span class=line><span class=cl>   slots:<span class=o>[</span>12288-16383<span class=o>]</span> <span class=o>(</span><span class=m>4096</span> slots<span class=o>)</span> master
+</span></span><span class=line><span class=cl>   <span class=m>1</span> additional replica<span class=o>(</span>s<span class=o>)</span>
+</span></span><span class=line><span class=cl>S: 08f1fa2ecd26f2916092695a3aa5bcb4185c1eee 127.0.0.1:6001
+</span></span><span class=line><span class=cl>   slots: <span class=o>(</span><span class=m>0</span> slots<span class=o>)</span> slave
+</span></span><span class=line><span class=cl>   replicates cf12b1d7074b1ef58d9f2cd8b3c50d9bdd53c125
+</span></span><span class=line><span class=cl>S: 2d555ec571b26fe24012f126b600b2d742233574 127.0.0.1:8001
+</span></span><span class=line><span class=cl>   slots: <span class=o>(</span><span class=m>0</span> slots<span class=o>)</span> slave
+</span></span><span class=line><span class=cl>   replicates c9f7d10dc6d4f471a9d5660b67c44699474bba9b
+</span></span><span class=line><span class=cl><span class=o>[</span>OK<span class=o>]</span> All nodes agree about slots configuration.
+</span></span><span class=line><span class=cl>&gt;&gt;&gt; Check <span class=k>for</span> open slots...
+</span></span><span class=line><span class=cl>&gt;&gt;&gt; Check slots coverage...
+</span></span><span class=line><span class=cl><span class=o>[</span>OK<span class=o>]</span> All <span class=m>16384</span> slots covered.
+</span></span></code></pre></td></tr></table></div></div><blockquote><p>可以看到哈希槽已经按我们的预期分配了</p></blockquote><p><em>为 <code>127.0.0.1:9000</code> 实例指定从节点</em></p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span><span class=lnt>26
+</span><span class=lnt>27
+</span><span class=lnt>28
+</span><span class=lnt>29
+</span><span class=lnt>30
+</span><span class=lnt>31
+</span><span class=lnt>32
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=o>[</span>root@localhost redis<span class=o>]</span><span class=c1># redis-cli --cluster add-node --cluster-slave --cluster-master-id b0a13bf57d4e514cffa305c44d41a5a92858eb9a 127.0.0.1:9001 127.0.0.1:9000</span>
+</span></span><span class=line><span class=cl>&gt;&gt;&gt; Adding node 127.0.0.1:9001 to cluster 127.0.0.1:9000
+</span></span><span class=line><span class=cl>&gt;&gt;&gt; Performing Cluster Check <span class=o>(</span>using node 127.0.0.1:9000<span class=o>)</span>
+</span></span><span class=line><span class=cl>M: b0a13bf57d4e514cffa305c44d41a5a92858eb9a 127.0.0.1:9000
+</span></span><span class=line><span class=cl>   slots:<span class=o>[</span>0-1364<span class=o>]</span>,<span class=o>[</span>5461-6826<span class=o>]</span>,<span class=o>[</span>10923-12287<span class=o>]</span> <span class=o>(</span><span class=m>4096</span> slots<span class=o>)</span> master
+</span></span><span class=line><span class=cl>M: e64e780e3a83e871daca04ddf7d4489624d97054 127.0.0.1:8000
+</span></span><span class=line><span class=cl>   slots:<span class=o>[</span>12288-16383<span class=o>]</span> <span class=o>(</span><span class=m>4096</span> slots<span class=o>)</span> master
+</span></span><span class=line><span class=cl>   <span class=m>1</span> additional replica<span class=o>(</span>s<span class=o>)</span>
+</span></span><span class=line><span class=cl>S: 2f90e0f293fcf95dada5ec3414d46f90411cd987 127.0.0.1:7001
+</span></span><span class=line><span class=cl>   slots: <span class=o>(</span><span class=m>0</span> slots<span class=o>)</span> slave
+</span></span><span class=line><span class=cl>   replicates e64e780e3a83e871daca04ddf7d4489624d97054
+</span></span><span class=line><span class=cl>M: c9f7d10dc6d4f471a9d5660b67c44699474bba9b 127.0.0.1:6000
+</span></span><span class=line><span class=cl>   slots:<span class=o>[</span>1365-5460<span class=o>]</span> <span class=o>(</span><span class=m>4096</span> slots<span class=o>)</span> master
+</span></span><span class=line><span class=cl>   <span class=m>1</span> additional replica<span class=o>(</span>s<span class=o>)</span>
+</span></span><span class=line><span class=cl>S: 2d555ec571b26fe24012f126b600b2d742233574 127.0.0.1:8001
+</span></span><span class=line><span class=cl>   slots: <span class=o>(</span><span class=m>0</span> slots<span class=o>)</span> slave
+</span></span><span class=line><span class=cl>   replicates c9f7d10dc6d4f471a9d5660b67c44699474bba9b
+</span></span><span class=line><span class=cl>S: 08f1fa2ecd26f2916092695a3aa5bcb4185c1eee 127.0.0.1:6001
+</span></span><span class=line><span class=cl>   slots: <span class=o>(</span><span class=m>0</span> slots<span class=o>)</span> slave
+</span></span><span class=line><span class=cl>   replicates cf12b1d7074b1ef58d9f2cd8b3c50d9bdd53c125
+</span></span><span class=line><span class=cl>M: cf12b1d7074b1ef58d9f2cd8b3c50d9bdd53c125 127.0.0.1:7000
+</span></span><span class=line><span class=cl>   slots:<span class=o>[</span>6827-10922<span class=o>]</span> <span class=o>(</span><span class=m>4096</span> slots<span class=o>)</span> master
+</span></span><span class=line><span class=cl>   <span class=m>1</span> additional replica<span class=o>(</span>s<span class=o>)</span>
+</span></span><span class=line><span class=cl><span class=o>[</span>OK<span class=o>]</span> All nodes agree about slots configuration.
+</span></span><span class=line><span class=cl>&gt;&gt;&gt; Check <span class=k>for</span> open slots...
+</span></span><span class=line><span class=cl>&gt;&gt;&gt; Check slots coverage...
+</span></span><span class=line><span class=cl><span class=o>[</span>OK<span class=o>]</span> All <span class=m>16384</span> slots covered.
+</span></span><span class=line><span class=cl>&gt;&gt;&gt; Send CLUSTER MEET to node 127.0.0.1:9001 to make it join the cluster.
+</span></span><span class=line><span class=cl>Waiting <span class=k>for</span> the cluster to join
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>&gt;&gt;&gt; Configure node as replica of 127.0.0.1:9000.
+</span></span><span class=line><span class=cl><span class=o>[</span>OK<span class=o>]</span> New node added correctly.
+</span></span></code></pre></td></tr></table></div></div><p><em>查看集群所有节点</em></p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span><span class=lnt>7
+</span><span class=lnt>8
+</span><span class=lnt>9
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=o>[</span>root@localhost redis<span class=o>]</span><span class=c1># redis-cli -p 6000 cluster nodes</span>
+</span></span><span class=line><span class=cl>b0a13bf57d4e514cffa305c44d41a5a92858eb9a 127.0.0.1:9000@19000 master - <span class=m>0</span> <span class=m>1648200334000</span> <span class=m>7</span> connected 0-1364 5461-6826 10923-12287
+</span></span><span class=line><span class=cl>e80d70fe82df986be2e7bc39873d87dd4b02040f 127.0.0.1:9001@19001 slave b0a13bf57d4e514cffa305c44d41a5a92858eb9a <span class=m>0</span> <span class=m>1648200335385</span> <span class=m>7</span> connected
+</span></span><span class=line><span class=cl>2f90e0f293fcf95dada5ec3414d46f90411cd987 127.0.0.1:7001@17001 slave e64e780e3a83e871daca04ddf7d4489624d97054 <span class=m>0</span> <span class=m>1648200336402</span> <span class=m>5</span> connected
+</span></span><span class=line><span class=cl>c9f7d10dc6d4f471a9d5660b67c44699474bba9b 127.0.0.1:6000@16000 myself,master - <span class=m>0</span> <span class=m>1648200335000</span> <span class=m>1</span> connected 1365-5460
+</span></span><span class=line><span class=cl>cf12b1d7074b1ef58d9f2cd8b3c50d9bdd53c125 127.0.0.1:7000@17000 master - <span class=m>0</span> <span class=m>1648200334000</span> <span class=m>2</span> connected 6827-10922
+</span></span><span class=line><span class=cl>e64e780e3a83e871daca04ddf7d4489624d97054 127.0.0.1:8000@18000 master - <span class=m>0</span> <span class=m>1648200337408</span> <span class=m>3</span> connected 12288-16383
+</span></span><span class=line><span class=cl>08f1fa2ecd26f2916092695a3aa5bcb4185c1eee 127.0.0.1:6001@16001 slave cf12b1d7074b1ef58d9f2cd8b3c50d9bdd53c125 <span class=m>0</span> <span class=m>1648200333367</span> <span class=m>4</span> connected
+</span></span><span class=line><span class=cl>2d555ec571b26fe24012f126b600b2d742233574 127.0.0.1:8001@18001 slave c9f7d10dc6d4f471a9d5660b67c44699474bba9b <span class=m>0</span> <span class=m>1648200334375</span> <span class=m>6</span> connected
+</span></span></code></pre></td></tr></table></div></div></div><div class=post-footer id=post-footer><div class=post-info><div class=post-info-line><div class=post-info-mod><span>更新于 2022-03-25</span></div><div class=post-info-license></div></div><div class=post-info-line><div class=post-info-md><span><a class=link-to-mardown href=/posts/redis-cluster-2/index.md target=_blank rel="noopener noreferrer">阅读原始文档</a></span></div><div class=post-info-share><span><a href=# title="分享到 Twitter" data-sharer=twitter data-url=https://liwanggui.com/posts/redis-cluster-2/ data-title="Redis 5.x 分片集群部署" data-hashtags=redis><i class="fab fa-twitter fa-fw"></i></a><a href=# title="分享到 Facebook" data-sharer=facebook data-url=https://liwanggui.com/posts/redis-cluster-2/ data-hashtag=redis><i class="fab fa-facebook-square fa-fw"></i></a><a href=# title="分享到 WhatsApp" data-sharer=whatsapp data-url=https://liwanggui.com/posts/redis-cluster-2/ data-title="Redis 5.x 分片集群部署" data-web><i class="fab fa-whatsapp fa-fw"></i></a><a href=# title="分享到 Line" data-sharer=line data-url=https://liwanggui.com/posts/redis-cluster-2/ data-title="Redis 5.x 分片集群部署"><i data-svg-src=/lib/simple-icons/icons/line.min.svg></i></a><a href=# title="分享到 微博" data-sharer=weibo data-url=https://liwanggui.com/posts/redis-cluster-2/ data-title="Redis 5.x 分片集群部署"><i class="fab fa-weibo fa-fw"></i></a><a href=# title="分享到 Myspace" data-sharer=myspace data-url=https://liwanggui.com/posts/redis-cluster-2/ data-title="Redis 5.x 分片集群部署" data-description><i data-svg-src=/lib/simple-icons/icons/myspace.min.svg></i></a><a href=# title="分享到 Blogger" data-sharer=blogger data-url=https://liwanggui.com/posts/redis-cluster-2/ data-title="Redis 5.x 分片集群部署" data-description><i class="fab fa-blogger fa-fw"></i></a><a href=# title="分享到 百度" data-sharer=baidu data-url=https://liwanggui.com/posts/redis-cluster-2/ data-title="Redis 5.x 分片集群部署"><i data-svg-src=/lib/simple-icons/icons/baidu.min.svg></i></a><a href=# title="分享到 Evernote" data-sharer=evernote data-url=https://liwanggui.com/posts/redis-cluster-2/ data-title="Redis 5.x 分片集群部署"><i class="fab fa-evernote fa-fw"></i></a></span></div></div></div><div class=post-info-more><section class=post-tags><i class="fas fa-tags fa-fw"></i>&nbsp;<a href=/tags/redis/>redis</a></section><section><span><a href=javascript:void(0); onclick=window.history.back()>返回</a></span>&nbsp;|&nbsp;<span><a href=/>主页</a></span></section></div><div class=post-nav><a href=/posts/redis-cluster-1/ class=prev rel=prev title="Redis 4.x 分片集群部署"><i class="fas fa-angle-left fa-fw"></i>Redis 4.x 分片集群部署</a>
+<a href=/posts/firewalld/ class=next rel=next title="Firewall 防火墙">Firewall 防火墙<i class="fas fa-angle-right fa-fw"></i></a></div></div><div id=comments><div id=giscus></div><noscript>Please enable JavaScript to view the comments powered by <a href=https://giscus.app/>giscus</a>.</noscript></div></article></div></main><footer class=footer><div class=footer-container><div class=footer-line>由 <a href=https://gohugo.io/ target=_blank rel="noopener noreferrer" title="Hugo 0.101.0">Hugo</a> 强力驱动&nbsp;|&nbsp;主题 - <a href=https://github.com/HEIGE-PCloud/DoIt target=_blank rel="noopener noreferrer" title="DoIt 0.3.0"><i class="far fa-edit fa-fw"></i> DoIt</a></div><div class=footer-line><i class="far fa-copyright fa-fw"></i><span itemprop=copyrightYear>2017 - 2024</span><span class=author itemprop=copyrightHolder>&nbsp;<a href=/about/ target=_blank rel="noopener noreferrer">李王贵</a></span><span class=icp-splitter>&nbsp;|&nbsp;</span><br class=icp-br><span class=icp><a href=https://beian.miit.gov.cn target=_blank>赣ICP备2023001395号</a></span></div><div class=footer-line></div><div class=footer-line></div></div></footer></div><div id=fixed-buttons><a href=#back-to-top id=back-to-top-button class=fixed-button title=回到顶部><i class="fas fa-arrow-up fa-fw"></i>
+</a><a href=# id=view-comments class=fixed-button title=查看评论><i class="fas fa-comment fa-fw"></i></a></div><div id=cookieconsent-container></div><div class=assets><link rel=stylesheet href=/lib/lightgallery/lightgallery.min.css><link rel=stylesheet href=/lib/katex/katex.min.css><link rel=preload as=style onload='this.onload=null,this.rel="stylesheet"' href=/lib/katex/copy-tex.min.css><noscript><link rel=stylesheet href=/lib/katex/copy-tex.min.css></noscript><link rel=stylesheet href=/lib/cookieconsent/cookieconsent.min.css><script type=text/javascript>window.config={code:{copyTitle:"复制到剪贴板",maxShownLines:10},comment:{giscus:{darkTheme:"dark",dataCategory:"Announcements",dataCategoryId:"DIC_kwDOE7mEQ84CY9pq",dataEmitMetadata:"1",dataInputPosition:"top",dataLang:"zh-CN",dataMapping:"pathname",dataReactionsEnabled:"1",dataRepo:"liwanggui/liwanggui.github.io",dataRepoId:"MDEwOlJlcG9zaXRvcnkzMzA5MjUxMjM=",dataStrict:"0",lightTheme:"light"}},cookieconsent:{content:{dismiss:"同意",link:"了解更多",message:"本网站使用 Cookies 来改善您的浏览体验."},enable:!0,palette:{button:{background:"#f0f0f0"},popup:{background:"#1aa3ff"}},theme:"edgeless"},lightGallery:{actualSize:!1,exThumbImage:"data-thumbnail",hideBarsDelay:2e3,selector:".lightgallery",speed:400,thumbContHeight:80,thumbWidth:80,thumbnail:!0},math:{delimiters:[{display:!0,left:"$$",right:"$$"},{display:!0,left:"\\[",right:"\\]"},{display:!1,left:"$",right:"$"},{display:!1,left:"\\(",right:"\\)"}],strict:!1},search:{distance:100,findAllMatches:!1,fuseIndexURL:"/index.json",highlightTag:"em",ignoreFieldNorm:!1,ignoreLocation:!1,isCaseSensitive:!1,location:0,maxResultLength:10,minMatchCharLength:2,noResultsFound:"没有找到结果",snippetLength:50,threshold:.3,type:"fuse",useExtendedSearch:!1},sharerjs:!0,twemoji:!0}</script><script type=text/javascript src=/js/giscus.min.js defer></script><script type=text/javascript src=/lib/twemoji/twemoji.min.js defer></script><script type=text/javascript src=/js/twemoji.min.js defer></script><script type=text/javascript src=/lib/lightgallery/lightgallery.min.js></script><script type=text/javascript src=/lib/lightgallery/lg-thumbnail.min.js></script><script type=text/javascript src=/lib/lightgallery/lg-zoom.min.js></script><script type=text/javascript src=/lib/clipboard/clipboard.min.js></script><script type=text/javascript src=/lib/sharer/sharer.min.js></script><script type=text/javascript src=/lib/katex/katex.min.js defer></script><script type=text/javascript src=/lib/katex/auto-render.min.js defer></script><script type=text/javascript src=/lib/katex/copy-tex.min.js defer></script><script type=text/javascript src=/lib/katex/mhchem.min.js defer></script><script type=text/javascript src=/js/katex.min.js defer></script><script type=text/javascript src=/lib/cookieconsent/cookieconsent.min.js defer></script><script type=text/javascript src=/js/cookieconsent.min.js defer></script><script type=text/javascript src=/js/theme.min.js defer></script></div></body></html>

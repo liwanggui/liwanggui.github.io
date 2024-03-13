@@ -1,0 +1,271 @@
+<!doctype html><html lang=zh-cn><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><meta name=robots content="noodp"><title>部署 ElasticSearch 集群 - _浅行</title><meta name=Description content="_浅行"><meta property="og:title" content="部署 ElasticSearch 集群"><meta property="og:description" content="环境准备本文使用 Ubuntu 20.04 安装 elasticsearch 集群，准备三台机。 192.168.16.102 192.168.16.103 192.168.16.104 安装配置 elasticsearch 集群 安装 elasticsearch 1 2 3 root@ubuntu:/opt# wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-7.12.0-linux-x86_64.tar.gz root@ubuntu:/opt# tar xzf elasticsearch-7.12.0-linux-x86_64.tar.gz root@ubuntu:/opt# ln -s elasticsearch-7.12.0 elasticsearch 配置 elasticsearch 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17"><meta property="og:type" content="article"><meta property="og:url" content="https://liwanggui.com/posts/elasticsearch/"><meta property="og:image" content="https://liwanggui.com/logo.png"><meta property="article:section" content="posts"><meta property="article:published_time" content="2021-04-10T17:11:24+08:00"><meta property="article:modified_time" content="2021-04-10T17:11:24+08:00"><meta name=twitter:card content="summary_large_image"><meta name=twitter:image content="https://liwanggui.com/logo.png"><meta name=twitter:title content="部署 ElasticSearch 集群"><meta name=twitter:description content="环境准备本文使用 Ubuntu 20.04 安装 elasticsearch 集群，准备三台机。 192.168.16.102 192.168.16.103 192.168.16.104 安装配置 elasticsearch 集群 安装 elasticsearch 1 2 3 root@ubuntu:/opt# wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-7.12.0-linux-x86_64.tar.gz root@ubuntu:/opt# tar xzf elasticsearch-7.12.0-linux-x86_64.tar.gz root@ubuntu:/opt# ln -s elasticsearch-7.12.0 elasticsearch 配置 elasticsearch 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17"><meta name=application-name content="LoveIt"><meta name=apple-mobile-web-app-title content="LoveIt"><meta name=theme-color content="#f8f8f8"><meta name=msapplication-TileColor content="#da532c"><link rel=canonical href=https://liwanggui.com/posts/elasticsearch/><link rel=prev href=https://liwanggui.com/posts/nginx-auth-basic/><link rel=next href=https://liwanggui.com/posts/filebeat/><link rel=stylesheet href=/lib/normalize/normalize.min.css><link rel=stylesheet href=/css/color.css><link rel=stylesheet href=/css/style.min.css><link rel=preload as=style onload='this.onload=null,this.rel="stylesheet"' href=/lib/fontawesome-free/all.min.css><noscript><link rel=stylesheet href=/lib/fontawesome-free/all.min.css></noscript><link rel=preload as=style onload='this.onload=null,this.rel="stylesheet"' href=/lib/animate/animate.min.css><noscript><link rel=stylesheet href=/lib/animate/animate.min.css></noscript><script type=application/ld+json>{"@context":"http://schema.org","@type":"BlogPosting","headline":"部署 ElasticSearch 集群","inLanguage":"zh-CN","mainEntityOfPage":{"@type":"WebPage","@id":"https:\/\/liwanggui.com\/posts\/elasticsearch\/"},"genre":"posts","keywords":"elasticsearch","wordcount":969,"url":"https:\/\/liwanggui.com\/posts\/elasticsearch\/","datePublished":"2021-04-10T17:11:24+08:00","dateModified":"2021-04-10T17:11:24+08:00","publisher":{"@type":"Organization","name":""},"author":{"@type":"Person","name":"李王贵"},"description":""}</script><script src=//instant.page/5.1.1 defer type=module integrity=sha384-MWfCL6g1OTGsbSwfuMHc8+8J2u71/LA8dzlIN3ycajckxuZZmF+DNjdm7O6H3PSq></script></head><body header-desktop=fixed header-mobile=auto><script type=text/javascript>function setTheme(e){document.body.setAttribute("theme",e),document.documentElement.style.setProperty("color-scheme",e==="light"?"light":"dark")}function saveTheme(e){window.localStorage&&localStorage.setItem("theme",e)}function getMeta(e){const t=document.getElementsByTagName("meta");for(let n=0;n<t.length;n++)if(t[n].getAttribute("name")===e)return t[n];return""}if(window.localStorage&&localStorage.getItem("theme")){let e=localStorage.getItem("theme");e==="light"||e==="dark"||e==="black"?setTheme(e):setTheme(window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light")}else"auto"==="light"||"auto"==="dark"||"auto"==="black"?(setTheme("auto"),saveTheme("auto")):(saveTheme("auto"),setTheme(window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"));let metaColors={light:"#f8f8f8",dark:"#252627",black:"#000000"};getMeta("theme-color").content=metaColors[document.body.getAttribute("theme")]</script><div id=back-to-top></div><div id=mask></div><div class=wrapper><header class=desktop id=header-desktop><div class=header-wrapper><div class=header-title><a href=/ title=_浅行><span class=header-title-pre><i class='far fa-kiss-wink-heart fa-fw'></i></span>_浅行</a></div><div class=menu><div class=menu-inner><a class=menu-item href=/posts/ title=文章列表>文章 </a><a class=menu-item href=/tags/ title=标签云>标签 </a><a class=menu-item href=/categories/ title=分类>分类 </a><a class=menu-item href=https://cook.liwanggui.com/ title=程序员做饭指南 rel="noopener noreferrer" target=_blank>烹饪 </a><a class=menu-item href=/about/index.html title=关于>关于 </a><span class="menu-item delimiter"></span><span class="menu-item search" id=search-desktop>
+<input type=text placeholder=搜索文章标题或内容... id=search-input-desktop>
+<a href=# class="search-button search-toggle" id=search-toggle-desktop title=搜索><i class="fas fa-search fa-fw"></i></a>
+<a href=# class="search-button search-clear" id=search-clear-desktop title=清空><i class="fas fa-times-circle fa-fw"></i></a>
+<span class="search-button search-loading" id=search-loading-desktop><i class="fas fa-spinner fa-fw fa-spin"></i></span>
+</span><a href=# class="menu-item theme-switch" title=切换主题><i class="fas fa-adjust fa-fw"></i></a></div></div></div></header><header class=mobile id=header-mobile><div class=header-container><div class=header-wrapper><div class=header-title><a href=/ title=_浅行><span class=header-title-pre><i class='far fa-kiss-wink-heart fa-fw'></i></span>_浅行</a></div><div class=menu-toggle id=menu-toggle-mobile><span></span><span></span><span></span></div></div><div class=menu id=menu-mobile><div class=search-wrapper><div class="search mobile" id=search-mobile><input type=text placeholder=搜索文章标题或内容... id=search-input-mobile>
+<a href=# class="search-button search-toggle" id=search-toggle-mobile title=搜索><i class="fas fa-search fa-fw"></i></a>
+<a href=# class="search-button search-clear" id=search-clear-mobile title=清空><i class="fas fa-times-circle fa-fw"></i></a>
+<span class="search-button search-loading" id=search-loading-mobile><i class="fas fa-spinner fa-fw fa-spin"></i></span></div><a href=# class=search-cancel id=search-cancel-mobile>取消</a></div><a class=menu-item href=/posts/ title=文章列表>文章</a><a class=menu-item href=/tags/ title=标签云>标签</a><a class=menu-item href=/categories/ title=分类>分类</a><a class=menu-item href=https://cook.liwanggui.com/ title=程序员做饭指南 rel="noopener noreferrer" target=_blank>烹饪</a><a class=menu-item href=/about/index.html title=关于>关于</a><a href=# class="menu-item theme-switch" title=切换主题>
+<i class="fas fa-adjust fa-fw"></i></a></div></div></header><div class="search-dropdown desktop"><div id=search-dropdown-desktop></div></div><div class="search-dropdown mobile"><div id=search-dropdown-mobile></div></div><main class=main><div class=container><div class=toc id=toc-auto><h2 class=toc-title>目录</h2><div class=toc-content id=toc-content-auto><nav id=TableOfContents><ul><li><a href=#环境准备>环境准备</a></li><li><a href=#安装配置-elasticsearch-集群>安装配置 elasticsearch 集群</a><ul><li><a href=#安装-elasticsearch>安装 elasticsearch</a></li><li><a href=#配置-elasticsearch>配置 elasticsearch</a></li><li><a href=#系统配置>系统配置</a></li><li><a href=#启动-elasticsearch-服务>启动 elasticsearch 服务</a></li></ul></li><li><a href=#elasticsearch-安全验证>elasticsearch 安全验证</a></li><li><a href=#重置-elasticsearch-密码>重置 elasticsearch 密码</a></li></ul></nav></div></div><script>document.getElementsByTagName("main")[0].setAttribute("pageStyle","normal")</script><script>document.getElementsByTagName("main")[0].setAttribute("autoTOC","true")</script><article class="page single"><h1 class="single-title animate__animated animate__flipInX">部署 ElasticSearch 集群</h1><div class=post-meta><div class=post-meta-line><span class=post-author><i class="author fas fa-user-circle fa-fw"></i><a href=/about/ title=Author rel=author class=author>李王贵</a>
+</span>&nbsp;<span class=post-category>收录于 </span>&nbsp;<span class=post-category>类别 <a href=/categories/devops/><i class="far fa-folder fa-fw"></i>devops</a>&nbsp;<a href=/categories/elasticstack/><i class="far fa-folder fa-fw"></i>elasticstack</a></span></div><div class=post-meta-line><i class="far fa-calendar-alt fa-fw"></i>&nbsp;<time datetime=2021-04-10>2021-04-10</time>&nbsp;<i class="far fa-edit fa-fw"></i>&nbsp;<time datetime=2021-04-10>2021-04-10</time>&nbsp;<i class="fas fa-pencil-alt fa-fw"></i>&nbsp;约 969 字&nbsp;
+<i class="far fa-clock fa-fw"></i>&nbsp;预计阅读 2 分钟&nbsp;</div></div><div class="details toc" id=toc-static kept><div class="details-summary toc-title"><span>目录</span>
+<span><i class="details-icon fas fa-angle-right"></i></span></div><div class="details-content toc-content" id=toc-content-static><nav id=TableOfContents><ul><li><a href=#环境准备>环境准备</a></li><li><a href=#安装配置-elasticsearch-集群>安装配置 elasticsearch 集群</a><ul><li><a href=#安装-elasticsearch>安装 elasticsearch</a></li><li><a href=#配置-elasticsearch>配置 elasticsearch</a></li><li><a href=#系统配置>系统配置</a></li><li><a href=#启动-elasticsearch-服务>启动 elasticsearch 服务</a></li></ul></li><li><a href=#elasticsearch-安全验证>elasticsearch 安全验证</a></li><li><a href=#重置-elasticsearch-密码>重置 elasticsearch 密码</a></li></ul></nav></div></div><div class=content id=content><h2 id=环境准备 class=headerLink><a href=#%e7%8e%af%e5%a2%83%e5%87%86%e5%a4%87 class=header-mark></a>环境准备</h2><p>本文使用 Ubuntu 20.04 安装 elasticsearch 集群，准备三台机。</p><ul><li>192.168.16.102</li><li>192.168.16.103</li><li>192.168.16.104</li></ul><h2 id=安装配置-elasticsearch-集群 class=headerLink><a href=#%e5%ae%89%e8%a3%85%e9%85%8d%e7%bd%ae-elasticsearch-%e9%9b%86%e7%be%a4 class=header-mark></a>安装配置 elasticsearch 集群</h2><h3 id=安装-elasticsearch class=headerLink><a href=#%e5%ae%89%e8%a3%85-elasticsearch class=header-mark></a>安装 elasticsearch</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>root@ubuntu:/opt# wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-7.12.0-linux-x86_64.tar.gz
+</span></span><span class=line><span class=cl>root@ubuntu:/opt# tar xzf elasticsearch-7.12.0-linux-x86_64.tar.gz
+</span></span><span class=line><span class=cl>root@ubuntu:/opt# ln -s elasticsearch-7.12.0 elasticsearch
+</span></span></code></pre></td></tr></table></div></div><h3 id=配置-elasticsearch class=headerLink><a href=#%e9%85%8d%e7%bd%ae-elasticsearch class=header-mark></a>配置 elasticsearch</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span><span class=lnt>26
+</span><span class=lnt>27
+</span><span class=lnt>28
+</span><span class=lnt>29
+</span><span class=lnt>30
+</span><span class=lnt>31
+</span><span class=lnt>32
+</span><span class=lnt>33
+</span><span class=lnt>34
+</span><span class=lnt>35
+</span><span class=lnt>36
+</span><span class=lnt>37
+</span><span class=lnt>38
+</span><span class=lnt>39
+</span><span class=lnt>40
+</span><span class=lnt>41
+</span><span class=lnt>42
+</span><span class=lnt>43
+</span><span class=lnt>44
+</span><span class=lnt>45
+</span><span class=lnt>46
+</span><span class=lnt>47
+</span><span class=lnt>48
+</span><span class=lnt>49
+</span><span class=lnt>50
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>root@ubuntu:/opt# <span class=nb>cd</span> elasticsearch/config
+</span></span><span class=line><span class=cl>root@ubuntu:/opt/elasticsearch/config# cat &gt; elasticsearch.yml <span class=s>&lt;&lt;EOF
+</span></span></span><span class=line><span class=cl><span class=s># 集群名
+</span></span></span><span class=line><span class=cl><span class=s>cluster.name: my-application
+</span></span></span><span class=line><span class=cl><span class=s># 集群内同时启动的数据任务个数，默认是2个
+</span></span></span><span class=line><span class=cl><span class=s>cluster.routing.allocation.cluster_concurrent_rebalance: 16
+</span></span></span><span class=line><span class=cl><span class=s># 添加或删除节点为及负载均衡时并发恢复的线程个数，默认是4个
+</span></span></span><span class=line><span class=cl><span class=s>cluster.routing.allocation.node_concurrent_recoveries: 16
+</span></span></span><span class=line><span class=cl><span class=s># 初始化数据恢复时，并发恢复线程的个数，默认4个
+</span></span></span><span class=line><span class=cl><span class=s>cluster.routing.allocation.node_initial_primaries_recoveries: 16
+</span></span></span><span class=line><span class=cl><span class=s>
+</span></span></span><span class=line><span class=cl><span class=s># 节点名
+</span></span></span><span class=line><span class=cl><span class=s>node.name: node-1
+</span></span></span><span class=line><span class=cl><span class=s># 是否有资格成为主节点
+</span></span></span><span class=line><span class=cl><span class=s>node.master: true
+</span></span></span><span class=line><span class=cl><span class=s># 是否为数据节点
+</span></span></span><span class=line><span class=cl><span class=s>node.data: true
+</span></span></span><span class=line><span class=cl><span class=s>
+</span></span></span><span class=line><span class=cl><span class=s>path.data: /data/elasticsearch/data
+</span></span></span><span class=line><span class=cl><span class=s>path.logs: /data/elasticsearch/logs
+</span></span></span><span class=line><span class=cl><span class=s>
+</span></span></span><span class=line><span class=cl><span class=s># 监听的网络地址
+</span></span></span><span class=line><span class=cl><span class=s>network.host: 0.0.0.0
+</span></span></span><span class=line><span class=cl><span class=s>network.tcp.keep_alive: true
+</span></span></span><span class=line><span class=cl><span class=s>network.tcp.no_delay: true
+</span></span></span><span class=line><span class=cl><span class=s>
+</span></span></span><span class=line><span class=cl><span class=s>transport.tcp.compress: true
+</span></span></span><span class=line><span class=cl><span class=s>gateway.recover_after_nodes: 2
+</span></span></span><span class=line><span class=cl><span class=s>
+</span></span></span><span class=line><span class=cl><span class=s># 用于 HTTP 客户端通信的端口
+</span></span></span><span class=line><span class=cl><span class=s>http.port: 9200
+</span></span></span><span class=line><span class=cl><span class=s>
+</span></span></span><span class=line><span class=cl><span class=s># 用于节点之间通信的端口
+</span></span></span><span class=line><span class=cl><span class=s>transport.port: 9300
+</span></span></span><span class=line><span class=cl><span class=s>
+</span></span></span><span class=line><span class=cl><span class=s># head 管理插件需要打开跨域配置
+</span></span></span><span class=line><span class=cl><span class=s>http.cors.allow-origin: &#34;*&#34;
+</span></span></span><span class=line><span class=cl><span class=s>http.cors.enabled: true
+</span></span></span><span class=line><span class=cl><span class=s>http.max_content_length: 200mb
+</span></span></span><span class=line><span class=cl><span class=s>
+</span></span></span><span class=line><span class=cl><span class=s># 节点发现
+</span></span></span><span class=line><span class=cl><span class=s>discovery.seed_hosts: [&#34;192.168.16.102:9300&#34;,&#34;192.168.16.103:9300&#34;,&#34;192.168.16.104:9300&#34;]
+</span></span></span><span class=line><span class=cl><span class=s>
+</span></span></span><span class=line><span class=cl><span class=s># 初始化一个集群时需要此配置来选举 master
+</span></span></span><span class=line><span class=cl><span class=s>cluster.initial_master_nodes: [&#34;node-1&#34;]
+</span></span></span><span class=line><span class=cl><span class=s>EOF</span>
+</span></span><span class=line><span class=cl><span class=c1># 配置 jvm 堆内存大小</span>
+</span></span><span class=line><span class=cl>root@ubuntu:/opt/elasticsearch/config# grep <span class=s1>&#39;^-Xm&#39;</span> jvm.options
+</span></span><span class=line><span class=cl>-Xms4g
+</span></span><span class=line><span class=cl>-Xmx4g
+</span></span></code></pre></td></tr></table></div></div><h3 id=系统配置 class=headerLink><a href=#%e7%b3%bb%e7%bb%9f%e9%85%8d%e7%bd%ae class=header-mark></a>系统配置</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>root@ubuntu:/opt/elasticsearch# useradd -m -s /bin/bash elasticsearch
+</span></span><span class=line><span class=cl>root@ubuntu:/opt/elasticsearch# mkdir -p /data/elasticsearch/<span class=o>{</span>data,logs<span class=o>}</span>
+</span></span><span class=line><span class=cl>root@ubuntu:/opt/elasticsearch# chown -R elasticsearch.elasticsearch /data/elasticsearch
+</span></span><span class=line><span class=cl>root@ubuntu:/opt/elasticsearch# chown -R elasticsearch.elasticsearch /opt/elasticsearch-7.12.0
+</span></span><span class=line><span class=cl>root@ubuntu:/opt/elasticsearch/config# cat &gt;&gt; /etc/security/limits.conf <span class=s>&lt;&lt;EOF
+</span></span></span><span class=line><span class=cl><span class=s>*   soft   nproc   unlimited
+</span></span></span><span class=line><span class=cl><span class=s>*   hard   nproc   unlimited
+</span></span></span><span class=line><span class=cl><span class=s>*   soft   core    unlimited
+</span></span></span><span class=line><span class=cl><span class=s>*   soft   nofile  65535
+</span></span></span><span class=line><span class=cl><span class=s>*   hard   nofile  65535
+</span></span></span><span class=line><span class=cl><span class=s>EOF</span>
+</span></span><span class=line><span class=cl>root@ubuntu:/opt/elasticsearch/config# <span class=nb>echo</span> <span class=s1>&#39;vm.max_map_count=262144&#39;</span> &gt;&gt; /etc/sysctl.conf
+</span></span><span class=line><span class=cl>root@ubuntu:/opt/elasticsearch/config# sysctl -p
+</span></span></code></pre></td></tr></table></div></div><h3 id=启动-elasticsearch-服务 class=headerLink><a href=#%e5%90%af%e5%8a%a8-elasticsearch-%e6%9c%8d%e5%8a%a1 class=header-mark></a>启动 elasticsearch 服务</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>root@ubuntu:~# su - elasticsearch
+</span></span><span class=line><span class=cl>elasticsearch@ubuntu:~$ <span class=nb>cd</span> /opt/elasticsearch
+</span></span><span class=line><span class=cl>elasticsearch@ubuntu:/opt/elasticsearch$ ./bin/elasticsearch
+</span></span></code></pre></td></tr></table></div></div><blockquote><p><code>elasticsearch</code> 默认不允许使用 <code>root</code> 用户启动， 需要切换至 <code>elasticsearch</code> 用户启动； <code>-d</code> 选项可以将程序设置为守护进程</p></blockquote><blockquote><p>提示：以相同的操作方法配置另两台节点，注意节点名不要重复</p></blockquote><h2 id=elasticsearch-安全验证 class=headerLink><a href=#elasticsearch-%e5%ae%89%e5%85%a8%e9%aa%8c%e8%af%81 class=header-mark></a>elasticsearch 安全验证</h2><p>elasticsearch 7.7 以后的版本将安全认证功能免费开放了。 并将 X-pack 插件集成了到了开源的 ElasticSearch 版本中。下面介绍如何利用 X-pack 给 ElasticSearch 相关组件设置用户名和密码</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span><span class=lnt>26
+</span><span class=lnt>27
+</span><span class=lnt>28
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=c1># 配置 xpack, 启用验证功能</span>
+</span></span><span class=line><span class=cl>root@ubuntu:/opt/elasticsearch# cat &gt;&gt;config/elasticsearch.yml <span class=s>&lt;&lt;EOF
+</span></span></span><span class=line><span class=cl><span class=s>xpack.security.enabled: true
+</span></span></span><span class=line><span class=cl><span class=s>xpack.security.transport.ssl.enabled: true
+</span></span></span><span class=line><span class=cl><span class=s>EOF</span>
+</span></span><span class=line><span class=cl><span class=c1># 重启 elasticsearch 服务</span>
+</span></span><span class=line><span class=cl>root@ubuntu:/opt/elasticsearch# <span class=nb>kill</span> &lt;elasticsearch-pid&gt;
+</span></span><span class=line><span class=cl>root@ubuntu:/opt/elasticsearch# su - elasticsearch
+</span></span><span class=line><span class=cl>elasticsearch@ubuntu:~$ <span class=nb>cd</span> /opt/elasticsearch
+</span></span><span class=line><span class=cl>elasticsearch@ubuntu:/opt/elasticsearch$ ./bin/elasticsearch -d
+</span></span><span class=line><span class=cl><span class=c1># 使用交互命令行模式配置验证密码</span>
+</span></span><span class=line><span class=cl>elasticsearch@ubuntu:/opt/elasticsearch$ ./bin/elasticsearch-setup-passwords interactive
+</span></span><span class=line><span class=cl>Initiating the setup of passwords <span class=k>for</span> reserved users elastic,apm_system,kibana,kibana_system,logstash_system,beats_system,remote_monitoring_user.
+</span></span><span class=line><span class=cl>You will be prompted to enter passwords as the process progresses.
+</span></span><span class=line><span class=cl>Please confirm that you would like to <span class=k>continue</span> <span class=o>[</span>y/N<span class=o>]</span>y
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Enter password <span class=k>for</span> <span class=o>[</span>elastic<span class=o>]</span>:
+</span></span><span class=line><span class=cl>Reenter password <span class=k>for</span> <span class=o>[</span>elastic<span class=o>]</span>:
+</span></span><span class=line><span class=cl>Enter password <span class=k>for</span> <span class=o>[</span>apm_system<span class=o>]</span>:
+</span></span><span class=line><span class=cl>Reenter password <span class=k>for</span> <span class=o>[</span>apm_system<span class=o>]</span>:
+</span></span><span class=line><span class=cl>Enter password <span class=k>for</span> <span class=o>[</span>kibana_system<span class=o>]</span>:
+</span></span><span class=line><span class=cl>Reenter password <span class=k>for</span> <span class=o>[</span>kibana_system<span class=o>]</span>:
+</span></span><span class=line><span class=cl>Enter password <span class=k>for</span> <span class=o>[</span>logstash_system<span class=o>]</span>:
+</span></span><span class=line><span class=cl>Reenter password <span class=k>for</span> <span class=o>[</span>logstash_system<span class=o>]</span>:
+</span></span><span class=line><span class=cl>Enter password <span class=k>for</span> <span class=o>[</span>beats_system<span class=o>]</span>:
+</span></span><span class=line><span class=cl>Reenter password <span class=k>for</span> <span class=o>[</span>beats_system<span class=o>]</span>:
+</span></span><span class=line><span class=cl>Enter password <span class=k>for</span> <span class=o>[</span>remote_monitoring_user<span class=o>]</span>:
+</span></span><span class=line><span class=cl>Reenter password <span class=k>for</span> <span class=o>[</span>remote_monitoring_user<span class=o>]</span>:
+</span></span></code></pre></td></tr></table></div></div><blockquote><p>到此已经完成ES及相关组件的加密了, 后续访问和使用相关组件都需要验证用户名和密码了 (<code>请记好你配置的密码</code>)</p></blockquote><blockquote><p>验证密码信息存储在 <code>.security-7</code> 索引中</p></blockquote><p><em>不带密码访问时</em></p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>root@ubuntu:~# curl -I localhost:9200
+</span></span><span class=line><span class=cl>HTTP/1.1 <span class=m>401</span> Unauthorized
+</span></span><span class=line><span class=cl>WWW-Authenticate: Basic <span class=nv>realm</span><span class=o>=</span><span class=s2>&#34;security&#34;</span> <span class=nv>charset</span><span class=o>=</span><span class=s2>&#34;UTF-8&#34;</span>
+</span></span><span class=line><span class=cl>content-type: application/json<span class=p>;</span> <span class=nv>charset</span><span class=o>=</span>UTF-8
+</span></span><span class=line><span class=cl>content-length: <span class=m>381</span>
+</span></span></code></pre></td></tr></table></div></div><p><em>带密码访问</em></p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>root@ubuntu:~#  curl -i localhost:9200 -u elastic:JEd01cn6hj0qm2mO
+</span></span><span class=line><span class=cl>HTTP/1.1 <span class=m>200</span> OK
+</span></span><span class=line><span class=cl>content-type: application/json<span class=p>;</span> <span class=nv>charset</span><span class=o>=</span>UTF-8
+</span></span><span class=line><span class=cl>content-length: <span class=m>530</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=o>{</span>
+</span></span><span class=line><span class=cl>  <span class=s2>&#34;name&#34;</span> : <span class=s2>&#34;node-1&#34;</span>,
+</span></span><span class=line><span class=cl>  <span class=s2>&#34;cluster_name&#34;</span> : <span class=s2>&#34;my-application&#34;</span>,
+</span></span><span class=line><span class=cl>  <span class=s2>&#34;cluster_uuid&#34;</span> : <span class=s2>&#34;G6jxloWFR1SpCJ5cqb4EKA&#34;</span>,
+</span></span><span class=line><span class=cl>  <span class=s2>&#34;version&#34;</span> : <span class=o>{</span>
+</span></span><span class=line><span class=cl>    <span class=s2>&#34;number&#34;</span> : <span class=s2>&#34;7.12.0&#34;</span>,
+</span></span><span class=line><span class=cl>    <span class=s2>&#34;build_flavor&#34;</span> : <span class=s2>&#34;default&#34;</span>,
+</span></span><span class=line><span class=cl>    <span class=s2>&#34;build_type&#34;</span> : <span class=s2>&#34;tar&#34;</span>,
+</span></span><span class=line><span class=cl>    <span class=s2>&#34;build_hash&#34;</span> : <span class=s2>&#34;78722783c38caa25a70982b5b042074cde5d3b3a&#34;</span>,
+</span></span><span class=line><span class=cl>    <span class=s2>&#34;build_date&#34;</span> : <span class=s2>&#34;2021-03-18T06:17:15.410153305Z&#34;</span>,
+</span></span><span class=line><span class=cl>    <span class=s2>&#34;build_snapshot&#34;</span> : false,
+</span></span><span class=line><span class=cl>    <span class=s2>&#34;lucene_version&#34;</span> : <span class=s2>&#34;8.8.0&#34;</span>,
+</span></span><span class=line><span class=cl>    <span class=s2>&#34;minimum_wire_compatibility_version&#34;</span> : <span class=s2>&#34;6.8.0&#34;</span>,
+</span></span><span class=line><span class=cl>    <span class=s2>&#34;minimum_index_compatibility_version&#34;</span> : <span class=s2>&#34;6.0.0-beta1&#34;</span>
+</span></span><span class=line><span class=cl>  <span class=o>}</span>,
+</span></span><span class=line><span class=cl>  <span class=s2>&#34;tagline&#34;</span> : <span class=s2>&#34;You Know, for Search&#34;</span>
+</span></span><span class=line><span class=cl><span class=o>}</span>
+</span></span></code></pre></td></tr></table></div></div><h2 id=重置-elasticsearch-密码 class=headerLink><a href=#%e9%87%8d%e7%bd%ae-elasticsearch-%e5%af%86%e7%a0%81 class=header-mark></a>重置 elasticsearch 密码</h2><ul><li>官方文档: <a href=https://www.elastic.co/guide/en/elasticsearch/reference/7.4/security-api-change-password.html target=_blank rel="noopener noreferrer">https://www.elastic.co/guide/en/elasticsearch/reference/7.4/security-api-change-password.html</a></li></ul><p><em>修改 <code>elastic</code> 用户的密码</em></p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>root@ubuntu:~# curl -X POST localhost:9200/_security/user/elastic/_password <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>-d <span class=s1>&#39;{&#34;password&#34;:&#34;123456&#34;}&#39;</span> <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>-u elastic:JEd01cn6hj0qm2mO <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>-H <span class=s1>&#39;content-type: application/json&#39;</span>
+</span></span></code></pre></td></tr></table></div></div><blockquote><p>也可以使用 <code>./bin/elasticsearch-setup-passwords interactive</code> 命令重新设置</p></blockquote></div><div class=post-footer id=post-footer><div class=post-info><div class=post-info-line><div class=post-info-mod><span>更新于 2021-04-10</span></div><div class=post-info-license></div></div><div class=post-info-line><div class=post-info-md><span><a class=link-to-mardown href=/posts/elasticsearch/index.md target=_blank rel="noopener noreferrer">阅读原始文档</a></span></div><div class=post-info-share><span><a href=# title="分享到 Twitter" data-sharer=twitter data-url=https://liwanggui.com/posts/elasticsearch/ data-title="部署 ElasticSearch 集群" data-hashtags=elasticsearch><i class="fab fa-twitter fa-fw"></i></a><a href=# title="分享到 Facebook" data-sharer=facebook data-url=https://liwanggui.com/posts/elasticsearch/ data-hashtag=elasticsearch><i class="fab fa-facebook-square fa-fw"></i></a><a href=# title="分享到 WhatsApp" data-sharer=whatsapp data-url=https://liwanggui.com/posts/elasticsearch/ data-title="部署 ElasticSearch 集群" data-web><i class="fab fa-whatsapp fa-fw"></i></a><a href=# title="分享到 Line" data-sharer=line data-url=https://liwanggui.com/posts/elasticsearch/ data-title="部署 ElasticSearch 集群"><i data-svg-src=/lib/simple-icons/icons/line.min.svg></i></a><a href=# title="分享到 微博" data-sharer=weibo data-url=https://liwanggui.com/posts/elasticsearch/ data-title="部署 ElasticSearch 集群"><i class="fab fa-weibo fa-fw"></i></a><a href=# title="分享到 Myspace" data-sharer=myspace data-url=https://liwanggui.com/posts/elasticsearch/ data-title="部署 ElasticSearch 集群" data-description><i data-svg-src=/lib/simple-icons/icons/myspace.min.svg></i></a><a href=# title="分享到 Blogger" data-sharer=blogger data-url=https://liwanggui.com/posts/elasticsearch/ data-title="部署 ElasticSearch 集群" data-description><i class="fab fa-blogger fa-fw"></i></a><a href=# title="分享到 百度" data-sharer=baidu data-url=https://liwanggui.com/posts/elasticsearch/ data-title="部署 ElasticSearch 集群"><i data-svg-src=/lib/simple-icons/icons/baidu.min.svg></i></a><a href=# title="分享到 Evernote" data-sharer=evernote data-url=https://liwanggui.com/posts/elasticsearch/ data-title="部署 ElasticSearch 集群"><i class="fab fa-evernote fa-fw"></i></a></span></div></div></div><div class=post-info-more><section class=post-tags><i class="fas fa-tags fa-fw"></i>&nbsp;<a href=/tags/elasticsearch/>elasticsearch</a></section><section><span><a href=javascript:void(0); onclick=window.history.back()>返回</a></span>&nbsp;|&nbsp;<span><a href=/>主页</a></span></section></div><div class=post-nav><a href=/posts/nginx-auth-basic/ class=prev rel=prev title="nginx - 基础身份验证 (auth_basic)"><i class="fas fa-angle-left fa-fw"></i>nginx - 基础身份验证 (auth_basic)</a>
+<a href=/posts/filebeat/ class=next rel=next title="使用 Filebeat 收集 nginx 日志">使用 Filebeat 收集 nginx 日志<i class="fas fa-angle-right fa-fw"></i></a></div></div><div id=comments><div id=giscus></div><noscript>Please enable JavaScript to view the comments powered by <a href=https://giscus.app/>giscus</a>.</noscript></div></article></div></main><footer class=footer><div class=footer-container><div class=footer-line>由 <a href=https://gohugo.io/ target=_blank rel="noopener noreferrer" title="Hugo 0.101.0">Hugo</a> 强力驱动&nbsp;|&nbsp;主题 - <a href=https://github.com/HEIGE-PCloud/DoIt target=_blank rel="noopener noreferrer" title="DoIt 0.3.0"><i class="far fa-edit fa-fw"></i> DoIt</a></div><div class=footer-line><i class="far fa-copyright fa-fw"></i><span itemprop=copyrightYear>2017 - 2024</span><span class=author itemprop=copyrightHolder>&nbsp;<a href=/about/ target=_blank rel="noopener noreferrer">李王贵</a></span><span class=icp-splitter>&nbsp;|&nbsp;</span><br class=icp-br><span class=icp><a href=https://beian.miit.gov.cn target=_blank>赣ICP备2023001395号</a></span></div><div class=footer-line></div><div class=footer-line></div></div></footer></div><div id=fixed-buttons><a href=#back-to-top id=back-to-top-button class=fixed-button title=回到顶部><i class="fas fa-arrow-up fa-fw"></i>
+</a><a href=# id=view-comments class=fixed-button title=查看评论><i class="fas fa-comment fa-fw"></i></a></div><div id=cookieconsent-container></div><div class=assets><link rel=stylesheet href=/lib/lightgallery/lightgallery.min.css><link rel=stylesheet href=/lib/katex/katex.min.css><link rel=preload as=style onload='this.onload=null,this.rel="stylesheet"' href=/lib/katex/copy-tex.min.css><noscript><link rel=stylesheet href=/lib/katex/copy-tex.min.css></noscript><link rel=stylesheet href=/lib/cookieconsent/cookieconsent.min.css><script type=text/javascript>window.config={code:{copyTitle:"复制到剪贴板",maxShownLines:10},comment:{giscus:{darkTheme:"dark",dataCategory:"Announcements",dataCategoryId:"DIC_kwDOE7mEQ84CY9pq",dataEmitMetadata:"1",dataInputPosition:"top",dataLang:"zh-CN",dataMapping:"pathname",dataReactionsEnabled:"1",dataRepo:"liwanggui/liwanggui.github.io",dataRepoId:"MDEwOlJlcG9zaXRvcnkzMzA5MjUxMjM=",dataStrict:"0",lightTheme:"light"}},cookieconsent:{content:{dismiss:"同意",link:"了解更多",message:"本网站使用 Cookies 来改善您的浏览体验."},enable:!0,palette:{button:{background:"#f0f0f0"},popup:{background:"#1aa3ff"}},theme:"edgeless"},lightGallery:{actualSize:!1,exThumbImage:"data-thumbnail",hideBarsDelay:2e3,selector:".lightgallery",speed:400,thumbContHeight:80,thumbWidth:80,thumbnail:!0},math:{delimiters:[{display:!0,left:"$$",right:"$$"},{display:!0,left:"\\[",right:"\\]"},{display:!1,left:"$",right:"$"},{display:!1,left:"\\(",right:"\\)"}],strict:!1},search:{distance:100,findAllMatches:!1,fuseIndexURL:"/index.json",highlightTag:"em",ignoreFieldNorm:!1,ignoreLocation:!1,isCaseSensitive:!1,location:0,maxResultLength:10,minMatchCharLength:2,noResultsFound:"没有找到结果",snippetLength:50,threshold:.3,type:"fuse",useExtendedSearch:!1},sharerjs:!0,twemoji:!0}</script><script type=text/javascript src=/js/giscus.min.js defer></script><script type=text/javascript src=/lib/twemoji/twemoji.min.js defer></script><script type=text/javascript src=/js/twemoji.min.js defer></script><script type=text/javascript src=/lib/lightgallery/lightgallery.min.js></script><script type=text/javascript src=/lib/lightgallery/lg-thumbnail.min.js></script><script type=text/javascript src=/lib/lightgallery/lg-zoom.min.js></script><script type=text/javascript src=/lib/clipboard/clipboard.min.js></script><script type=text/javascript src=/lib/sharer/sharer.min.js></script><script type=text/javascript src=/lib/katex/katex.min.js defer></script><script type=text/javascript src=/lib/katex/auto-render.min.js defer></script><script type=text/javascript src=/lib/katex/copy-tex.min.js defer></script><script type=text/javascript src=/lib/katex/mhchem.min.js defer></script><script type=text/javascript src=/js/katex.min.js defer></script><script type=text/javascript src=/lib/cookieconsent/cookieconsent.min.js defer></script><script type=text/javascript src=/js/cookieconsent.min.js defer></script><script type=text/javascript src=/js/theme.min.js defer></script></div></body></html>

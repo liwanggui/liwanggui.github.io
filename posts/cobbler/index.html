@@ -1,0 +1,743 @@
+<!doctype html><html lang=zh-cn><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><meta name=robots content="noodp"><title>使用 cobbler 批量部署 bclinux7.2 - _浅行</title><meta name=Description content="_浅行"><meta property="og:title" content="使用 cobbler 批量部署 bclinux7.2"><meta property="og:description" content="1. Cobbler介绍Cobbler是一个Linux服务器安装的服务，可以通过网络启动(PXE)的方式来快速安装、重装物理服务器和虚拟机，同时"><meta property="og:type" content="article"><meta property="og:url" content="https://liwanggui.com/posts/cobbler/"><meta property="og:image" content="https://liwanggui.com/logo.png"><meta property="article:section" content="posts"><meta property="article:published_time" content="2021-06-12T17:40:50+08:00"><meta property="article:modified_time" content="2021-06-12T17:40:50+08:00"><meta name=twitter:card content="summary_large_image"><meta name=twitter:image content="https://liwanggui.com/logo.png"><meta name=twitter:title content="使用 cobbler 批量部署 bclinux7.2"><meta name=twitter:description content="1. Cobbler介绍Cobbler是一个Linux服务器安装的服务，可以通过网络启动(PXE)的方式来快速安装、重装物理服务器和虚拟机，同时"><meta name=application-name content="LoveIt"><meta name=apple-mobile-web-app-title content="LoveIt"><meta name=theme-color content="#f8f8f8"><meta name=msapplication-TileColor content="#da532c"><link rel=canonical href=https://liwanggui.com/posts/cobbler/><link rel=prev href=https://liwanggui.com/posts/ansible-playbook/><link rel=next href=https://liwanggui.com/posts/windows-cmd/><link rel=stylesheet href=/lib/normalize/normalize.min.css><link rel=stylesheet href=/css/color.css><link rel=stylesheet href=/css/style.min.css><link rel=preload as=style onload='this.onload=null,this.rel="stylesheet"' href=/lib/fontawesome-free/all.min.css><noscript><link rel=stylesheet href=/lib/fontawesome-free/all.min.css></noscript><link rel=preload as=style onload='this.onload=null,this.rel="stylesheet"' href=/lib/animate/animate.min.css><noscript><link rel=stylesheet href=/lib/animate/animate.min.css></noscript><script type=application/ld+json>{"@context":"http://schema.org","@type":"BlogPosting","headline":"使用 cobbler 批量部署 bclinux7.2","inLanguage":"zh-CN","mainEntityOfPage":{"@type":"WebPage","@id":"https:\/\/liwanggui.com\/posts\/cobbler\/"},"genre":"posts","keywords":"cobbler","wordcount":4179,"url":"https:\/\/liwanggui.com\/posts\/cobbler\/","datePublished":"2021-06-12T17:40:50+08:00","dateModified":"2021-06-12T17:40:50+08:00","publisher":{"@type":"Organization","name":""},"author":{"@type":"Person","name":"李王贵"},"description":""}</script><script src=//instant.page/5.1.1 defer type=module integrity=sha384-MWfCL6g1OTGsbSwfuMHc8+8J2u71/LA8dzlIN3ycajckxuZZmF+DNjdm7O6H3PSq></script></head><body header-desktop=fixed header-mobile=auto><script type=text/javascript>function setTheme(e){document.body.setAttribute("theme",e),document.documentElement.style.setProperty("color-scheme",e==="light"?"light":"dark")}function saveTheme(e){window.localStorage&&localStorage.setItem("theme",e)}function getMeta(e){const t=document.getElementsByTagName("meta");for(let n=0;n<t.length;n++)if(t[n].getAttribute("name")===e)return t[n];return""}if(window.localStorage&&localStorage.getItem("theme")){let e=localStorage.getItem("theme");e==="light"||e==="dark"||e==="black"?setTheme(e):setTheme(window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light")}else"auto"==="light"||"auto"==="dark"||"auto"==="black"?(setTheme("auto"),saveTheme("auto")):(saveTheme("auto"),setTheme(window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"));let metaColors={light:"#f8f8f8",dark:"#252627",black:"#000000"};getMeta("theme-color").content=metaColors[document.body.getAttribute("theme")]</script><div id=back-to-top></div><div id=mask></div><div class=wrapper><header class=desktop id=header-desktop><div class=header-wrapper><div class=header-title><a href=/ title=_浅行><span class=header-title-pre><i class='far fa-kiss-wink-heart fa-fw'></i></span>_浅行</a></div><div class=menu><div class=menu-inner><a class=menu-item href=/posts/ title=文章列表>文章 </a><a class=menu-item href=/tags/ title=标签云>标签 </a><a class=menu-item href=/categories/ title=分类>分类 </a><a class=menu-item href=https://cook.liwanggui.com/ title=程序员做饭指南 rel="noopener noreferrer" target=_blank>烹饪 </a><a class=menu-item href=/about/index.html title=关于>关于 </a><span class="menu-item delimiter"></span><span class="menu-item search" id=search-desktop>
+<input type=text placeholder=搜索文章标题或内容... id=search-input-desktop>
+<a href=# class="search-button search-toggle" id=search-toggle-desktop title=搜索><i class="fas fa-search fa-fw"></i></a>
+<a href=# class="search-button search-clear" id=search-clear-desktop title=清空><i class="fas fa-times-circle fa-fw"></i></a>
+<span class="search-button search-loading" id=search-loading-desktop><i class="fas fa-spinner fa-fw fa-spin"></i></span>
+</span><a href=# class="menu-item theme-switch" title=切换主题><i class="fas fa-adjust fa-fw"></i></a></div></div></div></header><header class=mobile id=header-mobile><div class=header-container><div class=header-wrapper><div class=header-title><a href=/ title=_浅行><span class=header-title-pre><i class='far fa-kiss-wink-heart fa-fw'></i></span>_浅行</a></div><div class=menu-toggle id=menu-toggle-mobile><span></span><span></span><span></span></div></div><div class=menu id=menu-mobile><div class=search-wrapper><div class="search mobile" id=search-mobile><input type=text placeholder=搜索文章标题或内容... id=search-input-mobile>
+<a href=# class="search-button search-toggle" id=search-toggle-mobile title=搜索><i class="fas fa-search fa-fw"></i></a>
+<a href=# class="search-button search-clear" id=search-clear-mobile title=清空><i class="fas fa-times-circle fa-fw"></i></a>
+<span class="search-button search-loading" id=search-loading-mobile><i class="fas fa-spinner fa-fw fa-spin"></i></span></div><a href=# class=search-cancel id=search-cancel-mobile>取消</a></div><a class=menu-item href=/posts/ title=文章列表>文章</a><a class=menu-item href=/tags/ title=标签云>标签</a><a class=menu-item href=/categories/ title=分类>分类</a><a class=menu-item href=https://cook.liwanggui.com/ title=程序员做饭指南 rel="noopener noreferrer" target=_blank>烹饪</a><a class=menu-item href=/about/index.html title=关于>关于</a><a href=# class="menu-item theme-switch" title=切换主题>
+<i class="fas fa-adjust fa-fw"></i></a></div></div></header><div class="search-dropdown desktop"><div id=search-dropdown-desktop></div></div><div class="search-dropdown mobile"><div id=search-dropdown-mobile></div></div><main class=main><div class=container><div class=toc id=toc-auto><h2 class=toc-title>目录</h2><div class=toc-content id=toc-content-auto><nav id=TableOfContents><ul><li><a href=#1-cobbler介绍>1. Cobbler介绍</a><ul><li><a href=#11-cobbler集成的服务>1.1 Cobbler集成的服务</a></li><li><a href=#12-系统环境准备>1.2 系统环境准备</a></li></ul></li><li><a href=#2-cobbler的安装>2. Cobbler的安装</a><ul><li><a href=#21-安装cobbler>2.1 安装Cobbler</a></li><li><a href=#22-配置cobbler>2.2 配置Cobbler</a></li><li><a href=#23-配置dhcp>2.3 配置DHCP</a></li><li><a href=#24-同步cobbler配置>2.4 同步cobbler配置</a></li><li><a href=#25-开机启动>2.5 开机启动</a></li></ul></li><li><a href=#3-cobbler-命令行管理>3. cobbler 命令行管理</a><ul><li><a href=#31-查看命令帮助>3.1 查看命令帮助</a></li><li><a href=#32-导入镜像>3.2 导入镜像</a></li><li><a href=#33-指定kscfg文件及调整内核参数>3.3 指定ks.cfg文件及调整内核参数</a></li><li><a href=#34-安装系统>3.4 安装系统</a></li><li><a href=#35-kscfg-文件>3.5 ks.cfg 文件</a></li></ul></li></ul></nav></div></div><script>document.getElementsByTagName("main")[0].setAttribute("pageStyle","normal")</script><script>document.getElementsByTagName("main")[0].setAttribute("autoTOC","true")</script><article class="page single"><h1 class="single-title animate__animated animate__flipInX">使用 cobbler 批量部署 bclinux7.2</h1><div class=post-meta><div class=post-meta-line><span class=post-author><i class="author fas fa-user-circle fa-fw"></i><a href=/about/ title=Author rel=author class=author>李王贵</a>
+</span>&nbsp;<span class=post-category>收录于 </span>&nbsp;<span class=post-category>类别 <a href=/categories/devops/><i class="far fa-folder fa-fw"></i>devops</a></span></div><div class=post-meta-line><i class="far fa-calendar-alt fa-fw"></i>&nbsp;<time datetime=2021-06-12>2021-06-12</time>&nbsp;<i class="far fa-edit fa-fw"></i>&nbsp;<time datetime=2021-06-12>2021-06-12</time>&nbsp;<i class="fas fa-pencil-alt fa-fw"></i>&nbsp;约 4179 字&nbsp;
+<i class="far fa-clock fa-fw"></i>&nbsp;预计阅读 9 分钟&nbsp;</div></div><div class="details toc" id=toc-static kept><div class="details-summary toc-title"><span>目录</span>
+<span><i class="details-icon fas fa-angle-right"></i></span></div><div class="details-content toc-content" id=toc-content-static><nav id=TableOfContents><ul><li><a href=#1-cobbler介绍>1. Cobbler介绍</a><ul><li><a href=#11-cobbler集成的服务>1.1 Cobbler集成的服务</a></li><li><a href=#12-系统环境准备>1.2 系统环境准备</a></li></ul></li><li><a href=#2-cobbler的安装>2. Cobbler的安装</a><ul><li><a href=#21-安装cobbler>2.1 安装Cobbler</a></li><li><a href=#22-配置cobbler>2.2 配置Cobbler</a></li><li><a href=#23-配置dhcp>2.3 配置DHCP</a></li><li><a href=#24-同步cobbler配置>2.4 同步cobbler配置</a></li><li><a href=#25-开机启动>2.5 开机启动</a></li></ul></li><li><a href=#3-cobbler-命令行管理>3. cobbler 命令行管理</a><ul><li><a href=#31-查看命令帮助>3.1 查看命令帮助</a></li><li><a href=#32-导入镜像>3.2 导入镜像</a></li><li><a href=#33-指定kscfg文件及调整内核参数>3.3 指定ks.cfg文件及调整内核参数</a></li><li><a href=#34-安装系统>3.4 安装系统</a></li><li><a href=#35-kscfg-文件>3.5 ks.cfg 文件</a></li></ul></li></ul></nav></div></div><div class=content id=content><h2 id=1-cobbler介绍 class=headerLink><a href=#1-cobbler%e4%bb%8b%e7%bb%8d class=header-mark></a>1. Cobbler介绍</h2><p><code>Cobbler</code>是一个<code>Linux</code>服务器安装的服务，可以通过网络启动(PXE)的方式来快速安装、重装物理服务器和虚拟机，同时还可以管理<code>DHCP</code>，<code>DNS</code>等。</p><p><code>Cobbler</code>可以使用命令行方式管理，也提供了基于Web的界面管理工具(cobbler-web)，还提供了API接口，可以方便二次开发使用。</p><p><code>Cobbler</code>是较早前的<code>kickstart</code>的升级版，优点是比较容易配置，还自带web界面比较易于管理。</p><p><code>Cobbler</code>内置了一个轻量级配置管理系统，但它也支持和其它配置管理系统集成，如<code>Puppet</code>，暂时不支持<code>SaltStack</code>。</p><h3 id=11-cobbler集成的服务 class=headerLink><a href=#11-cobbler%e9%9b%86%e6%88%90%e7%9a%84%e6%9c%8d%e5%8a%a1 class=header-mark></a>1.1 Cobbler集成的服务</h3><ul><li>PXE服务支持</li><li>DHCP服务管理</li><li>DNS服务管理(可选bind,dnsmasq)</li><li>电源管理</li><li>Kickstart服务支持</li><li>YUM仓库管理</li><li>TFTP(PXE启动时需要)</li><li>Apache(提供kickstart的安装源，并提供定制化的kickstart配置)</li></ul><h3 id=12-系统环境准备 class=headerLink><a href=#12-%e7%b3%bb%e7%bb%9f%e7%8e%af%e5%a2%83%e5%87%86%e5%a4%87 class=header-mark></a>1.2 系统环境准备</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=o>[</span>root@localhost ~<span class=o>]</span><span class=c1># cat /etc/redhat-release # 查看发行版本</span>
+</span></span><span class=line><span class=cl>CentOS Linux release 7.2.1511 <span class=o>(</span>Core<span class=o>)</span>
+</span></span><span class=line><span class=cl><span class=o>[</span>root@localhost ~<span class=o>]</span><span class=c1># uname -r # 查看内核版本</span>
+</span></span><span class=line><span class=cl>3.10.0-327.el7.x86_64
+</span></span><span class=line><span class=cl><span class=o>[</span>root@localhost ~<span class=o>]</span><span class=c1># sed -i &#39;s/SELINUX=enforcing/SELINUX=disabled/&#39; /etc/selinux/config # 关闭selinux功能,配置文件修改只有重启系统方可生效(如果不想重启，请使用此命令临时关闭selinux功能：setenforce 0)</span>
+</span></span><span class=line><span class=cl><span class=o>[</span>root@localhost ~<span class=o>]</span><span class=c1># systemctl stop firewalld  # 停止防火墙</span>
+</span></span><span class=line><span class=cl><span class=o>[</span>root@localhost ~<span class=o>]</span><span class=c1># systemctl disable firewalld  # 禁用防火墙</span>
+</span></span><span class=line><span class=cl><span class=o>[</span>root@localhost ~<span class=o>]</span><span class=c1># ip addr show  # 查看ip地址</span>
+</span></span><span class=line><span class=cl>2: eth0: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu <span class=m>1500</span> qdisc pfifo_fast state UP qlen <span class=m>1000</span>
+</span></span><span class=line><span class=cl>    link/ether 00:0c:29:4d:04:21 brd ff:ff:ff:ff:ff:ff
+</span></span><span class=line><span class=cl>    inet 192.168.92.106/24 brd 192.168.92.255 scope global dynamic eth0
+</span></span><span class=line><span class=cl>       valid_lft 20823sec preferred_lft 20823sec
+</span></span><span class=line><span class=cl>    inet6 fe80::20c:29ff:fe4d:421/64 scope link
+</span></span><span class=line><span class=cl>       valid_lft forever preferred_lft forever
+</span></span><span class=line><span class=cl><span class=o>[</span>root@localhost ~<span class=o>]</span><span class=c1># wget -O /etc/yum.repos.d/epel.repo http://mirrors.aliyun.com/repo/epel-7.repo # 增加阿里云的 epel yum 源(没有此源将无法安装cobbler软件，软件安装完后不用可以删除)</span>
+</span></span></code></pre></td></tr></table></div></div><h2 id=2-cobbler的安装 class=headerLink><a href=#2-cobbler%e7%9a%84%e5%ae%89%e8%a3%85 class=header-mark></a>2. Cobbler的安装</h2><h3 id=21-安装cobbler class=headerLink><a href=#21-%e5%ae%89%e8%a3%85cobbler class=header-mark></a>2.1 安装Cobbler</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span><span class=lnt>26
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=c1># 安装所需软件</span>
+</span></span><span class=line><span class=cl><span class=o>[</span>root@localhost ~<span class=o>]</span><span class=c1># yum -y install cobbler cobbler-web dhcp tftp-server pykickstart httpd xinetd</span>
+</span></span><span class=line><span class=cl><span class=o>[</span>root@localhost ~<span class=o>]</span><span class=c1># rpm -ql cobbler  # 查看安装的文件，下面列出部分。</span>
+</span></span><span class=line><span class=cl>/etc/cobbler                  <span class=c1># 配置文件目录</span>
+</span></span><span class=line><span class=cl>/etc/cobbler/settings         <span class=c1># cobbler主配置文件，这个文件是YAML格式，Cobbler是python写的程序。</span>
+</span></span><span class=line><span class=cl>/etc/cobbler/dhcp.template    <span class=c1># DHCP服务的配置模板</span>
+</span></span><span class=line><span class=cl>/etc/cobbler/tftpd.template   <span class=c1># tftp服务的配置模板</span>
+</span></span><span class=line><span class=cl>/etc/cobbler/rsync.template   <span class=c1># rsync服务的配置模板</span>
+</span></span><span class=line><span class=cl>/etc/cobbler/iso              <span class=c1># iso模板配置文件目录</span>
+</span></span><span class=line><span class=cl>/etc/cobbler/pxe              <span class=c1># pxe模板文件目录</span>
+</span></span><span class=line><span class=cl>/etc/cobbler/power            <span class=c1># 电源的配置文件目录</span>
+</span></span><span class=line><span class=cl>/etc/cobbler/users.conf       <span class=c1># Web服务授权配置文件</span>
+</span></span><span class=line><span class=cl>/etc/cobbler/users.digest     <span class=c1># 用于web访问的用户名密码配置文件</span>
+</span></span><span class=line><span class=cl>/etc/cobbler/dnsmasq.template <span class=c1># DNS服务的配置模板</span>
+</span></span><span class=line><span class=cl>/etc/cobbler/modules.conf     <span class=c1># Cobbler模块配置文件</span>
+</span></span><span class=line><span class=cl>/var/lib/cobbler              <span class=c1># Cobbler数据目录</span>
+</span></span><span class=line><span class=cl>/var/lib/cobbler/config       <span class=c1># 配置文件</span>
+</span></span><span class=line><span class=cl>/var/lib/cobbler/kickstarts   <span class=c1># 默认存放kickstart文件</span>
+</span></span><span class=line><span class=cl>/var/lib/cobbler/loaders      <span class=c1># 存放的各种引导程序</span>
+</span></span><span class=line><span class=cl>/var/www/cobbler              <span class=c1># 系统安装镜像目录</span>
+</span></span><span class=line><span class=cl>/var/www/cobbler/ks_mirror    <span class=c1># 导入的系统镜像列表</span>
+</span></span><span class=line><span class=cl>/var/www/cobbler/images       <span class=c1># 导入的系统镜像启动文件</span>
+</span></span><span class=line><span class=cl>/var/www/cobbler/repo_mirror  <span class=c1># yum源存储目录</span>
+</span></span><span class=line><span class=cl>/var/log/cobbler              <span class=c1># 日志目录</span>
+</span></span><span class=line><span class=cl>/var/log/cobbler/install.log  <span class=c1># 客户端系统安装日志</span>
+</span></span><span class=line><span class=cl>/var/log/cobbler/cobbler.log  <span class=c1># cobbler日志</span>
+</span></span></code></pre></td></tr></table></div></div><h3 id=22-配置cobbler class=headerLink><a href=#22-%e9%85%8d%e7%bd%aecobbler class=header-mark></a>2.2 配置Cobbler</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span><span class=lnt>26
+</span><span class=lnt>27
+</span><span class=lnt>28
+</span><span class=lnt>29
+</span><span class=lnt>30
+</span><span class=lnt>31
+</span><span class=lnt>32
+</span><span class=lnt>33
+</span><span class=lnt>34
+</span><span class=lnt>35
+</span><span class=lnt>36
+</span><span class=lnt>37
+</span><span class=lnt>38
+</span><span class=lnt>39
+</span><span class=lnt>40
+</span><span class=lnt>41
+</span><span class=lnt>42
+</span><span class=lnt>43
+</span><span class=lnt>44
+</span><span class=lnt>45
+</span><span class=lnt>46
+</span><span class=lnt>47
+</span><span class=lnt>48
+</span><span class=lnt>49
+</span><span class=lnt>50
+</span><span class=lnt>51
+</span><span class=lnt>52
+</span><span class=lnt>53
+</span><span class=lnt>54
+</span><span class=lnt>55
+</span><span class=lnt>56
+</span><span class=lnt>57
+</span><span class=lnt>58
+</span><span class=lnt>59
+</span><span class=lnt>60
+</span><span class=lnt>61
+</span><span class=lnt>62
+</span><span class=lnt>63
+</span><span class=lnt>64
+</span><span class=lnt>65
+</span><span class=lnt>66
+</span><span class=lnt>67
+</span><span class=lnt>68
+</span><span class=lnt>69
+</span><span class=lnt>70
+</span><span class=lnt>71
+</span><span class=lnt>72
+</span><span class=lnt>73
+</span><span class=lnt>74
+</span><span class=lnt>75
+</span><span class=lnt>76
+</span><span class=lnt>77
+</span><span class=lnt>78
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=o>[</span>root@localhost ~<span class=o>]</span><span class=c1># systemctl start httpd # 启动 httpd 服务</span>
+</span></span><span class=line><span class=cl><span class=o>[</span>root@localhost ~<span class=o>]</span><span class=c1># systemctl start cobblerd # 启动 cobbler 服务</span>
+</span></span><span class=line><span class=cl><span class=o>[</span>root@localhost ~<span class=o>]</span><span class=c1># systemctl restart cobblerd # 此次重启是为了在执行 cobbler check 时不报错[root@localhost ~]# cobbler check </span>
+</span></span><span class=line><span class=cl>The following are potential configuration items that you may want to fix:
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=m>1</span> : The <span class=s1>&#39;server&#39;</span> field in /etc/cobbler/settings must be <span class=nb>set</span> to something other than localhost, or kickstarting features will not work.  This should be a resolvable hostname or IP <span class=k>for</span> the boot server as reachable by all machines that will use it.
+</span></span><span class=line><span class=cl><span class=m>2</span> : For PXE to be functional, the <span class=s1>&#39;next_server&#39;</span> field in /etc/cobbler/settings must be <span class=nb>set</span> to something other than 127.0.0.1, and should match the IP of the boot server on the PXE network.
+</span></span><span class=line><span class=cl><span class=m>3</span> : change <span class=s1>&#39;disable&#39;</span> to <span class=s1>&#39;no&#39;</span> in /etc/xinetd.d/tftp
+</span></span><span class=line><span class=cl><span class=m>4</span> : some network boot-loaders are missing from /var/lib/cobbler/loaders, you may run <span class=s1>&#39;cobbler get-loaders&#39;</span> to download them, or, <span class=k>if</span> you only want to handle x86/x86_64netbooting, you may ensure that you have installed a *recent* version of the syslinux package installed and can ignore this message entirely.  Files in this directory, should you want to support all architectures, should include pxelinux.0, menu.c32, elilo.efi, and yaboot. The <span class=s1>&#39;cobbler get-loaders&#39;</span> <span class=nb>command</span> is the easiest way to resolve these requirements.
+</span></span><span class=line><span class=cl><span class=m>5</span> : <span class=nb>enable</span> and start rsyncd.service with systemctl
+</span></span><span class=line><span class=cl><span class=m>6</span> : debmirror package is not installed, it will be required to manage debian deployments and repositories
+</span></span><span class=line><span class=cl><span class=m>7</span> : The default password used by the sample templates <span class=k>for</span> newly installed machines <span class=o>(</span>default_password_crypted in /etc/cobbler/settings<span class=o>)</span> is still <span class=nb>set</span> to <span class=s1>&#39;cobbler&#39;</span> and should be changed, try: <span class=s2>&#34;openssl passwd -1 -salt &#39;random-phrase-here&#39; &#39;your-password-here&#39;&#34;</span> to generate new one
+</span></span><span class=line><span class=cl><span class=m>8</span> : fencing tools were not found, and are required to use the <span class=o>(</span>optional<span class=o>)</span> power management features. install cman or fence-agents to use them
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Restart cobblerd and <span class=k>then</span> run <span class=s1>&#39;cobbler sync&#39;</span> to apply changes.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># 上面提示的问题，我们一个一个来解决</span>
+</span></span><span class=line><span class=cl><span class=o>[</span>root@localhost ~<span class=o>]</span><span class=c1># cp /etc/cobbler/settings{,.ori}  # 备份</span>
+</span></span><span class=line><span class=cl><span class=c1># 第1个问题，server，Cobbler服务器的IP。</span>
+</span></span><span class=line><span class=cl><span class=o>[</span>root@localhost ~<span class=o>]</span><span class=c1># sed -i &#39;s/server: 127.0.0.1/server: 192.168.92.106/&#39; /etc/cobbler/settings</span>
+</span></span><span class=line><span class=cl><span class=c1># 第2个问题，next_server，如果用Cobbler管理DHCP，修改本项，作用：告知客户端TFTP服务器的ip。</span>
+</span></span><span class=line><span class=cl><span class=o>[</span>root@localhost ~<span class=o>]</span><span class=c1># sed -i &#39;s/next_server: 127.0.0.1/next_server: 192.168.92.106/&#39; /etc/cobbler/settings</span>
+</span></span><span class=line><span class=cl><span class=c1># 用Cobbler管理DHCP</span>
+</span></span><span class=line><span class=cl><span class=o>[</span>root@localhost ~<span class=o>]</span><span class=c1># sed -i &#39;s/manage_dhcp: 0/manage_dhcp: 1/&#39; /etc/cobbler/settings</span>
+</span></span><span class=line><span class=cl><span class=c1># 防止循环装系统，适用于服务器第一启动项是PXE启动。</span>
+</span></span><span class=line><span class=cl><span class=o>[</span>root@localhost ~<span class=o>]</span><span class=c1># sed -i &#39;s/pxe_just_once: 0/pxe_just_once: 1/&#39; /etc/cobbler/settings</span>
+</span></span><span class=line><span class=cl><span class=c1># 第7个问题，设置新装系统的默认root密码123456。下面的命令来源于提示6。random-phrase-here为干扰码，可以自行设定。</span>
+</span></span><span class=line><span class=cl><span class=o>[</span>root@localhost ~<span class=o>]</span><span class=c1># openssl passwd -1 -salt &#39;root&#39; &#39;123456&#39;</span>
+</span></span><span class=line><span class=cl><span class=nv>$1$root$j0bp</span>.KLPyr.u9kgQ428D10
+</span></span><span class=line><span class=cl><span class=o>[</span>root@linux-node1 ~<span class=o>]</span><span class=c1># vim /etc/cobbler/settings </span>
+</span></span><span class=line><span class=cl>default_password_crypted: <span class=s2>&#34;</span><span class=nv>$1$root$j0bp</span><span class=s2>.KLPyr.u9kgQ428D10&#34;</span>
+</span></span><span class=line><span class=cl><span class=c1># 第4个问题，会自动从官网下载</span>
+</span></span><span class=line><span class=cl><span class=o>[</span>root@localhost ~<span class=o>]</span><span class=c1># cobbler get-loaders</span>
+</span></span><span class=line><span class=cl>task started: 2017-02-26_113724_get_loaders
+</span></span><span class=line><span class=cl>task started <span class=o>(</span><span class=nv>id</span><span class=o>=</span>Download Bootloader Content, <span class=nv>time</span><span class=o>=</span>Sun Feb <span class=m>26</span> 11:37:24 2017<span class=o>)</span>
+</span></span><span class=line><span class=cl>downloading https://cobbler.github.io/loaders/README to /var/lib/cobbler/loaders/README
+</span></span><span class=line><span class=cl>downloading https://cobbler.github.io/loaders/COPYING.elilo to /var/lib/cobbler/loaders/COPYING.elilo
+</span></span><span class=line><span class=cl>downloading https://cobbler.github.io/loaders/COPYING.yaboot to /var/lib/cobbler/loaders/COPYING.yaboot
+</span></span><span class=line><span class=cl>downloading https://cobbler.github.io/loaders/COPYING.syslinux to /var/lib/cobbler/loaders/COPYING.syslinux
+</span></span><span class=line><span class=cl>downloading https://cobbler.github.io/loaders/elilo-3.8-ia64.efi to /var/lib/cobbler/loaders/elilo-ia64.efi
+</span></span><span class=line><span class=cl>downloading https://cobbler.github.io/loaders/yaboot-1.3.17 to /var/lib/cobbler/loaders/yaboot
+</span></span><span class=line><span class=cl>downloading https://cobbler.github.io/loaders/pxelinux.0-3.86 to /var/lib/cobbler/loaders/pxelinux.0
+</span></span><span class=line><span class=cl>downloading https://cobbler.github.io/loaders/menu.c32-3.86 to /var/lib/cobbler/loaders/menu.c32
+</span></span><span class=line><span class=cl>downloading https://cobbler.github.io/loaders/grub-0.97-x86.efi to /var/lib/cobbler/loaders/grub-x86.efi
+</span></span><span class=line><span class=cl>downloading https://cobbler.github.io/loaders/grub-0.97-x86_64.efi to /var/lib/cobbler/loaders/grub-x86_64.efi
+</span></span><span class=line><span class=cl>*** TASK COMPLETE ***
+</span></span><span class=line><span class=cl><span class=o>[</span>root@localhost ~<span class=o>]</span><span class=c1># ls /var/lib/cobbler/loaders/ # 下载的内容</span>
+</span></span><span class=line><span class=cl>COPYING.elilo  COPYING.syslinux  COPYING.yaboot  elilo-ia64.efi  grub-x86_64.efi  grub-x86.efi  menu.c32  pxelinux.0  README  yaboot
+</span></span><span class=line><span class=cl><span class=c1># 第3个问题</span>
+</span></span><span class=line><span class=cl><span class=o>[</span>root@localhost ~<span class=o>]</span><span class=c1># vim /etc/xinetd.d/tftp</span>
+</span></span><span class=line><span class=cl>service tftp
+</span></span><span class=line><span class=cl><span class=o>{</span>
+</span></span><span class=line><span class=cl>        <span class=nv>socket_type</span>             <span class=o>=</span> dgram
+</span></span><span class=line><span class=cl>        <span class=nv>protocol</span>                <span class=o>=</span> udp
+</span></span><span class=line><span class=cl>        <span class=nb>wait</span>                    <span class=o>=</span> yes
+</span></span><span class=line><span class=cl>        <span class=nv>user</span>                    <span class=o>=</span> root
+</span></span><span class=line><span class=cl>        <span class=nv>server</span>                  <span class=o>=</span> /usr/sbin/in.tftpd
+</span></span><span class=line><span class=cl>        <span class=nv>server_args</span>             <span class=o>=</span> -s /var/lib/tftpboot
+</span></span><span class=line><span class=cl>        <span class=nv>disable</span>                 <span class=o>=</span> no <span class=c1># 改为no</span>
+</span></span><span class=line><span class=cl>        <span class=nv>per_source</span>              <span class=o>=</span> <span class=m>11</span>
+</span></span><span class=line><span class=cl>        <span class=nv>cps</span>                     <span class=o>=</span> <span class=m>100</span> <span class=m>2</span>
+</span></span><span class=line><span class=cl>        <span class=nv>flags</span>                   <span class=o>=</span> IPv4
+</span></span><span class=line><span class=cl><span class=o>}</span>
+</span></span><span class=line><span class=cl><span class=c1># 第5个问题</span>
+</span></span><span class=line><span class=cl><span class=o>[</span>root@localhost ~<span class=o>]</span><span class=c1># systemctl enable rsyncd.service</span>
+</span></span><span class=line><span class=cl>Created symlink from /etc/systemd/system/multi-user.target.wants/rsyncd.service to /usr/lib/systemd/system/rsyncd.service.
+</span></span><span class=line><span class=cl><span class=o>[</span>root@localhost ~<span class=o>]</span><span class=c1># systemctl start rsyncd.service</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># 启动xinetd服务，重启cobbler服务，重新检查cobbler</span>
+</span></span><span class=line><span class=cl><span class=o>[</span>root@localhost ~<span class=o>]</span><span class=c1># systemctl start xinetd</span>
+</span></span><span class=line><span class=cl><span class=o>[</span>root@localhost ~<span class=o>]</span><span class=c1># systemctl restart cobblerd</span>
+</span></span><span class=line><span class=cl><span class=o>[</span>root@localhost ~<span class=o>]</span><span class=c1># cobbler check</span>
+</span></span><span class=line><span class=cl>The following are potential configuration items that you may want to fix:
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=m>1</span> : debmirror package is not installed, it will be required to manage debian deployments and repositories <span class=c1># 和debian系统相关，不需要</span>
+</span></span><span class=line><span class=cl><span class=m>2</span> : fencing tools were not found, and are required to use the <span class=o>(</span>optional<span class=o>)</span> power management features. install cman or fence-agents to use them <span class=c1># fence设备相关，不需要</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Restart cobblerd and <span class=k>then</span> run <span class=s1>&#39;cobbler sync&#39;</span> to apply changes.
+</span></span></code></pre></td></tr></table></div></div><h3 id=23-配置dhcp class=headerLink><a href=#23-%e9%85%8d%e7%bd%aedhcp class=header-mark></a>2.3 配置DHCP</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=c1># 修改cobbler的dhcp模版，不要直接修改dhcp本身的配置文件，因为cobbler会覆盖。</span>
+</span></span><span class=line><span class=cl><span class=o>[</span>root@localhost ~<span class=o>]</span><span class=c1># vim /etc/cobbler/dhcp.template</span>
+</span></span><span class=line><span class=cl>......
+</span></span><span class=line><span class=cl><span class=c1># 仅列出修改过的字段</span>
+</span></span><span class=line><span class=cl>subnet 192.168.92.0 netmask 255.255.255.0 <span class=o>{</span>
+</span></span><span class=line><span class=cl>     option routers             192.168.92.2<span class=p>;</span> <span class=c1># 指定网关</span>
+</span></span><span class=line><span class=cl>     option domain-name-servers 192.168.92.2<span class=p>;</span> <span class=c1># 指定DNS</span>
+</span></span><span class=line><span class=cl>     option subnet-mask         255.255.255.0<span class=p>;</span> 
+</span></span><span class=line><span class=cl>     range dynamic-bootp        192.168.92.200 192.168.92.254<span class=p>;</span> <span class=c1># 分配的地址段（部署的服务器多可以给大点）</span>
+</span></span><span class=line><span class=cl>......
+</span></span></code></pre></td></tr></table></div></div><h3 id=24-同步cobbler配置 class=headerLink><a href=#24-%e5%90%8c%e6%ad%a5cobbler%e9%85%8d%e7%bd%ae class=header-mark></a>2.4 同步cobbler配置</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span><span class=lnt>26
+</span><span class=lnt>27
+</span><span class=lnt>28
+</span><span class=lnt>29
+</span><span class=lnt>30
+</span><span class=lnt>31
+</span><span class=lnt>32
+</span><span class=lnt>33
+</span><span class=lnt>34
+</span><span class=lnt>35
+</span><span class=lnt>36
+</span><span class=lnt>37
+</span><span class=lnt>38
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=c1># 同步最新cobbler配置，它会根据配置自动修改dhcp等服务。</span>
+</span></span><span class=line><span class=cl><span class=o>[</span>root@localhost ~<span class=o>]</span><span class=c1># cobbler sync</span>
+</span></span><span class=line><span class=cl>task started: 2017-02-26_115318_sync
+</span></span><span class=line><span class=cl>task started <span class=o>(</span><span class=nv>id</span><span class=o>=</span>Sync, <span class=nv>time</span><span class=o>=</span>Sun Feb <span class=m>26</span> 11:53:18 2017<span class=o>)</span>
+</span></span><span class=line><span class=cl>running pre-sync triggers
+</span></span><span class=line><span class=cl>cleaning trees
+</span></span><span class=line><span class=cl>removing: /var/lib/tftpboot/grub/images
+</span></span><span class=line><span class=cl>copying bootloaders
+</span></span><span class=line><span class=cl>trying hardlink /var/lib/cobbler/loaders/pxelinux.0 -&gt; /var/lib/tftpboot/pxelinux.0
+</span></span><span class=line><span class=cl>trying hardlink /var/lib/cobbler/loaders/menu.c32 -&gt; /var/lib/tftpboot/menu.c32
+</span></span><span class=line><span class=cl>trying hardlink /var/lib/cobbler/loaders/yaboot -&gt; /var/lib/tftpboot/yaboot
+</span></span><span class=line><span class=cl>trying hardlink /usr/share/syslinux/memdisk -&gt; /var/lib/tftpboot/memdisk
+</span></span><span class=line><span class=cl>trying hardlink /var/lib/cobbler/loaders/grub-x86.efi -&gt; /var/lib/tftpboot/grub/grub-x86.efi
+</span></span><span class=line><span class=cl>trying hardlink /var/lib/cobbler/loaders/grub-x86_64.efi -&gt; /var/lib/tftpboot/grub/grub-x86_64.efi
+</span></span><span class=line><span class=cl>copying distros to tftpboot
+</span></span><span class=line><span class=cl>copying images
+</span></span><span class=line><span class=cl>generating PXE configuration files
+</span></span><span class=line><span class=cl>generating PXE menu structure
+</span></span><span class=line><span class=cl>rendering DHCP files
+</span></span><span class=line><span class=cl>generating /etc/dhcp/dhcpd.conf
+</span></span><span class=line><span class=cl>rendering TFTPD files
+</span></span><span class=line><span class=cl>generating /etc/xinetd.d/tftp
+</span></span><span class=line><span class=cl>cleaning link caches
+</span></span><span class=line><span class=cl>running post-sync triggers
+</span></span><span class=line><span class=cl>running python triggers from /var/lib/cobbler/triggers/sync/post/*
+</span></span><span class=line><span class=cl>running python trigger cobbler.modules.sync_post_restart_services
+</span></span><span class=line><span class=cl>running: dhcpd -t -q
+</span></span><span class=line><span class=cl>received on stdout:
+</span></span><span class=line><span class=cl>received on stderr:
+</span></span><span class=line><span class=cl>running: service dhcpd restart
+</span></span><span class=line><span class=cl>received on stdout:
+</span></span><span class=line><span class=cl>received on stderr: Redirecting to /bin/systemctl restart  dhcpd.service
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>running shell triggers from /var/lib/cobbler/triggers/sync/post/*
+</span></span><span class=line><span class=cl>running python triggers from /var/lib/cobbler/triggers/change/*
+</span></span><span class=line><span class=cl>running python trigger cobbler.modules.scm_track
+</span></span><span class=line><span class=cl>running shell triggers from /var/lib/cobbler/triggers/change/*
+</span></span><span class=line><span class=cl>*** TASK COMPLETE ***
+</span></span></code></pre></td></tr></table></div></div><h3 id=25-开机启动 class=headerLink><a href=#25-%e5%bc%80%e6%9c%ba%e5%90%af%e5%8a%a8 class=header-mark></a>2.5 开机启动</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=c1># 设置为开机启动</span>
+</span></span><span class=line><span class=cl><span class=o>[</span>root@localhost ~<span class=o>]</span><span class=c1># systemctl enable httpd</span>
+</span></span><span class=line><span class=cl><span class=o>[</span>root@localhost ~<span class=o>]</span><span class=c1># systemctl enable rsyncd</span>
+</span></span><span class=line><span class=cl><span class=o>[</span>root@localhost ~<span class=o>]</span><span class=c1># systemctl enable xinetd</span>
+</span></span><span class=line><span class=cl><span class=o>[</span>root@localhost ~<span class=o>]</span><span class=c1># systemctl enable cobblerd</span>
+</span></span><span class=line><span class=cl><span class=o>[</span>root@localhost ~<span class=o>]</span><span class=c1># systemctl enable dhcpd</span>
+</span></span><span class=line><span class=cl><span class=c1># 重启所有服务</span>
+</span></span><span class=line><span class=cl><span class=o>[</span>root@localhost ~<span class=o>]</span><span class=c1># systemctl restart httpd</span>
+</span></span><span class=line><span class=cl><span class=o>[</span>root@localhost ~<span class=o>]</span><span class=c1># systemctl restart rsyncd</span>
+</span></span><span class=line><span class=cl><span class=o>[</span>root@localhost ~<span class=o>]</span><span class=c1># systemctl restart xinetd</span>
+</span></span><span class=line><span class=cl><span class=o>[</span>root@localhost ~<span class=o>]</span><span class=c1># systemctl restart cobblerd</span>
+</span></span><span class=line><span class=cl><span class=o>[</span>root@localhost ~<span class=o>]</span><span class=c1># systemctl restart dhcpd</span>
+</span></span></code></pre></td></tr></table></div></div><h2 id=3-cobbler-命令行管理 class=headerLink><a href=#3-cobbler-%e5%91%bd%e4%bb%a4%e8%a1%8c%e7%ae%a1%e7%90%86 class=header-mark></a>3. cobbler 命令行管理</h2><h3 id=31-查看命令帮助 class=headerLink><a href=#31-%e6%9f%a5%e7%9c%8b%e5%91%bd%e4%bb%a4%e5%b8%ae%e5%8a%a9 class=header-mark></a>3.1 查看命令帮助</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span><span class=lnt>26
+</span><span class=lnt>27
+</span><span class=lnt>28
+</span><span class=lnt>29
+</span><span class=lnt>30
+</span><span class=lnt>31
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=o>[</span>root@localhost ~<span class=o>]</span><span class=c1># cobbler</span>
+</span></span><span class=line><span class=cl><span class=nv>usage</span>
+</span></span><span class=line><span class=cl><span class=o>=====</span>
+</span></span><span class=line><span class=cl>cobbler &lt;distro<span class=p>|</span>profile<span class=p>|</span>system<span class=p>|</span>repo<span class=p>|</span>image<span class=p>|</span>mgmtclass<span class=p>|</span>package<span class=p>|</span>file&gt; ...
+</span></span><span class=line><span class=cl>        <span class=o>[</span>add<span class=p>|</span>edit<span class=p>|</span>copy<span class=p>|</span>getks*<span class=p>|</span>list<span class=p>|</span>remove<span class=p>|</span>rename<span class=p>|</span>report<span class=o>]</span> <span class=o>[</span>options<span class=p>|</span>--help<span class=o>]</span>
+</span></span><span class=line><span class=cl>cobbler &lt;aclsetup<span class=p>|</span>buildiso<span class=p>|</span>import<span class=p>|</span>list<span class=p>|</span>replicate<span class=p>|</span>report<span class=p>|</span>reposync<span class=p>|</span>sync<span class=p>|</span>validateks<span class=p>|</span>version<span class=p>|</span>signature<span class=p>|</span>get-loaders<span class=p>|</span>hardlink&gt; <span class=o>[</span>options<span class=p>|</span>--help<span class=o>]</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=o>[</span>root@linux-node1 ~<span class=o>]</span><span class=c1># cobbler import --help  # 导入镜像</span>
+</span></span><span class=line><span class=cl>Usage: cobbler <span class=o>[</span>options<span class=o>]</span>
+</span></span><span class=line><span class=cl>Options:
+</span></span><span class=line><span class=cl>  -h, --help            show this <span class=nb>help</span> message and <span class=nb>exit</span>
+</span></span><span class=line><span class=cl>  --arch<span class=o>=</span>ARCH           OS architecture being imported
+</span></span><span class=line><span class=cl>  --breed<span class=o>=</span>BREED         the breed being imported
+</span></span><span class=line><span class=cl>  --os-version<span class=o>=</span>OS_VERSION
+</span></span><span class=line><span class=cl>                        the version being imported
+</span></span><span class=line><span class=cl>  --path<span class=o>=</span>PATH           <span class=nb>local</span> path or rsync location
+</span></span><span class=line><span class=cl>  --name<span class=o>=</span>NAME           name, ex <span class=s1>&#39;RHEL-5&#39;</span>
+</span></span><span class=line><span class=cl>  --available-as<span class=o>=</span>AVAILABLE_AS
+</span></span><span class=line><span class=cl>                        tree is here, don<span class=err>&#39;</span>t mirror
+</span></span><span class=line><span class=cl>  --kickstart<span class=o>=</span>KICKSTART_FILE
+</span></span><span class=line><span class=cl>                        assign this kickstart file
+</span></span><span class=line><span class=cl>  --rsync-flags<span class=o>=</span>RSYNC_FLAGS
+</span></span><span class=line><span class=cl>                        pass additional flags to rsync
+</span></span><span class=line><span class=cl>cobbler check    核对当前设置是否有问题
+</span></span><span class=line><span class=cl>cobbler list     列出所有的cobbler元素
+</span></span><span class=line><span class=cl>cobbler report   列出元素的详细信息
+</span></span><span class=line><span class=cl>cobbler sync     同步配置到数据目录,更改配置最好都要执行下
+</span></span><span class=line><span class=cl>cobbler reposync 同步yum仓库
+</span></span><span class=line><span class=cl>cobbler distro   查看导入的发行版系统信息
+</span></span><span class=line><span class=cl>cobbler system   查看添加的系统信息
+</span></span><span class=line><span class=cl>cobbler profile  查看配置信息
+</span></span></code></pre></td></tr></table></div></div><h3 id=32-导入镜像 class=headerLink><a href=#32-%e5%af%bc%e5%85%a5%e9%95%9c%e5%83%8f class=header-mark></a>3.2 导入镜像</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=c1># 挂载镜像</span>
+</span></span><span class=line><span class=cl><span class=o>[</span>root@localhost ~<span class=o>]</span><span class=c1># mount /dev/cdrom /mnt</span>
+</span></span><span class=line><span class=cl>mount: /dev/sr0 is write-protected, mounting read-only
+</span></span><span class=line><span class=cl><span class=o>[</span>root@localhost ~<span class=o>]</span><span class=c1># cobbler import --path=/mnt/ --name=BClinux-7.2-x86_64 --arch=x86_64</span>
+</span></span><span class=line><span class=cl><span class=c1># --path 镜像路径</span>
+</span></span><span class=line><span class=cl><span class=c1># --name 为安装源定义一个名字</span>
+</span></span><span class=line><span class=cl><span class=c1># --arch 指定安装源是32位、64位、ia64, 目前支持的选项有: x86│x86_64│ia64</span>
+</span></span><span class=line><span class=cl><span class=c1># 安装源的唯一标示就是根据name参数来定义，本例导入成功后，安装源的唯一标示就是：BClinux-7.2-x86_64，如果重复，系统会提示导入失败。</span>
+</span></span><span class=line><span class=cl><span class=c1># 镜像存放目录，cobbler会将镜像中的所有安装文件拷贝到本地一份，放在/var/www/cobbler/ks_mirror下的BClinux-7.2-x86_64目录下。因此/var/www/cobbler目录必须具有足够容纳安装文件的空间。</span>
+</span></span><span class=line><span class=cl><span class=o>[</span>root@localhost ~<span class=o>]</span><span class=c1># cobbler distro list  # 查看镜像列表</span>
+</span></span><span class=line><span class=cl>   BClinux-7.2-x86_64
+</span></span></code></pre></td></tr></table></div></div><h3 id=33-指定kscfg文件及调整内核参数 class=headerLink><a href=#33-%e6%8c%87%e5%ae%9akscfg%e6%96%87%e4%bb%b6%e5%8f%8a%e8%b0%83%e6%95%b4%e5%86%85%e6%a0%b8%e5%8f%82%e6%95%b0 class=header-mark></a>3.3 指定ks.cfg文件及调整内核参数</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span><span class=lnt>26
+</span><span class=lnt>27
+</span><span class=lnt>28
+</span><span class=lnt>29
+</span><span class=lnt>30
+</span><span class=lnt>31
+</span><span class=lnt>32
+</span><span class=lnt>33
+</span><span class=lnt>34
+</span><span class=lnt>35
+</span><span class=lnt>36
+</span><span class=lnt>37
+</span><span class=lnt>38
+</span><span class=lnt>39
+</span><span class=lnt>40
+</span><span class=lnt>41
+</span><span class=lnt>42
+</span><span class=lnt>43
+</span><span class=lnt>44
+</span><span class=lnt>45
+</span><span class=lnt>46
+</span><span class=lnt>47
+</span><span class=lnt>48
+</span><span class=lnt>49
+</span><span class=lnt>50
+</span><span class=lnt>51
+</span><span class=lnt>52
+</span><span class=lnt>53
+</span><span class=lnt>54
+</span><span class=lnt>55
+</span><span class=lnt>56
+</span><span class=lnt>57
+</span><span class=lnt>58
+</span><span class=lnt>59
+</span><span class=lnt>60
+</span><span class=lnt>61
+</span><span class=lnt>62
+</span><span class=lnt>63
+</span><span class=lnt>64
+</span><span class=lnt>65
+</span><span class=lnt>66
+</span><span class=lnt>67
+</span><span class=lnt>68
+</span><span class=lnt>69
+</span><span class=lnt>70
+</span><span class=lnt>71
+</span><span class=lnt>72
+</span><span class=lnt>73
+</span><span class=lnt>74
+</span><span class=lnt>75
+</span><span class=lnt>76
+</span><span class=lnt>77
+</span><span class=lnt>78
+</span><span class=lnt>79
+</span><span class=lnt>80
+</span><span class=lnt>81
+</span><span class=lnt>82
+</span><span class=lnt>83
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=o>[</span>root@localhost ~<span class=o>]</span><span class=c1># cd /var/lib/cobbler/kickstarts/ # Cobbler的ks.cfg文件存放位置</span>
+</span></span><span class=line><span class=cl><span class=o>[</span>root@localhost kickstarts<span class=o>]</span><span class=c1># ls # 自带很多</span>
+</span></span><span class=line><span class=cl>default.ks    esxi5-ks.cfg      legacy.ks     sample_autoyast.xml  sample_esx4.ks   sample_esxi5.ks  sample_old.seed
+</span></span><span class=line><span class=cl>esxi4-ks.cfg  install_profiles  pxerescue.ks  sample_end.ks        sample_esxi4.ks  sample.ks        sample.seed
+</span></span><span class=line><span class=cl><span class=c1># 上传准备好的ks文件(anaconda-ks.cfg),上传方式自己选择（sftp,U盘...)</span>
+</span></span><span class=line><span class=cl><span class=o>[</span>root@localhost kickstarts<span class=o>]</span><span class=c1># mv anaconda-ks.cfg BClinux-7.2-x86_64.cfg</span>
+</span></span><span class=line><span class=cl><span class=c1># 在第一次导入系统镜像后，Cobbler会给镜像指定一个默认的kickstart自动安装文件在/var/lib/cobbler/kickstarts下的sample_end.ks。</span>
+</span></span><span class=line><span class=cl><span class=o>[</span>root@localhost kickstarts<span class=o>]</span><span class=c1># cobbler profile report --name=BClinux-7.2-x86_64</span>
+</span></span><span class=line><span class=cl>Name                           : BClinux-7.2-x86_64
+</span></span><span class=line><span class=cl>TFTP Boot Files                : <span class=o>{}</span>
+</span></span><span class=line><span class=cl>Comment                        :
+</span></span><span class=line><span class=cl>DHCP Tag                       : default
+</span></span><span class=line><span class=cl>Distribution                   : BClinux-7.2-x86_64
+</span></span><span class=line><span class=cl>Enable gPXE?                   : <span class=m>0</span>
+</span></span><span class=line><span class=cl>Enable PXE Menu?               : <span class=m>1</span>
+</span></span><span class=line><span class=cl>Fetchable Files                : <span class=o>{}</span>
+</span></span><span class=line><span class=cl>Kernel Options                 : <span class=o>{}</span>
+</span></span><span class=line><span class=cl>Kernel Options <span class=o>(</span>Post Install<span class=o>)</span>  : <span class=o>{}</span>
+</span></span><span class=line><span class=cl>Kickstart                      : /var/lib/cobbler/kickstarts/sample_end.ks <span class=c1># 默认的ks文件</span>
+</span></span><span class=line><span class=cl>Kickstart Metadata             : <span class=o>{}</span>
+</span></span><span class=line><span class=cl>Management Classes             : <span class=o>[]</span>
+</span></span><span class=line><span class=cl>Management Parameters          : <span class=s>&lt;&lt;inherit&gt;&gt;
+</span></span></span><span class=line><span class=cl><span class=s>Name Servers                   : []
+</span></span></span><span class=line><span class=cl><span class=s>Name Servers Search Path       : []
+</span></span></span><span class=line><span class=cl><span class=s>Owners                         : [&#39;admin&#39;]
+</span></span></span><span class=line><span class=cl><span class=s>Parent Profile                 :
+</span></span></span><span class=line><span class=cl><span class=s>Internal proxy                 :
+</span></span></span><span class=line><span class=cl><span class=s>Red Hat Management Key         : &lt;&lt;inherit</span>&gt;&gt;
+</span></span><span class=line><span class=cl>Red Hat Management Server      : <span class=s>&lt;&lt;inherit&gt;&gt;
+</span></span></span><span class=line><span class=cl><span class=s>Repos                          : []
+</span></span></span><span class=line><span class=cl><span class=s>Server Override                : &lt;&lt;inherit</span>&gt;&gt;
+</span></span><span class=line><span class=cl>Template Files                 : <span class=o>{}</span>
+</span></span><span class=line><span class=cl>Virt Auto Boot                 : <span class=m>1</span>
+</span></span><span class=line><span class=cl>Virt Bridge                    : xenbr0
+</span></span><span class=line><span class=cl>Virt CPUs                      : <span class=m>1</span>
+</span></span><span class=line><span class=cl>Virt Disk Driver Type          : raw
+</span></span><span class=line><span class=cl>Virt File Size<span class=o>(</span>GB<span class=o>)</span>             : <span class=m>5</span>
+</span></span><span class=line><span class=cl>Virt Path                      :
+</span></span><span class=line><span class=cl>Virt RAM <span class=o>(</span>MB<span class=o>)</span>                  : <span class=m>512</span>
+</span></span><span class=line><span class=cl>Virt Type                      : kvm
+</span></span><span class=line><span class=cl><span class=c1># 编辑profile，修改关联的ks文件</span>
+</span></span><span class=line><span class=cl><span class=o>[</span>root@localhost kickstarts<span class=o>]</span><span class=c1># cobbler profile edit --name=BClinux-7.2-x86_64 --kickstart=/var/lib/cobbler/kickstarts/BClinux-7.2-x86_64.cfg</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># 修改安装系统的内核参数，在CentOS7系统有一个地方变了，就是网卡名变成eno16777736这种形式，但是为了运维标准化，我们需要将它变成我们常用的eth0，因此使用下面的参数。但要注意是CentOS7才需要下面的步骤，CentOS6不需要。（改之前请确认是否需要修改，如不需要请跳过）</span>
+</span></span><span class=line><span class=cl><span class=o>[</span>root@localhost kickstarts<span class=o>]</span><span class=c1># cobbler profile edit --name=BClinux-7.2-x86_64 --kopts=&#39;net.ifnames=0 biosdevname=0&#39;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=o>[</span>root@localhost kickstarts<span class=o>]</span><span class=c1># cobbler profile report CentOS-7.1-x86_64</span>
+</span></span><span class=line><span class=cl>Name                           : BClinux-7.2-x86_64
+</span></span><span class=line><span class=cl>TFTP Boot Files                : <span class=o>{}</span>
+</span></span><span class=line><span class=cl>Comment                        :
+</span></span><span class=line><span class=cl>DHCP Tag                       : default
+</span></span><span class=line><span class=cl>Distribution                   : BClinux-7.2-x86_64
+</span></span><span class=line><span class=cl>Enable gPXE?                   : <span class=m>0</span>
+</span></span><span class=line><span class=cl>Enable PXE Menu?               : <span class=m>1</span>
+</span></span><span class=line><span class=cl>Fetchable Files                : <span class=o>{}</span>
+</span></span><span class=line><span class=cl>Kernel Options                 : <span class=o>{</span><span class=s1>&#39;biosdevname&#39;</span>: <span class=s1>&#39;0&#39;</span>, <span class=s1>&#39;net.ifnames&#39;</span>: <span class=s1>&#39;0&#39;</span><span class=o>}</span>
+</span></span><span class=line><span class=cl>Kernel Options <span class=o>(</span>Post Install<span class=o>)</span>  : <span class=o>{}</span>
+</span></span><span class=line><span class=cl>Kickstart                      : /var/lib/cobbler/kickstarts/BClinux-7.2-x86_64.cfg
+</span></span><span class=line><span class=cl>Kickstart Metadata             : <span class=o>{}</span>
+</span></span><span class=line><span class=cl>Management Classes             : <span class=o>[]</span>
+</span></span><span class=line><span class=cl>Management Parameters          : <span class=s>&lt;&lt;inherit&gt;&gt;
+</span></span></span><span class=line><span class=cl><span class=s>Name Servers                   : []
+</span></span></span><span class=line><span class=cl><span class=s>Name Servers Search Path       : []
+</span></span></span><span class=line><span class=cl><span class=s>Owners                         : [&#39;admin&#39;]
+</span></span></span><span class=line><span class=cl><span class=s>Parent Profile                 :
+</span></span></span><span class=line><span class=cl><span class=s>Internal proxy                 :
+</span></span></span><span class=line><span class=cl><span class=s>Red Hat Management Key         : &lt;&lt;inherit</span>&gt;&gt;
+</span></span><span class=line><span class=cl>Red Hat Management Server      : <span class=s>&lt;&lt;inherit&gt;&gt;
+</span></span></span><span class=line><span class=cl><span class=s>Repos                          : []
+</span></span></span><span class=line><span class=cl><span class=s>Server Override                : &lt;&lt;inherit</span>&gt;&gt;
+</span></span><span class=line><span class=cl>Template Files                 : <span class=o>{}</span>
+</span></span><span class=line><span class=cl>Virt Auto Boot                 : <span class=m>1</span>
+</span></span><span class=line><span class=cl>Virt Bridge                    : xenbr0
+</span></span><span class=line><span class=cl>Virt CPUs                      : <span class=m>1</span>
+</span></span><span class=line><span class=cl>Virt Disk Driver Type          : raw
+</span></span><span class=line><span class=cl>Virt File Size<span class=o>(</span>GB<span class=o>)</span>             : <span class=m>5</span>
+</span></span><span class=line><span class=cl>Virt Path                      :
+</span></span><span class=line><span class=cl>Virt RAM <span class=o>(</span>MB<span class=o>)</span>                  : <span class=m>512</span>
+</span></span><span class=line><span class=cl>Virt Type                      : kvm
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># 每次修改完都要同步一次</span>
+</span></span><span class=line><span class=cl><span class=o>[</span>root@localhost kickstarts<span class=o>]</span><span class=c1># cobbler sync</span>
+</span></span></code></pre></td></tr></table></div></div><h3 id=34-安装系统 class=headerLink><a href=#34-%e5%ae%89%e8%a3%85%e7%b3%bb%e7%bb%9f class=header-mark></a>3.4 安装系统</h3><p>可以很愉快的告诉你到这里就可以安装系统了！</p><p><strong>修改Cobbler提示</strong></p><blockquote><p>非必须，不想修改请跳过直接开始安装系统</p></blockquote><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=o>[</span>root@localhost ~<span class=o>]</span><span class=c1># vim /etc/cobbler/pxe/pxedefault.template</span>
+</span></span><span class=line><span class=cl>MENU TITLE Cobbler <span class=p>|</span> http://wglee.org <span class=c1># 此处的网址可以修改为你公司的网址</span>
+</span></span><span class=line><span class=cl><span class=o>[</span>root@localhost ~<span class=o>]</span><span class=c1># cobbler sync # 修改配置都要同步</span>
+</span></span></code></pre></td></tr></table></div></div><p><a class=lightgallery href=/images/cobbler.png title=cobbler data-thumbnail=/images/cobbler.png><img loading=lazy src=/images/cobbler.png srcset="/images/cobbler.png, /images/cobbler.png 1.5x, /images/cobbler.png 2x" sizes=auto alt=/images/cobbler.png></a></p><p>OK，选择第二项就可以开始装机了。</p><h3 id=35-kscfg-文件 class=headerLink><a href=#35-kscfg-%e6%96%87%e4%bb%b6 class=header-mark></a>3.5 ks.cfg 文件</h3><blockquote><p>关于ks.cfg文件详细说明请查看：<em>ks.cfg 文件配置</em> 文档</p></blockquote><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span><span class=lnt>26
+</span><span class=lnt>27
+</span><span class=lnt>28
+</span><span class=lnt>29
+</span><span class=lnt>30
+</span><span class=lnt>31
+</span><span class=lnt>32
+</span><span class=lnt>33
+</span><span class=lnt>34
+</span><span class=lnt>35
+</span><span class=lnt>36
+</span><span class=lnt>37
+</span><span class=lnt>38
+</span><span class=lnt>39
+</span><span class=lnt>40
+</span><span class=lnt>41
+</span><span class=lnt>42
+</span><span class=lnt>43
+</span><span class=lnt>44
+</span><span class=lnt>45
+</span><span class=lnt>46
+</span><span class=lnt>47
+</span><span class=lnt>48
+</span><span class=lnt>49
+</span><span class=lnt>50
+</span><span class=lnt>51
+</span><span class=lnt>52
+</span><span class=lnt>53
+</span><span class=lnt>54
+</span><span class=lnt>55
+</span><span class=lnt>56
+</span><span class=lnt>57
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=o>[</span>root@localhost kickstarts<span class=o>]</span><span class=c1># cat BClinux-7.2-x86_64.cfg</span>
+</span></span><span class=line><span class=cl><span class=c1>#version=DEVEL</span>
+</span></span><span class=line><span class=cl>install
+</span></span><span class=line><span class=cl><span class=c1># System authorization information</span>
+</span></span><span class=line><span class=cl>auth --enableshadow --passalgo<span class=o>=</span>sha512
+</span></span><span class=line><span class=cl><span class=c1># Use Network installation</span>
+</span></span><span class=line><span class=cl>url --url<span class=o>=</span><span class=nv>$tree</span> <span class=c1># 这些$开头的变量都是调用配置文件里的值。</span>
+</span></span><span class=line><span class=cl><span class=c1># Run the Setup Agent on first boot</span>
+</span></span><span class=line><span class=cl>firstboot --enable
+</span></span><span class=line><span class=cl>ignoredisk --only-use<span class=o>=</span>sda
+</span></span><span class=line><span class=cl><span class=c1># Keyboard layouts</span>
+</span></span><span class=line><span class=cl>keyboard --vckeymap<span class=o>=</span>us --xlayouts<span class=o>=</span><span class=s1>&#39;us&#39;</span>
+</span></span><span class=line><span class=cl><span class=c1># System language</span>
+</span></span><span class=line><span class=cl>lang en_US.UTF-8
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># Network information</span>
+</span></span><span class=line><span class=cl>network  --bootproto<span class=o>=</span>dhcp --onboot<span class=o>=</span>on
+</span></span><span class=line><span class=cl>network  --hostname<span class=o>=</span>localhost.localdomain
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># Root password</span>
+</span></span><span class=line><span class=cl>rootpw  --iscrypted <span class=nv>$default_password_crypted</span> <span class=c1># $开头的变量，调用配置文件里的值。</span>
+</span></span><span class=line><span class=cl><span class=c1># System services</span>
+</span></span><span class=line><span class=cl>services --disabled<span class=o>=</span><span class=s2>&#34;chronyd&#34;</span>
+</span></span><span class=line><span class=cl>firewall --disabled
+</span></span><span class=line><span class=cl>selinux --disabled
+</span></span><span class=line><span class=cl><span class=c1># Reboot after installation</span>
+</span></span><span class=line><span class=cl>reboot
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># System timezone</span>
+</span></span><span class=line><span class=cl>timezone Asia/Shanghai --isUtc
+</span></span><span class=line><span class=cl><span class=c1># System bootloader configuration</span>
+</span></span><span class=line><span class=cl>bootloader --append<span class=o>=</span><span class=s2>&#34; crashkernel=auto&#34;</span> --location<span class=o>=</span>mbr --boot-drive<span class=o>=</span>sda
+</span></span><span class=line><span class=cl><span class=c1># Partition clearing information</span>
+</span></span><span class=line><span class=cl>clearpart --none --initlabel
+</span></span><span class=line><span class=cl><span class=c1># Disk partitioning information</span>
+</span></span><span class=line><span class=cl>part /boot --fstype<span class=o>=</span><span class=s2>&#34;ext4&#34;</span> --ondisk<span class=o>=</span>sda --size<span class=o>=</span><span class=m>500</span>
+</span></span><span class=line><span class=cl>part pv.01 --fstype<span class=o>=</span><span class=s2>&#34;lvmpv&#34;</span> --ondisk<span class=o>=</span>sda --grow --size<span class=o>=</span><span class=m>1</span>
+</span></span><span class=line><span class=cl>volgroup bclinux pv.01
+</span></span><span class=line><span class=cl>logvol /  --fstype<span class=o>=</span><span class=s2>&#34;xfs&#34;</span> --size<span class=o>=</span><span class=m>10240</span> --name<span class=o>=</span>root --vgname<span class=o>=</span>bclinux
+</span></span><span class=line><span class=cl>logvol swap  --fstype<span class=o>=</span><span class=s2>&#34;swap&#34;</span> --size<span class=o>=</span><span class=m>1024</span> --name<span class=o>=</span>swap --vgname<span class=o>=</span>bclinux
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>%packages
+</span></span><span class=line><span class=cl>@^minimal
+</span></span><span class=line><span class=cl>@core
+</span></span><span class=line><span class=cl>@security-tools
+</span></span><span class=line><span class=cl>kexec-tools
+</span></span><span class=line><span class=cl>vim
+</span></span><span class=line><span class=cl>wget
+</span></span><span class=line><span class=cl>%end
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>%addon com_redhat_kdump --enable --reserve-mb<span class=o>=</span><span class=s1>&#39;auto&#39;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>%end
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>%post
+</span></span><span class=line><span class=cl>wget -O /etc/yum.repos.d/epel.repo http://mirrors.aliyun.com/repo/epel-7.repo
+</span></span><span class=line><span class=cl>%end
+</span></span></code></pre></td></tr></table></div></div></div><div class=post-footer id=post-footer><div class=post-info><div class=post-info-line><div class=post-info-mod><span>更新于 2021-06-12</span></div><div class=post-info-license></div></div><div class=post-info-line><div class=post-info-md><span><a class=link-to-mardown href=/posts/cobbler/index.md target=_blank rel="noopener noreferrer">阅读原始文档</a></span></div><div class=post-info-share><span><a href=# title="分享到 Twitter" data-sharer=twitter data-url=https://liwanggui.com/posts/cobbler/ data-title="使用 cobbler 批量部署 bclinux7.2" data-hashtags=cobbler><i class="fab fa-twitter fa-fw"></i></a><a href=# title="分享到 Facebook" data-sharer=facebook data-url=https://liwanggui.com/posts/cobbler/ data-hashtag=cobbler><i class="fab fa-facebook-square fa-fw"></i></a><a href=# title="分享到 WhatsApp" data-sharer=whatsapp data-url=https://liwanggui.com/posts/cobbler/ data-title="使用 cobbler 批量部署 bclinux7.2" data-web><i class="fab fa-whatsapp fa-fw"></i></a><a href=# title="分享到 Line" data-sharer=line data-url=https://liwanggui.com/posts/cobbler/ data-title="使用 cobbler 批量部署 bclinux7.2"><i data-svg-src=/lib/simple-icons/icons/line.min.svg></i></a><a href=# title="分享到 微博" data-sharer=weibo data-url=https://liwanggui.com/posts/cobbler/ data-title="使用 cobbler 批量部署 bclinux7.2"><i class="fab fa-weibo fa-fw"></i></a><a href=# title="分享到 Myspace" data-sharer=myspace data-url=https://liwanggui.com/posts/cobbler/ data-title="使用 cobbler 批量部署 bclinux7.2" data-description><i data-svg-src=/lib/simple-icons/icons/myspace.min.svg></i></a><a href=# title="分享到 Blogger" data-sharer=blogger data-url=https://liwanggui.com/posts/cobbler/ data-title="使用 cobbler 批量部署 bclinux7.2" data-description><i class="fab fa-blogger fa-fw"></i></a><a href=# title="分享到 百度" data-sharer=baidu data-url=https://liwanggui.com/posts/cobbler/ data-title="使用 cobbler 批量部署 bclinux7.2"><i data-svg-src=/lib/simple-icons/icons/baidu.min.svg></i></a><a href=# title="分享到 Evernote" data-sharer=evernote data-url=https://liwanggui.com/posts/cobbler/ data-title="使用 cobbler 批量部署 bclinux7.2"><i class="fab fa-evernote fa-fw"></i></a></span></div></div></div><div class=post-info-more><section class=post-tags><i class="fas fa-tags fa-fw"></i>&nbsp;<a href=/tags/cobbler/>cobbler</a></section><section><span><a href=javascript:void(0); onclick=window.history.back()>返回</a></span>&nbsp;|&nbsp;<span><a href=/>主页</a></span></section></div><div class=post-nav><a href=/posts/ansible-playbook/ class=prev rel=prev title="Ansible Playbook 示例"><i class="fas fa-angle-left fa-fw"></i>Ansible Playbook 示例</a>
+<a href=/posts/windows-cmd/ class=next rel=next title="Windows 常用 CMD 命令">Windows 常用 CMD 命令<i class="fas fa-angle-right fa-fw"></i></a></div></div><div id=comments><div id=giscus></div><noscript>Please enable JavaScript to view the comments powered by <a href=https://giscus.app/>giscus</a>.</noscript></div></article></div></main><footer class=footer><div class=footer-container><div class=footer-line>由 <a href=https://gohugo.io/ target=_blank rel="noopener noreferrer" title="Hugo 0.101.0">Hugo</a> 强力驱动&nbsp;|&nbsp;主题 - <a href=https://github.com/HEIGE-PCloud/DoIt target=_blank rel="noopener noreferrer" title="DoIt 0.3.0"><i class="far fa-edit fa-fw"></i> DoIt</a></div><div class=footer-line><i class="far fa-copyright fa-fw"></i><span itemprop=copyrightYear>2017 - 2024</span><span class=author itemprop=copyrightHolder>&nbsp;<a href=/about/ target=_blank rel="noopener noreferrer">李王贵</a></span><span class=icp-splitter>&nbsp;|&nbsp;</span><br class=icp-br><span class=icp><a href=https://beian.miit.gov.cn target=_blank>赣ICP备2023001395号</a></span></div><div class=footer-line></div><div class=footer-line></div></div></footer></div><div id=fixed-buttons><a href=#back-to-top id=back-to-top-button class=fixed-button title=回到顶部><i class="fas fa-arrow-up fa-fw"></i>
+</a><a href=# id=view-comments class=fixed-button title=查看评论><i class="fas fa-comment fa-fw"></i></a></div><div id=cookieconsent-container></div><div class=assets><link rel=stylesheet href=/lib/lightgallery/lightgallery.min.css><link rel=stylesheet href=/lib/katex/katex.min.css><link rel=preload as=style onload='this.onload=null,this.rel="stylesheet"' href=/lib/katex/copy-tex.min.css><noscript><link rel=stylesheet href=/lib/katex/copy-tex.min.css></noscript><link rel=stylesheet href=/lib/cookieconsent/cookieconsent.min.css><script type=text/javascript>window.config={code:{copyTitle:"复制到剪贴板",maxShownLines:10},comment:{giscus:{darkTheme:"dark",dataCategory:"Announcements",dataCategoryId:"DIC_kwDOE7mEQ84CY9pq",dataEmitMetadata:"1",dataInputPosition:"top",dataLang:"zh-CN",dataMapping:"pathname",dataReactionsEnabled:"1",dataRepo:"liwanggui/liwanggui.github.io",dataRepoId:"MDEwOlJlcG9zaXRvcnkzMzA5MjUxMjM=",dataStrict:"0",lightTheme:"light"}},cookieconsent:{content:{dismiss:"同意",link:"了解更多",message:"本网站使用 Cookies 来改善您的浏览体验."},enable:!0,palette:{button:{background:"#f0f0f0"},popup:{background:"#1aa3ff"}},theme:"edgeless"},lightGallery:{actualSize:!1,exThumbImage:"data-thumbnail",hideBarsDelay:2e3,selector:".lightgallery",speed:400,thumbContHeight:80,thumbWidth:80,thumbnail:!0},math:{delimiters:[{display:!0,left:"$$",right:"$$"},{display:!0,left:"\\[",right:"\\]"},{display:!1,left:"$",right:"$"},{display:!1,left:"\\(",right:"\\)"}],strict:!1},search:{distance:100,findAllMatches:!1,fuseIndexURL:"/index.json",highlightTag:"em",ignoreFieldNorm:!1,ignoreLocation:!1,isCaseSensitive:!1,location:0,maxResultLength:10,minMatchCharLength:2,noResultsFound:"没有找到结果",snippetLength:50,threshold:.3,type:"fuse",useExtendedSearch:!1},sharerjs:!0,twemoji:!0}</script><script type=text/javascript src=/js/giscus.min.js defer></script><script type=text/javascript src=/lib/twemoji/twemoji.min.js defer></script><script type=text/javascript src=/js/twemoji.min.js defer></script><script type=text/javascript src=/lib/lightgallery/lightgallery.min.js></script><script type=text/javascript src=/lib/lightgallery/lg-thumbnail.min.js></script><script type=text/javascript src=/lib/lightgallery/lg-zoom.min.js></script><script type=text/javascript src=/lib/clipboard/clipboard.min.js></script><script type=text/javascript src=/lib/sharer/sharer.min.js></script><script type=text/javascript src=/lib/katex/katex.min.js defer></script><script type=text/javascript src=/lib/katex/auto-render.min.js defer></script><script type=text/javascript src=/lib/katex/copy-tex.min.js defer></script><script type=text/javascript src=/lib/katex/mhchem.min.js defer></script><script type=text/javascript src=/js/katex.min.js defer></script><script type=text/javascript src=/lib/cookieconsent/cookieconsent.min.js defer></script><script type=text/javascript src=/js/cookieconsent.min.js defer></script><script type=text/javascript src=/js/theme.min.js defer></script></div></body></html>

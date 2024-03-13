@@ -1,0 +1,131 @@
+<!doctype html><html lang=zh-cn><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><meta name=robots content="noodp"><title>docker - 私有仓库部署 (harbor) - _浅行</title><meta name=Description content="_浅行"><meta property="og:title" content="docker - 私有仓库部署 (harbor)"><meta property="og:description" content="harbor 使用 docker 容器的方式部署，所以在部署 harbor 前需要安装好 docker 及单机编排工具 docker-compose 下载 harbor 离线安装包harbor 托管于 Github，在 Github 上有提供完整的离线安装"><meta property="og:type" content="article"><meta property="og:url" content="https://liwanggui.com/posts/docker-harbor/"><meta property="og:image" content="https://liwanggui.com/logo.png"><meta property="article:section" content="posts"><meta property="article:published_time" content="2021-03-06T11:54:16+08:00"><meta property="article:modified_time" content="2021-03-06T11:54:16+08:00"><meta name=twitter:card content="summary_large_image"><meta name=twitter:image content="https://liwanggui.com/logo.png"><meta name=twitter:title content="docker - 私有仓库部署 (harbor)"><meta name=twitter:description content="harbor 使用 docker 容器的方式部署，所以在部署 harbor 前需要安装好 docker 及单机编排工具 docker-compose 下载 harbor 离线安装包harbor 托管于 Github，在 Github 上有提供完整的离线安装"><meta name=application-name content="LoveIt"><meta name=apple-mobile-web-app-title content="LoveIt"><meta name=theme-color content="#f8f8f8"><meta name=msapplication-TileColor content="#da532c"><link rel=canonical href=https://liwanggui.com/posts/docker-harbor/><link rel=prev href=https://liwanggui.com/posts/docker-dockerfile/><link rel=next href=https://liwanggui.com/posts/docker-cli/><link rel=stylesheet href=/lib/normalize/normalize.min.css><link rel=stylesheet href=/css/color.css><link rel=stylesheet href=/css/style.min.css><link rel=preload as=style onload='this.onload=null,this.rel="stylesheet"' href=/lib/fontawesome-free/all.min.css><noscript><link rel=stylesheet href=/lib/fontawesome-free/all.min.css></noscript><link rel=preload as=style onload='this.onload=null,this.rel="stylesheet"' href=/lib/animate/animate.min.css><noscript><link rel=stylesheet href=/lib/animate/animate.min.css></noscript><script type=application/ld+json>{"@context":"http://schema.org","@type":"BlogPosting","headline":"docker - 私有仓库部署 (harbor)","inLanguage":"zh-CN","mainEntityOfPage":{"@type":"WebPage","@id":"https:\/\/liwanggui.com\/posts\/docker-harbor\/"},"genre":"posts","keywords":"docker, harbor","wordcount":429,"url":"https:\/\/liwanggui.com\/posts\/docker-harbor\/","datePublished":"2021-03-06T11:54:16+08:00","dateModified":"2021-03-06T11:54:16+08:00","publisher":{"@type":"Organization","name":""},"author":{"@type":"Person","name":"李王贵"},"description":""}</script><script src=//instant.page/5.1.1 defer type=module integrity=sha384-MWfCL6g1OTGsbSwfuMHc8+8J2u71/LA8dzlIN3ycajckxuZZmF+DNjdm7O6H3PSq></script></head><body header-desktop=fixed header-mobile=auto><script type=text/javascript>function setTheme(e){document.body.setAttribute("theme",e),document.documentElement.style.setProperty("color-scheme",e==="light"?"light":"dark")}function saveTheme(e){window.localStorage&&localStorage.setItem("theme",e)}function getMeta(e){const t=document.getElementsByTagName("meta");for(let n=0;n<t.length;n++)if(t[n].getAttribute("name")===e)return t[n];return""}if(window.localStorage&&localStorage.getItem("theme")){let e=localStorage.getItem("theme");e==="light"||e==="dark"||e==="black"?setTheme(e):setTheme(window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light")}else"auto"==="light"||"auto"==="dark"||"auto"==="black"?(setTheme("auto"),saveTheme("auto")):(saveTheme("auto"),setTheme(window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"));let metaColors={light:"#f8f8f8",dark:"#252627",black:"#000000"};getMeta("theme-color").content=metaColors[document.body.getAttribute("theme")]</script><div id=back-to-top></div><div id=mask></div><div class=wrapper><header class=desktop id=header-desktop><div class=header-wrapper><div class=header-title><a href=/ title=_浅行><span class=header-title-pre><i class='far fa-kiss-wink-heart fa-fw'></i></span>_浅行</a></div><div class=menu><div class=menu-inner><a class=menu-item href=/posts/ title=文章列表>文章 </a><a class=menu-item href=/tags/ title=标签云>标签 </a><a class=menu-item href=/categories/ title=分类>分类 </a><a class=menu-item href=https://cook.liwanggui.com/ title=程序员做饭指南 rel="noopener noreferrer" target=_blank>烹饪 </a><a class=menu-item href=/about/index.html title=关于>关于 </a><span class="menu-item delimiter"></span><span class="menu-item search" id=search-desktop>
+<input type=text placeholder=搜索文章标题或内容... id=search-input-desktop>
+<a href=# class="search-button search-toggle" id=search-toggle-desktop title=搜索><i class="fas fa-search fa-fw"></i></a>
+<a href=# class="search-button search-clear" id=search-clear-desktop title=清空><i class="fas fa-times-circle fa-fw"></i></a>
+<span class="search-button search-loading" id=search-loading-desktop><i class="fas fa-spinner fa-fw fa-spin"></i></span>
+</span><a href=# class="menu-item theme-switch" title=切换主题><i class="fas fa-adjust fa-fw"></i></a></div></div></div></header><header class=mobile id=header-mobile><div class=header-container><div class=header-wrapper><div class=header-title><a href=/ title=_浅行><span class=header-title-pre><i class='far fa-kiss-wink-heart fa-fw'></i></span>_浅行</a></div><div class=menu-toggle id=menu-toggle-mobile><span></span><span></span><span></span></div></div><div class=menu id=menu-mobile><div class=search-wrapper><div class="search mobile" id=search-mobile><input type=text placeholder=搜索文章标题或内容... id=search-input-mobile>
+<a href=# class="search-button search-toggle" id=search-toggle-mobile title=搜索><i class="fas fa-search fa-fw"></i></a>
+<a href=# class="search-button search-clear" id=search-clear-mobile title=清空><i class="fas fa-times-circle fa-fw"></i></a>
+<span class="search-button search-loading" id=search-loading-mobile><i class="fas fa-spinner fa-fw fa-spin"></i></span></div><a href=# class=search-cancel id=search-cancel-mobile>取消</a></div><a class=menu-item href=/posts/ title=文章列表>文章</a><a class=menu-item href=/tags/ title=标签云>标签</a><a class=menu-item href=/categories/ title=分类>分类</a><a class=menu-item href=https://cook.liwanggui.com/ title=程序员做饭指南 rel="noopener noreferrer" target=_blank>烹饪</a><a class=menu-item href=/about/index.html title=关于>关于</a><a href=# class="menu-item theme-switch" title=切换主题>
+<i class="fas fa-adjust fa-fw"></i></a></div></div></header><div class="search-dropdown desktop"><div id=search-dropdown-desktop></div></div><div class="search-dropdown mobile"><div id=search-dropdown-mobile></div></div><main class=main><div class=container><div class=toc id=toc-auto><h2 class=toc-title>目录</h2><div class=toc-content id=toc-content-auto><nav id=TableOfContents><ul><li><a href=#下载-harbor-离线安装包>下载 harbor 离线安装包</a></li><li><a href=#安装-docker-compose>安装 docker-compose</a></li><li><a href=#部署-harbor>部署 harbor</a></li><li><a href=#配置-nginx-反代>配置 nginx 反代</a></li></ul></nav></div></div><script>document.getElementsByTagName("main")[0].setAttribute("pageStyle","normal")</script><script>document.getElementsByTagName("main")[0].setAttribute("autoTOC","true")</script><article class="page single"><h1 class="single-title animate__animated animate__flipInX">docker - 私有仓库部署 (harbor)</h1><div class=post-meta><div class=post-meta-line><span class=post-author><i class="author fas fa-user-circle fa-fw"></i><a href=/about/ title=Author rel=author class=author>李王贵</a>
+</span>&nbsp;<span class=post-category>收录于 </span>&nbsp;<span class=post-category>类别 <a href=/categories/container/><i class="far fa-folder fa-fw"></i>container</a></span></div><div class=post-meta-line><i class="far fa-calendar-alt fa-fw"></i>&nbsp;<time datetime=2021-03-06>2021-03-06</time>&nbsp;<i class="far fa-edit fa-fw"></i>&nbsp;<time datetime=2021-03-06>2021-03-06</time>&nbsp;<i class="fas fa-pencil-alt fa-fw"></i>&nbsp;约 429 字&nbsp;
+<i class="far fa-clock fa-fw"></i>&nbsp;预计阅读 1 分钟&nbsp;</div></div><div class="details toc" id=toc-static kept><div class="details-summary toc-title"><span>目录</span>
+<span><i class="details-icon fas fa-angle-right"></i></span></div><div class="details-content toc-content" id=toc-content-static><nav id=TableOfContents><ul><li><a href=#下载-harbor-离线安装包>下载 harbor 离线安装包</a></li><li><a href=#安装-docker-compose>安装 docker-compose</a></li><li><a href=#部署-harbor>部署 harbor</a></li><li><a href=#配置-nginx-反代>配置 nginx 反代</a></li></ul></nav></div></div><div class=content id=content><p><code>harbor</code> 使用 <code>docker</code> 容器的方式部署，所以在部署 <code>harbor</code> 前需要安装好 <code>docker</code> 及单机编排工具 <code>docker-compose</code></p><h2 id=下载-harbor-离线安装包 class=headerLink><a href=#%e4%b8%8b%e8%bd%bd-harbor-%e7%a6%bb%e7%ba%bf%e5%ae%89%e8%a3%85%e5%8c%85 class=header-mark></a>下载 harbor 离线安装包</h2><p><code>harbor</code> 托管于 Github，在 Github 上有提供完整的离线安装直接下载即可。 <a href=https://github.com/goharbor/harbor target=_blank rel="noopener noreferrer">Github 地址</a></p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>root@ops:/opt# wget https://github.com/goharbor/harbor/releases/download/v2.1.0/harbor-offline-installer-v2.1.0.tgz
+</span></span></code></pre></td></tr></table></div></div><h2 id=安装-docker-compose class=headerLink><a href=#%e5%ae%89%e8%a3%85-docker-compose class=header-mark></a>安装 docker-compose</h2><p>由于 <code>harbor</code> 依赖于 <code>docker-compose</code> 完成单机编排工作，需要先安装好</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>root@ops:/opt# curl -L <span class=s2>&#34;https://github.com/docker/compose/releases/download/1.27.4/docker-compose-</span><span class=k>$(</span>uname -s<span class=k>)</span><span class=s2>-</span><span class=k>$(</span>uname -m<span class=k>)</span><span class=s2>&#34;</span> -o /usr/local/bin/docker-compose
+</span></span><span class=line><span class=cl>root@ops:/opt# chmod +x /usr/local/bin/docker-compose
+</span></span></code></pre></td></tr></table></div></div><h2 id=部署-harbor class=headerLink><a href=#%e9%83%a8%e7%bd%b2-harbor class=header-mark></a>部署 harbor</h2><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span><span class=lnt>26
+</span><span class=lnt>27
+</span><span class=lnt>28
+</span><span class=lnt>29
+</span><span class=lnt>30
+</span><span class=lnt>31
+</span><span class=lnt>32
+</span><span class=lnt>33
+</span><span class=lnt>34
+</span><span class=lnt>35
+</span><span class=lnt>36
+</span><span class=lnt>37
+</span><span class=lnt>38
+</span><span class=lnt>39
+</span><span class=lnt>40
+</span><span class=lnt>41
+</span><span class=lnt>42
+</span><span class=lnt>43
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>root@ops:/opt# tar xzf harbor-offline-installer-v2.1.0.tgz
+</span></span><span class=line><span class=cl>root@ops:/opt# <span class=nb>cd</span> harbor
+</span></span><span class=line><span class=cl><span class=c1># 复制一份harbor配置文件</span>
+</span></span><span class=line><span class=cl>root@ops:/opt/harbor# cp harbor.yml.tmpl harbor.yml
+</span></span><span class=line><span class=cl>root@ops:/opt/harbor# egrep -v <span class=s1>&#39;^$|#&#39;</span> harbor.yml
+</span></span><span class=line><span class=cl>hostname: harbor.host.com  <span class=c1># harbor 站点域名</span>
+</span></span><span class=line><span class=cl>http:
+</span></span><span class=line><span class=cl>  port: <span class=m>801</span>   <span class=c1># 修改端口</span>
+</span></span><span class=line><span class=cl>harbor_admin_password: Harbor12345  <span class=c1># harbor 管理员默认密码</span>
+</span></span><span class=line><span class=cl>database:
+</span></span><span class=line><span class=cl>  password: root123
+</span></span><span class=line><span class=cl>  max_idle_conns: <span class=m>50</span>
+</span></span><span class=line><span class=cl>  max_open_conns: <span class=m>100</span>
+</span></span><span class=line><span class=cl>data_volume: /data/harbor  <span class=c1># harbor 数据存储路径</span>
+</span></span><span class=line><span class=cl>clair:
+</span></span><span class=line><span class=cl>  updaters_interval: <span class=m>12</span>
+</span></span><span class=line><span class=cl>trivy:
+</span></span><span class=line><span class=cl>  ignore_unfixed: <span class=nb>false</span>
+</span></span><span class=line><span class=cl>  skip_update: <span class=nb>false</span>
+</span></span><span class=line><span class=cl>  insecure: <span class=nb>false</span>
+</span></span><span class=line><span class=cl>jobservice:
+</span></span><span class=line><span class=cl>  max_job_workers: <span class=m>10</span>
+</span></span><span class=line><span class=cl>notification:
+</span></span><span class=line><span class=cl>  webhook_job_max_retry: <span class=m>10</span>
+</span></span><span class=line><span class=cl>chart:
+</span></span><span class=line><span class=cl>  absolute_url: disabled
+</span></span><span class=line><span class=cl>log:
+</span></span><span class=line><span class=cl>  level: info
+</span></span><span class=line><span class=cl>  local:
+</span></span><span class=line><span class=cl>    rotate_count: <span class=m>50</span>
+</span></span><span class=line><span class=cl>    rotate_size: 200M
+</span></span><span class=line><span class=cl>    location: /data/harbor/logs   <span class=c1># harbor 日志文件路径</span>
+</span></span><span class=line><span class=cl>_version: 2.0.0
+</span></span><span class=line><span class=cl>proxy:
+</span></span><span class=line><span class=cl>  http_proxy:
+</span></span><span class=line><span class=cl>  https_proxy:
+</span></span><span class=line><span class=cl>  no_proxy:
+</span></span><span class=line><span class=cl>  components:
+</span></span><span class=line><span class=cl>    - core
+</span></span><span class=line><span class=cl>    - jobservice
+</span></span><span class=line><span class=cl>    - clair
+</span></span><span class=line><span class=cl>    - trivy
+</span></span><span class=line><span class=cl>root@ops:/opt/harbor# ./install <span class=c1># 开始部署 harbor</span>
+</span></span></code></pre></td></tr></table></div></div><h2 id=配置-nginx-反代 class=headerLink><a href=#%e9%85%8d%e7%bd%ae-nginx-%e5%8f%8d%e4%bb%a3 class=header-mark></a>配置 nginx 反代</h2><blockquote><p>部署完成后可以配置 nginx 反代对外提供服务，nginx 配置注意加大 <code>client_max_body_size</code> 参数值.</p></blockquote><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-nginx data-lang=nginx><span class=line><span class=cl><span class=k>server</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=kn>listen</span> <span class=mi>80</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=kn>server_name</span> <span class=s>harbor.wfugui.com</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=c1># 注意此项配置
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=kn>client_max_body_size</span> <span class=mi>2000m</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=kn>location</span> <span class=s>/</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=kn>proxy_pass</span> <span class=s>https://localhost:801</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>        <span class=kn>include</span> <span class=s>proxy.conf</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></td></tr></table></div></div><blockquote><p>注意: 最新版本的 harbor 如果不启用证书验证连接(https) 在 push 镜像时会不成功</p></blockquote></div><div class=post-footer id=post-footer><div class=post-info><div class=post-info-line><div class=post-info-mod><span>更新于 2021-03-06</span></div><div class=post-info-license></div></div><div class=post-info-line><div class=post-info-md><span><a class=link-to-mardown href=/posts/docker-harbor/index.md target=_blank rel="noopener noreferrer">阅读原始文档</a></span></div><div class=post-info-share><span><a href=# title="分享到 Twitter" data-sharer=twitter data-url=https://liwanggui.com/posts/docker-harbor/ data-title="docker - 私有仓库部署 (harbor)" data-hashtags=docker,harbor><i class="fab fa-twitter fa-fw"></i></a><a href=# title="分享到 Facebook" data-sharer=facebook data-url=https://liwanggui.com/posts/docker-harbor/ data-hashtag=docker><i class="fab fa-facebook-square fa-fw"></i></a><a href=# title="分享到 WhatsApp" data-sharer=whatsapp data-url=https://liwanggui.com/posts/docker-harbor/ data-title="docker - 私有仓库部署 (harbor)" data-web><i class="fab fa-whatsapp fa-fw"></i></a><a href=# title="分享到 Line" data-sharer=line data-url=https://liwanggui.com/posts/docker-harbor/ data-title="docker - 私有仓库部署 (harbor)"><i data-svg-src=/lib/simple-icons/icons/line.min.svg></i></a><a href=# title="分享到 微博" data-sharer=weibo data-url=https://liwanggui.com/posts/docker-harbor/ data-title="docker - 私有仓库部署 (harbor)"><i class="fab fa-weibo fa-fw"></i></a><a href=# title="分享到 Myspace" data-sharer=myspace data-url=https://liwanggui.com/posts/docker-harbor/ data-title="docker - 私有仓库部署 (harbor)" data-description><i data-svg-src=/lib/simple-icons/icons/myspace.min.svg></i></a><a href=# title="分享到 Blogger" data-sharer=blogger data-url=https://liwanggui.com/posts/docker-harbor/ data-title="docker - 私有仓库部署 (harbor)" data-description><i class="fab fa-blogger fa-fw"></i></a><a href=# title="分享到 百度" data-sharer=baidu data-url=https://liwanggui.com/posts/docker-harbor/ data-title="docker - 私有仓库部署 (harbor)"><i data-svg-src=/lib/simple-icons/icons/baidu.min.svg></i></a><a href=# title="分享到 Evernote" data-sharer=evernote data-url=https://liwanggui.com/posts/docker-harbor/ data-title="docker - 私有仓库部署 (harbor)"><i class="fab fa-evernote fa-fw"></i></a></span></div></div></div><div class=post-info-more><section class=post-tags><i class="fas fa-tags fa-fw"></i>&nbsp;<a href=/tags/docker/>docker</a>,&nbsp;<a href=/tags/harbor/>harbor</a></section><section><span><a href=javascript:void(0); onclick=window.history.back()>返回</a></span>&nbsp;|&nbsp;<span><a href=/>主页</a></span></section></div><div class=post-nav><a href=/posts/docker-dockerfile/ class=prev rel=prev title="docker - Dockerfile 相关指令"><i class="fas fa-angle-left fa-fw"></i>docker - Dockerfile 相关指令</a>
+<a href=/posts/docker-cli/ class=next rel=next title="docker - 基本操作">docker - 基本操作<i class="fas fa-angle-right fa-fw"></i></a></div></div><div id=comments><div id=giscus></div><noscript>Please enable JavaScript to view the comments powered by <a href=https://giscus.app/>giscus</a>.</noscript></div></article></div></main><footer class=footer><div class=footer-container><div class=footer-line>由 <a href=https://gohugo.io/ target=_blank rel="noopener noreferrer" title="Hugo 0.101.0">Hugo</a> 强力驱动&nbsp;|&nbsp;主题 - <a href=https://github.com/HEIGE-PCloud/DoIt target=_blank rel="noopener noreferrer" title="DoIt 0.3.0"><i class="far fa-edit fa-fw"></i> DoIt</a></div><div class=footer-line><i class="far fa-copyright fa-fw"></i><span itemprop=copyrightYear>2017 - 2024</span><span class=author itemprop=copyrightHolder>&nbsp;<a href=/about/ target=_blank rel="noopener noreferrer">李王贵</a></span><span class=icp-splitter>&nbsp;|&nbsp;</span><br class=icp-br><span class=icp><a href=https://beian.miit.gov.cn target=_blank>赣ICP备2023001395号</a></span></div><div class=footer-line></div><div class=footer-line></div></div></footer></div><div id=fixed-buttons><a href=#back-to-top id=back-to-top-button class=fixed-button title=回到顶部><i class="fas fa-arrow-up fa-fw"></i>
+</a><a href=# id=view-comments class=fixed-button title=查看评论><i class="fas fa-comment fa-fw"></i></a></div><div id=cookieconsent-container></div><div class=assets><link rel=stylesheet href=/lib/lightgallery/lightgallery.min.css><link rel=stylesheet href=/lib/katex/katex.min.css><link rel=preload as=style onload='this.onload=null,this.rel="stylesheet"' href=/lib/katex/copy-tex.min.css><noscript><link rel=stylesheet href=/lib/katex/copy-tex.min.css></noscript><link rel=stylesheet href=/lib/cookieconsent/cookieconsent.min.css><script type=text/javascript>window.config={code:{copyTitle:"复制到剪贴板",maxShownLines:10},comment:{giscus:{darkTheme:"dark",dataCategory:"Announcements",dataCategoryId:"DIC_kwDOE7mEQ84CY9pq",dataEmitMetadata:"1",dataInputPosition:"top",dataLang:"zh-CN",dataMapping:"pathname",dataReactionsEnabled:"1",dataRepo:"liwanggui/liwanggui.github.io",dataRepoId:"MDEwOlJlcG9zaXRvcnkzMzA5MjUxMjM=",dataStrict:"0",lightTheme:"light"}},cookieconsent:{content:{dismiss:"同意",link:"了解更多",message:"本网站使用 Cookies 来改善您的浏览体验."},enable:!0,palette:{button:{background:"#f0f0f0"},popup:{background:"#1aa3ff"}},theme:"edgeless"},lightGallery:{actualSize:!1,exThumbImage:"data-thumbnail",hideBarsDelay:2e3,selector:".lightgallery",speed:400,thumbContHeight:80,thumbWidth:80,thumbnail:!0},math:{delimiters:[{display:!0,left:"$$",right:"$$"},{display:!0,left:"\\[",right:"\\]"},{display:!1,left:"$",right:"$"},{display:!1,left:"\\(",right:"\\)"}],strict:!1},search:{distance:100,findAllMatches:!1,fuseIndexURL:"/index.json",highlightTag:"em",ignoreFieldNorm:!1,ignoreLocation:!1,isCaseSensitive:!1,location:0,maxResultLength:10,minMatchCharLength:2,noResultsFound:"没有找到结果",snippetLength:50,threshold:.3,type:"fuse",useExtendedSearch:!1},sharerjs:!0,twemoji:!0}</script><script type=text/javascript src=/js/giscus.min.js defer></script><script type=text/javascript src=/lib/twemoji/twemoji.min.js defer></script><script type=text/javascript src=/js/twemoji.min.js defer></script><script type=text/javascript src=/lib/lightgallery/lightgallery.min.js></script><script type=text/javascript src=/lib/lightgallery/lg-thumbnail.min.js></script><script type=text/javascript src=/lib/lightgallery/lg-zoom.min.js></script><script type=text/javascript src=/lib/clipboard/clipboard.min.js></script><script type=text/javascript src=/lib/sharer/sharer.min.js></script><script type=text/javascript src=/lib/katex/katex.min.js defer></script><script type=text/javascript src=/lib/katex/auto-render.min.js defer></script><script type=text/javascript src=/lib/katex/copy-tex.min.js defer></script><script type=text/javascript src=/lib/katex/mhchem.min.js defer></script><script type=text/javascript src=/js/katex.min.js defer></script><script type=text/javascript src=/lib/cookieconsent/cookieconsent.min.js defer></script><script type=text/javascript src=/js/cookieconsent.min.js defer></script><script type=text/javascript src=/js/theme.min.js defer></script></div></body></html>

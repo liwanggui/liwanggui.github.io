@@ -1,0 +1,197 @@
+<!doctype html><html lang=zh-cn><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><meta name=robots content="noodp"><title>fpm - 简单的包制作工具 - _浅行</title><meta name=Description content="_浅行"><meta property="og:title" content="fpm - 简单的包制作工具"><meta property="og:description" content="fpm 简介fpm 的目标是使得构建二进制包 (deb, rpm, osx 等) 变得简单快速 fpm 项目地址: https://github.com/jordansissel/fpm fpm 文档地址: https://fpm.readthedocs.io/en/latest/ fpm 依赖fpm 使用 Ruby 开发, 所以你得先安装 Ruby. 有些系统中默认"><meta property="og:type" content="article"><meta property="og:url" content="https://liwanggui.com/posts/fpm/"><meta property="og:image" content="https://liwanggui.com/logo.png"><meta property="article:section" content="posts"><meta property="article:published_time" content="2021-07-03T15:46:10+08:00"><meta property="article:modified_time" content="2021-07-03T15:46:10+08:00"><meta name=twitter:card content="summary_large_image"><meta name=twitter:image content="https://liwanggui.com/logo.png"><meta name=twitter:title content="fpm - 简单的包制作工具"><meta name=twitter:description content="fpm 简介fpm 的目标是使得构建二进制包 (deb, rpm, osx 等) 变得简单快速 fpm 项目地址: https://github.com/jordansissel/fpm fpm 文档地址: https://fpm.readthedocs.io/en/latest/ fpm 依赖fpm 使用 Ruby 开发, 所以你得先安装 Ruby. 有些系统中默认"><meta name=application-name content="LoveIt"><meta name=apple-mobile-web-app-title content="LoveIt"><meta name=theme-color content="#f8f8f8"><meta name=msapplication-TileColor content="#da532c"><link rel=canonical href=https://liwanggui.com/posts/fpm/><link rel=prev href=https://liwanggui.com/posts/find/><link rel=next href=https://liwanggui.com/posts/docker-build-ssh/><link rel=stylesheet href=/lib/normalize/normalize.min.css><link rel=stylesheet href=/css/color.css><link rel=stylesheet href=/css/style.min.css><link rel=preload as=style onload='this.onload=null,this.rel="stylesheet"' href=/lib/fontawesome-free/all.min.css><noscript><link rel=stylesheet href=/lib/fontawesome-free/all.min.css></noscript><link rel=preload as=style onload='this.onload=null,this.rel="stylesheet"' href=/lib/animate/animate.min.css><noscript><link rel=stylesheet href=/lib/animate/animate.min.css></noscript><script type=application/ld+json>{"@context":"http://schema.org","@type":"BlogPosting","headline":"fpm - 简单的包制作工具","inLanguage":"zh-CN","mainEntityOfPage":{"@type":"WebPage","@id":"https:\/\/liwanggui.com\/posts\/fpm\/"},"genre":"posts","keywords":"fpm","wordcount":1131,"url":"https:\/\/liwanggui.com\/posts\/fpm\/","datePublished":"2021-07-03T15:46:10+08:00","dateModified":"2021-07-03T15:46:10+08:00","publisher":{"@type":"Organization","name":""},"author":{"@type":"Person","name":"李王贵"},"description":""}</script><script src=//instant.page/5.1.1 defer type=module integrity=sha384-MWfCL6g1OTGsbSwfuMHc8+8J2u71/LA8dzlIN3ycajckxuZZmF+DNjdm7O6H3PSq></script></head><body header-desktop=fixed header-mobile=auto><script type=text/javascript>function setTheme(e){document.body.setAttribute("theme",e),document.documentElement.style.setProperty("color-scheme",e==="light"?"light":"dark")}function saveTheme(e){window.localStorage&&localStorage.setItem("theme",e)}function getMeta(e){const t=document.getElementsByTagName("meta");for(let n=0;n<t.length;n++)if(t[n].getAttribute("name")===e)return t[n];return""}if(window.localStorage&&localStorage.getItem("theme")){let e=localStorage.getItem("theme");e==="light"||e==="dark"||e==="black"?setTheme(e):setTheme(window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light")}else"auto"==="light"||"auto"==="dark"||"auto"==="black"?(setTheme("auto"),saveTheme("auto")):(saveTheme("auto"),setTheme(window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"));let metaColors={light:"#f8f8f8",dark:"#252627",black:"#000000"};getMeta("theme-color").content=metaColors[document.body.getAttribute("theme")]</script><div id=back-to-top></div><div id=mask></div><div class=wrapper><header class=desktop id=header-desktop><div class=header-wrapper><div class=header-title><a href=/ title=_浅行><span class=header-title-pre><i class='far fa-kiss-wink-heart fa-fw'></i></span>_浅行</a></div><div class=menu><div class=menu-inner><a class=menu-item href=/posts/ title=文章列表>文章 </a><a class=menu-item href=/tags/ title=标签云>标签 </a><a class=menu-item href=/categories/ title=分类>分类 </a><a class=menu-item href=https://cook.liwanggui.com/ title=程序员做饭指南 rel="noopener noreferrer" target=_blank>烹饪 </a><a class=menu-item href=/about/index.html title=关于>关于 </a><span class="menu-item delimiter"></span><span class="menu-item search" id=search-desktop>
+<input type=text placeholder=搜索文章标题或内容... id=search-input-desktop>
+<a href=# class="search-button search-toggle" id=search-toggle-desktop title=搜索><i class="fas fa-search fa-fw"></i></a>
+<a href=# class="search-button search-clear" id=search-clear-desktop title=清空><i class="fas fa-times-circle fa-fw"></i></a>
+<span class="search-button search-loading" id=search-loading-desktop><i class="fas fa-spinner fa-fw fa-spin"></i></span>
+</span><a href=# class="menu-item theme-switch" title=切换主题><i class="fas fa-adjust fa-fw"></i></a></div></div></div></header><header class=mobile id=header-mobile><div class=header-container><div class=header-wrapper><div class=header-title><a href=/ title=_浅行><span class=header-title-pre><i class='far fa-kiss-wink-heart fa-fw'></i></span>_浅行</a></div><div class=menu-toggle id=menu-toggle-mobile><span></span><span></span><span></span></div></div><div class=menu id=menu-mobile><div class=search-wrapper><div class="search mobile" id=search-mobile><input type=text placeholder=搜索文章标题或内容... id=search-input-mobile>
+<a href=# class="search-button search-toggle" id=search-toggle-mobile title=搜索><i class="fas fa-search fa-fw"></i></a>
+<a href=# class="search-button search-clear" id=search-clear-mobile title=清空><i class="fas fa-times-circle fa-fw"></i></a>
+<span class="search-button search-loading" id=search-loading-mobile><i class="fas fa-spinner fa-fw fa-spin"></i></span></div><a href=# class=search-cancel id=search-cancel-mobile>取消</a></div><a class=menu-item href=/posts/ title=文章列表>文章</a><a class=menu-item href=/tags/ title=标签云>标签</a><a class=menu-item href=/categories/ title=分类>分类</a><a class=menu-item href=https://cook.liwanggui.com/ title=程序员做饭指南 rel="noopener noreferrer" target=_blank>烹饪</a><a class=menu-item href=/about/index.html title=关于>关于</a><a href=# class="menu-item theme-switch" title=切换主题>
+<i class="fas fa-adjust fa-fw"></i></a></div></div></header><div class="search-dropdown desktop"><div id=search-dropdown-desktop></div></div><div class="search-dropdown mobile"><div id=search-dropdown-mobile></div></div><main class=main><div class=container><div class=toc id=toc-auto><h2 class=toc-title>目录</h2><div class=toc-content id=toc-content-auto><nav id=TableOfContents><ul><li><a href=#fpm-简介>fpm 简介</a></li><li><a href=#fpm-依赖>fpm 依赖</a></li><li><a href=#安装-fpm>安装 fpm</a></li><li><a href=#使用示例>使用示例</a><ul><li><a href=#制作-nodejs-包>制作 nodejs 包</a></li><li><a href=#制作-nodejs-doc-包>制作 nodejs-doc 包</a></li><li><a href=#制作-nodejs-dev-包>制作 nodejs-dev 包</a></li></ul></li><li><a href=#注意事项>注意事项</a></li></ul></nav></div></div><script>document.getElementsByTagName("main")[0].setAttribute("pageStyle","normal")</script><script>document.getElementsByTagName("main")[0].setAttribute("autoTOC","true")</script><article class="page single"><h1 class="single-title animate__animated animate__flipInX">fpm - 简单的包制作工具</h1><div class=post-meta><div class=post-meta-line><span class=post-author><i class="author fas fa-user-circle fa-fw"></i><a href=/about/ title=Author rel=author class=author>李王贵</a>
+</span>&nbsp;<span class=post-category>收录于 </span>&nbsp;<span class=post-category>类别 <a href=/categories/devops/><i class="far fa-folder fa-fw"></i>devops</a>&nbsp;<a href=/categories/command/><i class="far fa-folder fa-fw"></i>command</a></span></div><div class=post-meta-line><i class="far fa-calendar-alt fa-fw"></i>&nbsp;<time datetime=2021-07-03>2021-07-03</time>&nbsp;<i class="far fa-edit fa-fw"></i>&nbsp;<time datetime=2021-07-03>2021-07-03</time>&nbsp;<i class="fas fa-pencil-alt fa-fw"></i>&nbsp;约 1131 字&nbsp;
+<i class="far fa-clock fa-fw"></i>&nbsp;预计阅读 3 分钟&nbsp;</div></div><div class="details toc" id=toc-static kept><div class="details-summary toc-title"><span>目录</span>
+<span><i class="details-icon fas fa-angle-right"></i></span></div><div class="details-content toc-content" id=toc-content-static><nav id=TableOfContents><ul><li><a href=#fpm-简介>fpm 简介</a></li><li><a href=#fpm-依赖>fpm 依赖</a></li><li><a href=#安装-fpm>安装 fpm</a></li><li><a href=#使用示例>使用示例</a><ul><li><a href=#制作-nodejs-包>制作 nodejs 包</a></li><li><a href=#制作-nodejs-doc-包>制作 nodejs-doc 包</a></li><li><a href=#制作-nodejs-dev-包>制作 nodejs-dev 包</a></li></ul></li><li><a href=#注意事项>注意事项</a></li></ul></nav></div></div><div class=content id=content><h2 id=fpm-简介 class=headerLink><a href=#fpm-%e7%ae%80%e4%bb%8b class=header-mark></a>fpm 简介</h2><p><code>fpm</code> 的目标是使得构建二进制包 (<code>deb</code>, <code>rpm</code>, <code>osx</code> 等) 变得简单快速</p><ul><li>fpm 项目地址: <a href=https://github.com/jordansissel/fpm target=_blank rel="noopener noreferrer">https://github.com/jordansissel/fpm</a></li><li>fpm 文档地址: <a href=https://fpm.readthedocs.io/en/latest/ target=_blank rel="noopener noreferrer">https://fpm.readthedocs.io/en/latest/</a></li></ul><h2 id=fpm-依赖 class=headerLink><a href=#fpm-%e4%be%9d%e8%b5%96 class=header-mark></a>fpm 依赖</h2><p><code>fpm</code> 使用 <code>Ruby</code> 开发, 所以你得先安装 <code>Ruby</code>. 有些系统中默认已经安装了 <code>Ruby</code>, 例如: OSX, 有些系统可能没有安装 <code>Ruby</code>, 此时你需要执行下命令进行安装:</p><p><strong>OSX/macOS:</strong></p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>brew install gnu-tar
+</span></span><span class=line><span class=cl>brew install rpm
+</span></span></code></pre></td></tr></table></div></div><p><strong>Red Hat systems (Fedora 22 or older, CentOS, etc):</strong></p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>yum install ruby-devel gcc make rpm-build rubygems
+</span></span></code></pre></td></tr></table></div></div><blockquote><p>注意: CentOS 源中的 ruby 版本过低，需要手动源码编译安装较新的 Ruby 版本</p></blockquote><p><em>编译安装 Ruby</em></p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span><span class=lnt>7
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>yum install gcc openssl-devel make
+</span></span><span class=line><span class=cl>wget https://cache.ruby-lang.org/pub/ruby/2.7/ruby-2.7.3.tar.gz
+</span></span><span class=line><span class=cl>tar xzf ruby-2.7.3.tar.gz
+</span></span><span class=line><span class=cl><span class=nb>cd</span> ruby-2.7.3
+</span></span><span class=line><span class=cl>./configure --prefix<span class=o>=</span>/usr/local/ruby
+</span></span><span class=line><span class=cl>make
+</span></span><span class=line><span class=cl>make install
+</span></span></code></pre></td></tr></table></div></div><p><em>配置环境变量</em></p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=nb>echo</span> <span class=s1>&#39;export PATH=/usr/local/ruby/bin:$PATH&#39;</span> &gt; /etc/profile.d/ruby.sh
+</span></span><span class=line><span class=cl><span class=nb>source</span> /etc/profile
+</span></span></code></pre></td></tr></table></div></div><p><em>配置 Ruby 源</em></p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>gem sources -l <span class=c1># 查看当前源</span>
+</span></span><span class=line><span class=cl>gem sources --add https://gems.ruby-china.com/ --remove https://rubygems.org/
+</span></span></code></pre></td></tr></table></div></div><p><strong>Fedora 23 or newer:</strong></p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>dnf install ruby-devel gcc make rpm-build libffi-devel
+</span></span></code></pre></td></tr></table></div></div><p><strong>Oracle Linux 7.x systems:</strong></p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>yum-config-manager --enable ol7_optional_latest
+</span></span><span class=line><span class=cl>yum install ruby-devel gcc make rpm-build rubygems
+</span></span></code></pre></td></tr></table></div></div><p><strong>Debian-derived systems (Debian, Ubuntu, etc):</strong></p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>apt-get install ruby ruby-dev rubygems build-essential
+</span></span></code></pre></td></tr></table></div></div><h2 id=安装-fpm class=headerLink><a href=#%e5%ae%89%e8%a3%85-fpm class=header-mark></a>安装 fpm</h2><p><em>可以使用 gem 工具安装 fpm</em></p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>gem install --no-document fpm
+</span></span></code></pre></td></tr></table></div></div><p><em>检查是否安装</em></p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>fpm --version
+</span></span></code></pre></td></tr></table></div></div><p><em>常用参数说明</em></p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>-s 指定源类型
+</span></span><span class=line><span class=cl>-t 指定目标类型，即想要制作为什么包
+</span></span><span class=line><span class=cl>-n 指定包的名字
+</span></span><span class=line><span class=cl>-v 指定包的版本号
+</span></span><span class=line><span class=cl>-C 在搜索文件之前将目录更改为此处
+</span></span><span class=line><span class=cl>-d 指定依赖于哪些包
+</span></span><span class=line><span class=cl>-a 架构名称，通常匹配 &#39;uname -m&#39;, 可以使用 &#39;-a all&#39; 或者 &#39;-a native&#39;
+</span></span><span class=line><span class=cl>-f 第二次打包时目录下如果有同名安装包存在，则覆盖它
+</span></span><span class=line><span class=cl>-p 输出的安装包的目录，不想放在当前目录下就需要指定
+</span></span><span class=line><span class=cl>--iteration 指定包的发布次数，例 RPM 的 release 字段
+</span></span><span class=line><span class=cl>--post-install 软件包安装完成之后所要运行的脚本；同 --after-install
+</span></span><span class=line><span class=cl>--pre-install 软件包安装完成之前所要运行的脚本；同 --before-install
+</span></span><span class=line><span class=cl>--post-uninstall 软件包卸载完成之后所要运行的脚本；同 --after-remove
+</span></span><span class=line><span class=cl>--pre-uninstall 软件包卸载完成之前所要运行的脚本；同 --before-remove
+</span></span></code></pre></td></tr></table></div></div><h2 id=使用示例 class=headerLink><a href=#%e4%bd%bf%e7%94%a8%e7%a4%ba%e4%be%8b class=header-mark></a>使用示例</h2><p>以 <code>nodejs</code> 为例，</p><p>将 <code>nodejs</code> 构建成3个包: <code>nodejs</code>, <code>nodejs-dev</code>, <code>nodejs-doc</code></p><p>在示例中需要我们在 <code>make install</code> 时设置 <code>DESTDIR</code> 将编译好的文件安装到特定的目录中</p><h3 id=制作-nodejs-包 class=headerLink><a href=#%e5%88%b6%e4%bd%9c-nodejs-%e5%8c%85 class=header-mark></a>制作 nodejs 包</h3><p><em>正常编译步骤</em></p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>% wget http://nodejs.org/dist/v0.6.0/node-v0.6.0.tar.gz
+</span></span><span class=line><span class=cl>% tar -zxf node-v0.6.0.tar.gz
+</span></span><span class=line><span class=cl>% <span class=nb>cd</span> node-v0.6.0
+</span></span><span class=line><span class=cl>% ./configure --prefix<span class=o>=</span>/usr
+</span></span><span class=line><span class=cl>% make
+</span></span></code></pre></td></tr></table></div></div><p><em>将 nodejs 安装至临时目录</em></p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>% mkdir /tmp/installdir
+</span></span><span class=line><span class=cl>% make install <span class=nv>DESTDIR</span><span class=o>=</span>/tmp/installdir
+</span></span></code></pre></td></tr></table></div></div><p><em>制作 nodejs 包</em></p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span><span class=lnt>7
+</span><span class=lnt>8
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=c1># Create a nodejs deb with only bin and lib directories:</span>
+</span></span><span class=line><span class=cl><span class=c1># The &#39;VERSION&#39; and &#39;ARCH&#39; strings are automatically filled in for you</span>
+</span></span><span class=line><span class=cl><span class=c1># based on the other arguments given.</span>
+</span></span><span class=line><span class=cl>% fpm -s dir -t deb -n nodejs -v 0.6.0 -C /tmp/installdir <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>  -p nodejs_VERSION_ARCH.deb <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>  -d <span class=s2>&#34;libssl0.9.8 &gt; 0&#34;</span> <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>  -d <span class=s2>&#34;libstdc++6 &gt;= 4.4.3&#34;</span> <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>  usr/bin usr/lib
+</span></span></code></pre></td></tr></table></div></div><blockquote><p><code>nodejs</code> 包中只包含 <code>usr/bin</code> <code>usr/lib</code> 中的文件，此为 nodejs 基础运行包</p></blockquote><p><em>安装 nodejs 包，测试一下</em></p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span><span class=lnt>7
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=err>#</span> <span class=err>&#39;</span><span class=nx>fpm</span><span class=err>&#39;</span> <span class=nx>just</span> <span class=nx>produced</span> <span class=nx>us</span> <span class=nx>a</span> <span class=nx>nodejs</span> <span class=nx>deb</span><span class=p>:</span>
+</span></span><span class=line><span class=cl><span class=o>%</span> <span class=nx>file</span> <span class=nx>nodejs_0</span><span class=mf>.6.0</span><span class=o>-</span><span class=mi>1_</span><span class=nx>amd64</span><span class=p>.</span><span class=nx>deb</span>
+</span></span><span class=line><span class=cl><span class=nx>nodejs_0</span><span class=mf>.6.0</span><span class=o>-</span><span class=mi>1_</span><span class=nx>amd64</span><span class=p>.</span><span class=nx>deb</span><span class=p>:</span> <span class=nx>Debian</span> <span class=nx>binary</span> <span class=kn>package</span> <span class=p>(</span><span class=nx>format</span> <span class=mf>2.0</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=o>%</span> <span class=nx>sudo</span> <span class=nx>dpkg</span> <span class=o>-</span><span class=nx>i</span> <span class=nx>nodejs_0</span><span class=mf>.6.0</span><span class=o>-</span><span class=mi>1_</span><span class=nx>amd64</span><span class=p>.</span><span class=nx>deb</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=o>%</span> <span class=o>/</span><span class=nx>usr</span><span class=o>/</span><span class=nx>bin</span><span class=o>/</span><span class=nx>node</span> <span class=o>--</span><span class=nx>version</span>
+</span></span><span class=line><span class=cl><span class=nx>v0</span><span class=mf>.6.0</span>
+</span></span></code></pre></td></tr></table></div></div><h3 id=制作-nodejs-doc-包 class=headerLink><a href=#%e5%88%b6%e4%bd%9c-nodejs-doc-%e5%8c%85 class=header-mark></a>制作 nodejs-doc 包</h3><p><em>创建 nodejs 文档手册包</em></p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=c1># Create a package of the node manpage</span>
+</span></span><span class=line><span class=cl>% fpm -s dir -t deb -p nodejs-doc_VERSION_ARCH.deb -n nodejs-doc -v 0.6.0 -C /tmp/installdir usr/share/man
+</span></span></code></pre></td></tr></table></div></div><p><em>查看 nodejs-doc 包</em></p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>% dpkg -c nodejs-doc_0.6.0-1_amd64.deb <span class=p>|</span> grep node.1
+</span></span><span class=line><span class=cl>-rw-r--r-- root/root       <span class=m>945</span> 2011-01-02 18:35 usr/share/man/man1/node.1
+</span></span></code></pre></td></tr></table></div></div><h3 id=制作-nodejs-dev-包 class=headerLink><a href=#%e5%88%b6%e4%bd%9c-nodejs-dev-%e5%8c%85 class=header-mark></a>制作 nodejs-dev 包</h3><p>最后，打包用于开发的 <code>headers</code> 文件:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>% fpm -s dir -t deb -p nodejs-dev_VERSION_ARCH.deb -n nodejs-dev -v 0.6.0 -C /tmp/installdir usr/include
+</span></span><span class=line><span class=cl>% dpkg -c nodejs-dev_0.6.0-1_amd64.deb <span class=p>|</span> grep -F .h
+</span></span><span class=line><span class=cl>-rw-r--r-- root/root     <span class=m>14359</span> 2011-01-02 18:33 usr/include/node/eio.h
+</span></span><span class=line><span class=cl>-rw-r--r-- root/root      <span class=m>1118</span> 2011-01-02 18:33 usr/include/node/node_version.h
+</span></span><span class=line><span class=cl>-rw-r--r-- root/root     <span class=m>25318</span> 2011-01-02 18:33 usr/include/node/ev.h
+</span></span><span class=line><span class=cl>...
+</span></span></code></pre></td></tr></table></div></div><h2 id=注意事项 class=headerLink><a href=#%e6%b3%a8%e6%84%8f%e4%ba%8b%e9%a1%b9 class=header-mark></a>注意事项</h2><p>当我们需要将某个目录制作成二进制包时，需要注意 &ldquo;相对路径&rdquo; 与 &ldquo;绝对路径&rdquo; 问题，以 <code>nginx</code> 为例</p><p><em>相对路径</em></p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>% <span class=nb>cd</span> /usr/local/nginx
+</span></span><span class=line><span class=cl>% fpm -s dir -t rpm -n nginx -v 1.16.1 --iteration 1.el7 .
+</span></span><span class=line><span class=cl>no value <span class=k>for</span> epoch is set, defaulting to nil <span class=o>{</span>:level<span class=o>=</span>&gt;:warn<span class=o>}</span>
+</span></span><span class=line><span class=cl>no value <span class=k>for</span> epoch is set, defaulting to nil <span class=o>{</span>:level<span class=o>=</span>&gt;:warn<span class=o>}</span>
+</span></span><span class=line><span class=cl>Created package <span class=o>{</span>:path<span class=o>=</span>&gt;<span class=s2>&#34;nginx-1.16.1-1.el7.x86_64.rpm&#34;</span><span class=o>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># 查看 rpm 包文件列表</span>
+</span></span><span class=line><span class=cl>$ rpm -qpl nginx-1.16.1-1.el7.x86_64.rpm
+</span></span><span class=line><span class=cl>/client_body_temp
+</span></span><span class=line><span class=cl>/conf/extra/dynamic_pools
+</span></span><span class=line><span class=cl>/conf/extra/static_pools
+</span></span><span class=line><span class=cl>...
+</span></span></code></pre></td></tr></table></div></div><p><em>绝对路径</em></p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>$ fpm -s dir -t rpm -n nginx -v 1.16.1 --iteration 2.el7 /usr/local/nginx
+</span></span><span class=line><span class=cl>no value <span class=k>for</span> epoch is set, defaulting to nil <span class=o>{</span>:level<span class=o>=</span>&gt;:warn<span class=o>}</span>
+</span></span><span class=line><span class=cl>no value <span class=k>for</span> epoch is set, defaulting to nil <span class=o>{</span>:level<span class=o>=</span>&gt;:warn<span class=o>}</span>
+</span></span><span class=line><span class=cl>Created package <span class=o>{</span>:path<span class=o>=</span>&gt;<span class=s2>&#34;nginx-1.16.1-2.el7.x86_64.rpm&#34;</span><span class=o>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># 查看 rpm 包文件列表</span>
+</span></span><span class=line><span class=cl>$ rpm -qpl nginx-1.16.1-2.el7.x86_64.rpm
+</span></span><span class=line><span class=cl>/usr/local/nginx/client_body_temp
+</span></span><span class=line><span class=cl>/usr/local/nginx/conf/extra/dynamic_pools
+</span></span><span class=line><span class=cl>/usr/local/nginx/conf/extra/static_pools
+</span></span><span class=line><span class=cl>/usr/local/nginx/conf/fastcgi.conf
+</span></span><span class=line><span class=cl>/usr/local/nginx/conf/fastcgi.conf.default
+</span></span><span class=line><span class=cl>...
+</span></span></code></pre></td></tr></table></div></div><blockquote><p>更多使用帮助请查看 fpm 官方文档 <a href=https://fpm.readthedocs.io/en/latest/ target=_blank rel="noopener noreferrer">https://fpm.readthedocs.io/en/latest/</a></p></blockquote></div><div class=post-footer id=post-footer><div class=post-info><div class=post-info-line><div class=post-info-mod><span>更新于 2021-07-03</span></div><div class=post-info-license></div></div><div class=post-info-line><div class=post-info-md><span><a class=link-to-mardown href=/posts/fpm/index.md target=_blank rel="noopener noreferrer">阅读原始文档</a></span></div><div class=post-info-share><span><a href=# title="分享到 Twitter" data-sharer=twitter data-url=https://liwanggui.com/posts/fpm/ data-title="fpm - 简单的包制作工具" data-hashtags=fpm><i class="fab fa-twitter fa-fw"></i></a><a href=# title="分享到 Facebook" data-sharer=facebook data-url=https://liwanggui.com/posts/fpm/ data-hashtag=fpm><i class="fab fa-facebook-square fa-fw"></i></a><a href=# title="分享到 WhatsApp" data-sharer=whatsapp data-url=https://liwanggui.com/posts/fpm/ data-title="fpm - 简单的包制作工具" data-web><i class="fab fa-whatsapp fa-fw"></i></a><a href=# title="分享到 Line" data-sharer=line data-url=https://liwanggui.com/posts/fpm/ data-title="fpm - 简单的包制作工具"><i data-svg-src=/lib/simple-icons/icons/line.min.svg></i></a><a href=# title="分享到 微博" data-sharer=weibo data-url=https://liwanggui.com/posts/fpm/ data-title="fpm - 简单的包制作工具"><i class="fab fa-weibo fa-fw"></i></a><a href=# title="分享到 Myspace" data-sharer=myspace data-url=https://liwanggui.com/posts/fpm/ data-title="fpm - 简单的包制作工具" data-description><i data-svg-src=/lib/simple-icons/icons/myspace.min.svg></i></a><a href=# title="分享到 Blogger" data-sharer=blogger data-url=https://liwanggui.com/posts/fpm/ data-title="fpm - 简单的包制作工具" data-description><i class="fab fa-blogger fa-fw"></i></a><a href=# title="分享到 百度" data-sharer=baidu data-url=https://liwanggui.com/posts/fpm/ data-title="fpm - 简单的包制作工具"><i data-svg-src=/lib/simple-icons/icons/baidu.min.svg></i></a><a href=# title="分享到 Evernote" data-sharer=evernote data-url=https://liwanggui.com/posts/fpm/ data-title="fpm - 简单的包制作工具"><i class="fab fa-evernote fa-fw"></i></a></span></div></div></div><div class=post-info-more><section class=post-tags><i class="fas fa-tags fa-fw"></i>&nbsp;<a href=/tags/fpm/>fpm</a></section><section><span><a href=javascript:void(0); onclick=window.history.back()>返回</a></span>&nbsp;|&nbsp;<span><a href=/>主页</a></span></section></div><div class=post-nav><a href=/posts/find/ class=prev rel=prev title="利用 find 查找文件"><i class="fas fa-angle-left fa-fw"></i>利用 find 查找文件</a>
+<a href=/posts/docker-build-ssh/ class=next rel=next title="docker - 创建 SSH 镜像">docker - 创建 SSH 镜像<i class="fas fa-angle-right fa-fw"></i></a></div></div><div id=comments><div id=giscus></div><noscript>Please enable JavaScript to view the comments powered by <a href=https://giscus.app/>giscus</a>.</noscript></div></article></div></main><footer class=footer><div class=footer-container><div class=footer-line>由 <a href=https://gohugo.io/ target=_blank rel="noopener noreferrer" title="Hugo 0.101.0">Hugo</a> 强力驱动&nbsp;|&nbsp;主题 - <a href=https://github.com/HEIGE-PCloud/DoIt target=_blank rel="noopener noreferrer" title="DoIt 0.3.0"><i class="far fa-edit fa-fw"></i> DoIt</a></div><div class=footer-line><i class="far fa-copyright fa-fw"></i><span itemprop=copyrightYear>2017 - 2024</span><span class=author itemprop=copyrightHolder>&nbsp;<a href=/about/ target=_blank rel="noopener noreferrer">李王贵</a></span><span class=icp-splitter>&nbsp;|&nbsp;</span><br class=icp-br><span class=icp><a href=https://beian.miit.gov.cn target=_blank>赣ICP备2023001395号</a></span></div><div class=footer-line></div><div class=footer-line></div></div></footer></div><div id=fixed-buttons><a href=#back-to-top id=back-to-top-button class=fixed-button title=回到顶部><i class="fas fa-arrow-up fa-fw"></i>
+</a><a href=# id=view-comments class=fixed-button title=查看评论><i class="fas fa-comment fa-fw"></i></a></div><div id=cookieconsent-container></div><div class=assets><link rel=stylesheet href=/lib/lightgallery/lightgallery.min.css><link rel=stylesheet href=/lib/katex/katex.min.css><link rel=preload as=style onload='this.onload=null,this.rel="stylesheet"' href=/lib/katex/copy-tex.min.css><noscript><link rel=stylesheet href=/lib/katex/copy-tex.min.css></noscript><link rel=stylesheet href=/lib/cookieconsent/cookieconsent.min.css><script type=text/javascript>window.config={code:{copyTitle:"复制到剪贴板",maxShownLines:10},comment:{giscus:{darkTheme:"dark",dataCategory:"Announcements",dataCategoryId:"DIC_kwDOE7mEQ84CY9pq",dataEmitMetadata:"1",dataInputPosition:"top",dataLang:"zh-CN",dataMapping:"pathname",dataReactionsEnabled:"1",dataRepo:"liwanggui/liwanggui.github.io",dataRepoId:"MDEwOlJlcG9zaXRvcnkzMzA5MjUxMjM=",dataStrict:"0",lightTheme:"light"}},cookieconsent:{content:{dismiss:"同意",link:"了解更多",message:"本网站使用 Cookies 来改善您的浏览体验."},enable:!0,palette:{button:{background:"#f0f0f0"},popup:{background:"#1aa3ff"}},theme:"edgeless"},lightGallery:{actualSize:!1,exThumbImage:"data-thumbnail",hideBarsDelay:2e3,selector:".lightgallery",speed:400,thumbContHeight:80,thumbWidth:80,thumbnail:!0},math:{delimiters:[{display:!0,left:"$$",right:"$$"},{display:!0,left:"\\[",right:"\\]"},{display:!1,left:"$",right:"$"},{display:!1,left:"\\(",right:"\\)"}],strict:!1},search:{distance:100,findAllMatches:!1,fuseIndexURL:"/index.json",highlightTag:"em",ignoreFieldNorm:!1,ignoreLocation:!1,isCaseSensitive:!1,location:0,maxResultLength:10,minMatchCharLength:2,noResultsFound:"没有找到结果",snippetLength:50,threshold:.3,type:"fuse",useExtendedSearch:!1},sharerjs:!0,twemoji:!0}</script><script type=text/javascript src=/js/giscus.min.js defer></script><script type=text/javascript src=/lib/twemoji/twemoji.min.js defer></script><script type=text/javascript src=/js/twemoji.min.js defer></script><script type=text/javascript src=/lib/lightgallery/lightgallery.min.js></script><script type=text/javascript src=/lib/lightgallery/lg-thumbnail.min.js></script><script type=text/javascript src=/lib/lightgallery/lg-zoom.min.js></script><script type=text/javascript src=/lib/clipboard/clipboard.min.js></script><script type=text/javascript src=/lib/sharer/sharer.min.js></script><script type=text/javascript src=/lib/katex/katex.min.js defer></script><script type=text/javascript src=/lib/katex/auto-render.min.js defer></script><script type=text/javascript src=/lib/katex/copy-tex.min.js defer></script><script type=text/javascript src=/lib/katex/mhchem.min.js defer></script><script type=text/javascript src=/js/katex.min.js defer></script><script type=text/javascript src=/lib/cookieconsent/cookieconsent.min.js defer></script><script type=text/javascript src=/js/cookieconsent.min.js defer></script><script type=text/javascript src=/js/theme.min.js defer></script></div></body></html>

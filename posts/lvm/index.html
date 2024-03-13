@@ -1,0 +1,457 @@
+<!doctype html><html lang=zh-cn><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><meta name=robots content="noodp"><title>使用 LVM 管理硬盘空间 - _浅行</title><meta name=Description content="_浅行"><meta property="og:title" content="使用 LVM 管理硬盘空间"><meta property="og:description" content="为虚拟机挂载一块新硬盘，用于实验（/dev/sdb） 1 2 3 4 5 6 7 8 9 [root@localhost ~]# lsblk NAME MAJ:MIN RM SIZE RO TYPE MOUNTPOINT sda 8:0 0 20G 0 disk ├─sda1 8:1 0 1G 0 part /boot └─sda2 8:2"><meta property="og:type" content="article"><meta property="og:url" content="https://liwanggui.com/posts/lvm/"><meta property="og:image" content="https://liwanggui.com/logo.png"><meta property="article:section" content="posts"><meta property="article:published_time" content="2021-12-16T10:22:01+08:00"><meta property="article:modified_time" content="2021-12-16T10:22:01+08:00"><meta name=twitter:card content="summary_large_image"><meta name=twitter:image content="https://liwanggui.com/logo.png"><meta name=twitter:title content="使用 LVM 管理硬盘空间"><meta name=twitter:description content="为虚拟机挂载一块新硬盘，用于实验（/dev/sdb） 1 2 3 4 5 6 7 8 9 [root@localhost ~]# lsblk NAME MAJ:MIN RM SIZE RO TYPE MOUNTPOINT sda 8:0 0 20G 0 disk ├─sda1 8:1 0 1G 0 part /boot └─sda2 8:2"><meta name=application-name content="LoveIt"><meta name=apple-mobile-web-app-title content="LoveIt"><meta name=theme-color content="#f8f8f8"><meta name=msapplication-TileColor content="#da532c"><link rel=canonical href=https://liwanggui.com/posts/lvm/><link rel=prev href=https://liwanggui.com/posts/stunnel/><link rel=next href=https://liwanggui.com/posts/bash-while/><link rel=stylesheet href=/lib/normalize/normalize.min.css><link rel=stylesheet href=/css/color.css><link rel=stylesheet href=/css/style.min.css><link rel=preload as=style onload='this.onload=null,this.rel="stylesheet"' href=/lib/fontawesome-free/all.min.css><noscript><link rel=stylesheet href=/lib/fontawesome-free/all.min.css></noscript><link rel=preload as=style onload='this.onload=null,this.rel="stylesheet"' href=/lib/animate/animate.min.css><noscript><link rel=stylesheet href=/lib/animate/animate.min.css></noscript><script type=application/ld+json>{"@context":"http://schema.org","@type":"BlogPosting","headline":"使用 LVM 管理硬盘空间","inLanguage":"zh-CN","mainEntityOfPage":{"@type":"WebPage","@id":"https:\/\/liwanggui.com\/posts\/lvm\/"},"genre":"posts","keywords":"lvm","wordcount":1624,"url":"https:\/\/liwanggui.com\/posts\/lvm\/","datePublished":"2021-12-16T10:22:01+08:00","dateModified":"2021-12-16T10:22:01+08:00","publisher":{"@type":"Organization","name":""},"author":{"@type":"Person","name":"李王贵"},"description":""}</script><script src=//instant.page/5.1.1 defer type=module integrity=sha384-MWfCL6g1OTGsbSwfuMHc8+8J2u71/LA8dzlIN3ycajckxuZZmF+DNjdm7O6H3PSq></script></head><body header-desktop=fixed header-mobile=auto><script type=text/javascript>function setTheme(e){document.body.setAttribute("theme",e),document.documentElement.style.setProperty("color-scheme",e==="light"?"light":"dark")}function saveTheme(e){window.localStorage&&localStorage.setItem("theme",e)}function getMeta(e){const t=document.getElementsByTagName("meta");for(let n=0;n<t.length;n++)if(t[n].getAttribute("name")===e)return t[n];return""}if(window.localStorage&&localStorage.getItem("theme")){let e=localStorage.getItem("theme");e==="light"||e==="dark"||e==="black"?setTheme(e):setTheme(window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light")}else"auto"==="light"||"auto"==="dark"||"auto"==="black"?(setTheme("auto"),saveTheme("auto")):(saveTheme("auto"),setTheme(window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"));let metaColors={light:"#f8f8f8",dark:"#252627",black:"#000000"};getMeta("theme-color").content=metaColors[document.body.getAttribute("theme")]</script><div id=back-to-top></div><div id=mask></div><div class=wrapper><header class=desktop id=header-desktop><div class=header-wrapper><div class=header-title><a href=/ title=_浅行><span class=header-title-pre><i class='far fa-kiss-wink-heart fa-fw'></i></span>_浅行</a></div><div class=menu><div class=menu-inner><a class=menu-item href=/posts/ title=文章列表>文章 </a><a class=menu-item href=/tags/ title=标签云>标签 </a><a class=menu-item href=/categories/ title=分类>分类 </a><a class=menu-item href=https://cook.liwanggui.com/ title=程序员做饭指南 rel="noopener noreferrer" target=_blank>烹饪 </a><a class=menu-item href=/about/index.html title=关于>关于 </a><span class="menu-item delimiter"></span><span class="menu-item search" id=search-desktop>
+<input type=text placeholder=搜索文章标题或内容... id=search-input-desktop>
+<a href=# class="search-button search-toggle" id=search-toggle-desktop title=搜索><i class="fas fa-search fa-fw"></i></a>
+<a href=# class="search-button search-clear" id=search-clear-desktop title=清空><i class="fas fa-times-circle fa-fw"></i></a>
+<span class="search-button search-loading" id=search-loading-desktop><i class="fas fa-spinner fa-fw fa-spin"></i></span>
+</span><a href=# class="menu-item theme-switch" title=切换主题><i class="fas fa-adjust fa-fw"></i></a></div></div></div></header><header class=mobile id=header-mobile><div class=header-container><div class=header-wrapper><div class=header-title><a href=/ title=_浅行><span class=header-title-pre><i class='far fa-kiss-wink-heart fa-fw'></i></span>_浅行</a></div><div class=menu-toggle id=menu-toggle-mobile><span></span><span></span><span></span></div></div><div class=menu id=menu-mobile><div class=search-wrapper><div class="search mobile" id=search-mobile><input type=text placeholder=搜索文章标题或内容... id=search-input-mobile>
+<a href=# class="search-button search-toggle" id=search-toggle-mobile title=搜索><i class="fas fa-search fa-fw"></i></a>
+<a href=# class="search-button search-clear" id=search-clear-mobile title=清空><i class="fas fa-times-circle fa-fw"></i></a>
+<span class="search-button search-loading" id=search-loading-mobile><i class="fas fa-spinner fa-fw fa-spin"></i></span></div><a href=# class=search-cancel id=search-cancel-mobile>取消</a></div><a class=menu-item href=/posts/ title=文章列表>文章</a><a class=menu-item href=/tags/ title=标签云>标签</a><a class=menu-item href=/categories/ title=分类>分类</a><a class=menu-item href=https://cook.liwanggui.com/ title=程序员做饭指南 rel="noopener noreferrer" target=_blank>烹饪</a><a class=menu-item href=/about/index.html title=关于>关于</a><a href=# class="menu-item theme-switch" title=切换主题>
+<i class="fas fa-adjust fa-fw"></i></a></div></div></header><div class="search-dropdown desktop"><div id=search-dropdown-desktop></div></div><div class="search-dropdown mobile"><div id=search-dropdown-mobile></div></div><main class=main><div class=container><div class=toc id=toc-auto><h2 class=toc-title>目录</h2><div class=toc-content id=toc-content-auto><nav id=TableOfContents><ul><li><a href=#创建-pv>创建 PV</a></li><li><a href=#加入-vg>加入 VG</a></li><li><a href=#创建-lv>创建 LV</a></li><li><a href=#动态-lv-扩容>动态 lv 扩容</a></li></ul></nav></div></div><script>document.getElementsByTagName("main")[0].setAttribute("pageStyle","normal")</script><script>document.getElementsByTagName("main")[0].setAttribute("autoTOC","true")</script><article class="page single"><h1 class="single-title animate__animated animate__flipInX">使用 LVM 管理硬盘空间</h1><div class=post-meta><div class=post-meta-line><span class=post-author><i class="author fas fa-user-circle fa-fw"></i><a href=/about/ title=Author rel=author class=author>李王贵</a>
+</span>&nbsp;<span class=post-category>收录于 </span>&nbsp;<span class=post-category>类别 <a href=/categories/devops/><i class="far fa-folder fa-fw"></i>devops</a></span></div><div class=post-meta-line><i class="far fa-calendar-alt fa-fw"></i>&nbsp;<time datetime=2021-12-16>2021-12-16</time>&nbsp;<i class="far fa-edit fa-fw"></i>&nbsp;<time datetime=2021-12-16>2021-12-16</time>&nbsp;<i class="fas fa-pencil-alt fa-fw"></i>&nbsp;约 1624 字&nbsp;
+<i class="far fa-clock fa-fw"></i>&nbsp;预计阅读 4 分钟&nbsp;</div></div><div class="details toc" id=toc-static kept><div class="details-summary toc-title"><span>目录</span>
+<span><i class="details-icon fas fa-angle-right"></i></span></div><div class="details-content toc-content" id=toc-content-static><nav id=TableOfContents><ul><li><a href=#创建-pv>创建 PV</a></li><li><a href=#加入-vg>加入 VG</a></li><li><a href=#创建-lv>创建 LV</a></li><li><a href=#动态-lv-扩容>动态 lv 扩容</a></li></ul></nav></div></div><div class=content id=content><p>为虚拟机挂载一块新硬盘，用于实验（<code>/dev/sdb</code>）</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span><span class=lnt>7
+</span><span class=lnt>8
+</span><span class=lnt>9
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=o>[</span>root@localhost ~<span class=o>]</span><span class=c1># lsblk</span>
+</span></span><span class=line><span class=cl>NAME            MAJ:MIN RM  SIZE RO TYPE MOUNTPOINT
+</span></span><span class=line><span class=cl>sda               8:0    <span class=m>0</span>   20G  <span class=m>0</span> disk
+</span></span><span class=line><span class=cl>├─sda1            8:1    <span class=m>0</span>    1G  <span class=m>0</span> part /boot
+</span></span><span class=line><span class=cl>└─sda2            8:2    <span class=m>0</span>   19G  <span class=m>0</span> part
+</span></span><span class=line><span class=cl>  ├─centos-root 253:0    <span class=m>0</span>   17G  <span class=m>0</span> lvm  /
+</span></span><span class=line><span class=cl>  └─centos-swap 253:1    <span class=m>0</span>    2G  <span class=m>0</span> lvm  <span class=o>[</span>SWAP<span class=o>]</span>
+</span></span><span class=line><span class=cl>sdb               8:16   <span class=m>0</span>   20G  <span class=m>0</span> disk
+</span></span><span class=line><span class=cl>sr0              11:0    <span class=m>1</span>  906M  <span class=m>0</span> rom
+</span></span></code></pre></td></tr></table></div></div><h2 id=创建-pv class=headerLink><a href=#%e5%88%9b%e5%bb%ba-pv class=header-mark></a>创建 PV</h2><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>pvcreate /dev/sdb
+</span></span></code></pre></td></tr></table></div></div><h2 id=加入-vg class=headerLink><a href=#%e5%8a%a0%e5%85%a5-vg class=header-mark></a>加入 VG</h2><p>查看 VG</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=o>[</span>root@localhost ~<span class=o>]</span><span class=c1># vgdisplay</span>
+</span></span><span class=line><span class=cl>  --- Volume group ---
+</span></span><span class=line><span class=cl>  VG Name               centos
+</span></span><span class=line><span class=cl>  System ID
+</span></span><span class=line><span class=cl>  Format                lvm2
+</span></span><span class=line><span class=cl>  Metadata Areas        <span class=m>1</span>
+</span></span><span class=line><span class=cl>  Metadata Sequence No  <span class=m>3</span>
+</span></span><span class=line><span class=cl>  VG Access             read/write
+</span></span><span class=line><span class=cl>  VG Status             resizable
+</span></span><span class=line><span class=cl>  MAX LV                <span class=m>0</span>
+</span></span><span class=line><span class=cl>  Cur LV                <span class=m>2</span>
+</span></span><span class=line><span class=cl>  Open LV               <span class=m>2</span>
+</span></span><span class=line><span class=cl>  Max PV                <span class=m>0</span>
+</span></span><span class=line><span class=cl>  Cur PV                <span class=m>1</span>
+</span></span><span class=line><span class=cl>  Act PV                <span class=m>1</span>
+</span></span><span class=line><span class=cl>  VG Size               &lt;19.00 GiB
+</span></span><span class=line><span class=cl>  PE Size               4.00 MiB
+</span></span><span class=line><span class=cl>  Total PE              <span class=m>4863</span>
+</span></span><span class=line><span class=cl>  Alloc PE / Size       <span class=m>4863</span> / &lt;19.00 GiB
+</span></span><span class=line><span class=cl>  Free  PE / Size       <span class=m>0</span> / <span class=m>0</span>
+</span></span><span class=line><span class=cl>  VG UUID               85pJBT-lfvE-sptt-ywZF-j8Ya-m1Xg-ch4Qyf
+</span></span></code></pre></td></tr></table></div></div><p>将新硬盘加入 <code>centos</code> VG 中</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=o>[</span>root@localhost ~<span class=o>]</span><span class=c1># vgextend centos /dev/sdb</span>
+</span></span><span class=line><span class=cl>  Volume group <span class=s2>&#34;centos&#34;</span> successfully extended
+</span></span></code></pre></td></tr></table></div></div><p>再次查看 VG</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=o>[</span>root@localhost ~<span class=o>]</span><span class=c1># vgdisplay</span>
+</span></span><span class=line><span class=cl>  --- Volume group ---
+</span></span><span class=line><span class=cl>  VG Name               centos
+</span></span><span class=line><span class=cl>  System ID
+</span></span><span class=line><span class=cl>  Format                lvm2
+</span></span><span class=line><span class=cl>  Metadata Areas        <span class=m>2</span>
+</span></span><span class=line><span class=cl>  Metadata Sequence No  <span class=m>4</span>
+</span></span><span class=line><span class=cl>  VG Access             read/write
+</span></span><span class=line><span class=cl>  VG Status             resizable
+</span></span><span class=line><span class=cl>  MAX LV                <span class=m>0</span>
+</span></span><span class=line><span class=cl>  Cur LV                <span class=m>2</span>
+</span></span><span class=line><span class=cl>  Open LV               <span class=m>2</span>
+</span></span><span class=line><span class=cl>  Max PV                <span class=m>0</span>
+</span></span><span class=line><span class=cl>  Cur PV                <span class=m>2</span>
+</span></span><span class=line><span class=cl>  Act PV                <span class=m>2</span>
+</span></span><span class=line><span class=cl>  VG Size               38.99 GiB
+</span></span><span class=line><span class=cl>  PE Size               4.00 MiB
+</span></span><span class=line><span class=cl>  Total PE              <span class=m>9982</span>
+</span></span><span class=line><span class=cl>  Alloc PE / Size       <span class=m>4863</span> / &lt;19.00 GiB
+</span></span><span class=line><span class=cl>  Free  PE / Size       <span class=m>5119</span> / &lt;20.00 GiB
+</span></span><span class=line><span class=cl>  VG UUID               85pJBT-lfvE-sptt-ywZF-j8Ya-m1Xg-ch4Qyf
+</span></span></code></pre></td></tr></table></div></div><blockquote><p>通过上面的信息可以看出 VG 容量扩大了</p></blockquote><h2 id=创建-lv class=headerLink><a href=#%e5%88%9b%e5%bb%ba-lv class=header-mark></a>创建 LV</h2><p>查看现有的 lv 卷</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span><span class=lnt>26
+</span><span class=lnt>27
+</span><span class=lnt>28
+</span><span class=lnt>29
+</span><span class=lnt>30
+</span><span class=lnt>31
+</span><span class=lnt>32
+</span><span class=lnt>33
+</span><span class=lnt>34
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=o>[</span>root@localhost ~<span class=o>]</span><span class=c1># lvdisplay</span>
+</span></span><span class=line><span class=cl>  --- Logical volume ---
+</span></span><span class=line><span class=cl>  LV Path                /dev/centos/swap
+</span></span><span class=line><span class=cl>  LV Name                swap
+</span></span><span class=line><span class=cl>  VG Name                centos
+</span></span><span class=line><span class=cl>  LV UUID                52CL0Y-FldW-4wuO-fV1s-qtAl-oKR5-vPI2uZ
+</span></span><span class=line><span class=cl>  LV Write Access        read/write
+</span></span><span class=line><span class=cl>  LV Creation host, <span class=nb>time</span> localhost.localdomain, 2021-09-10 12:03:59 +0800
+</span></span><span class=line><span class=cl>  LV Status              available
+</span></span><span class=line><span class=cl>  <span class=c1># open                 2</span>
+</span></span><span class=line><span class=cl>  LV Size                2.00 GiB
+</span></span><span class=line><span class=cl>  Current LE             <span class=m>512</span>
+</span></span><span class=line><span class=cl>  Segments               <span class=m>1</span>
+</span></span><span class=line><span class=cl>  Allocation             inherit
+</span></span><span class=line><span class=cl>  Read ahead sectors     auto
+</span></span><span class=line><span class=cl>  - currently <span class=nb>set</span> to     <span class=m>8192</span>
+</span></span><span class=line><span class=cl>  Block device           253:1
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>  --- Logical volume ---
+</span></span><span class=line><span class=cl>  LV Path                /dev/centos/root
+</span></span><span class=line><span class=cl>  LV Name                root
+</span></span><span class=line><span class=cl>  VG Name                centos
+</span></span><span class=line><span class=cl>  LV UUID                QL4fK3-RjZ0-5XXd-ghsm-W0DQ-Gp3m-A4z45J
+</span></span><span class=line><span class=cl>  LV Write Access        read/write
+</span></span><span class=line><span class=cl>  LV Creation host, <span class=nb>time</span> localhost.localdomain, 2021-09-10 12:03:59 +0800
+</span></span><span class=line><span class=cl>  LV Status              available
+</span></span><span class=line><span class=cl>  <span class=c1># open                 1</span>
+</span></span><span class=line><span class=cl>  LV Size                &lt;17.00 GiB
+</span></span><span class=line><span class=cl>  Current LE             <span class=m>4351</span>
+</span></span><span class=line><span class=cl>  Segments               <span class=m>1</span>
+</span></span><span class=line><span class=cl>  Allocation             inherit
+</span></span><span class=line><span class=cl>  Read ahead sectors     auto
+</span></span><span class=line><span class=cl>  - currently <span class=nb>set</span> to     <span class=m>8192</span>
+</span></span><span class=line><span class=cl>  Block device           253:0
+</span></span></code></pre></td></tr></table></div></div><blockquote><p>目前只有 swap 和 root 两个 lv</p></blockquote><p>创建新的 lv 卷（test_lv）</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=o>[</span>root@localhost ~<span class=o>]</span><span class=c1># lvcreate -L 5G -n test_lv centos</span>
+</span></span><span class=line><span class=cl>  Logical volume <span class=s2>&#34;test_lv&#34;</span> created.
+</span></span></code></pre></td></tr></table></div></div><p>查看 test_lv</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=o>[</span>root@localhost ~<span class=o>]</span><span class=c1># lvdisplay /dev/centos/test_lv</span>
+</span></span><span class=line><span class=cl>  --- Logical volume ---
+</span></span><span class=line><span class=cl>  LV Path                /dev/centos/test_lv
+</span></span><span class=line><span class=cl>  LV Name                test_lv
+</span></span><span class=line><span class=cl>  VG Name                centos
+</span></span><span class=line><span class=cl>  LV UUID                qUnC6d-dyn0-7f0C-TC3B-dmi1-ncwF-30CJug
+</span></span><span class=line><span class=cl>  LV Write Access        read/write
+</span></span><span class=line><span class=cl>  LV Creation host, <span class=nb>time</span> localhost.localdomain, 2021-12-16 10:36:54 +0800
+</span></span><span class=line><span class=cl>  LV Status              available
+</span></span><span class=line><span class=cl>  <span class=c1># open                 0</span>
+</span></span><span class=line><span class=cl>  LV Size                5.00 GiB
+</span></span><span class=line><span class=cl>  Current LE             <span class=m>1280</span>
+</span></span><span class=line><span class=cl>  Segments               <span class=m>1</span>
+</span></span><span class=line><span class=cl>  Allocation             inherit
+</span></span><span class=line><span class=cl>  Read ahead sectors     auto
+</span></span><span class=line><span class=cl>  - currently <span class=nb>set</span> to     <span class=m>8192</span>
+</span></span><span class=line><span class=cl>  Block device           253:2
+</span></span></code></pre></td></tr></table></div></div><p>使用 test_lv</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span><span class=lnt>26
+</span><span class=lnt>27
+</span><span class=lnt>28
+</span><span class=lnt>29
+</span><span class=lnt>30
+</span><span class=lnt>31
+</span><span class=lnt>32
+</span><span class=lnt>33
+</span><span class=lnt>34
+</span><span class=lnt>35
+</span><span class=lnt>36
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=o>[</span>root@localhost ~<span class=o>]</span><span class=c1># mkfs.ext4 /dev/centos/test_lv</span>
+</span></span><span class=line><span class=cl>mke2fs 1.42.9 <span class=o>(</span>28-Dec-2013<span class=o>)</span>
+</span></span><span class=line><span class=cl>Filesystem <span class=nv>label</span><span class=o>=</span>
+</span></span><span class=line><span class=cl>OS type: Linux
+</span></span><span class=line><span class=cl>Block <span class=nv>size</span><span class=o>=</span><span class=m>4096</span> <span class=o>(</span><span class=nv>log</span><span class=o>=</span>2<span class=o>)</span>
+</span></span><span class=line><span class=cl>Fragment <span class=nv>size</span><span class=o>=</span><span class=m>4096</span> <span class=o>(</span><span class=nv>log</span><span class=o>=</span>2<span class=o>)</span>
+</span></span><span class=line><span class=cl><span class=nv>Stride</span><span class=o>=</span><span class=m>0</span> blocks, Stripe <span class=nv>width</span><span class=o>=</span><span class=m>0</span> blocks
+</span></span><span class=line><span class=cl><span class=m>327680</span> inodes, <span class=m>1310720</span> blocks
+</span></span><span class=line><span class=cl><span class=m>65536</span> blocks <span class=o>(</span>5.00%<span class=o>)</span> reserved <span class=k>for</span> the super user
+</span></span><span class=line><span class=cl>First data <span class=nv>block</span><span class=o>=</span><span class=m>0</span>
+</span></span><span class=line><span class=cl>Maximum filesystem <span class=nv>blocks</span><span class=o>=</span><span class=m>1342177280</span>
+</span></span><span class=line><span class=cl><span class=m>40</span> block groups
+</span></span><span class=line><span class=cl><span class=m>32768</span> blocks per group, <span class=m>32768</span> fragments per group
+</span></span><span class=line><span class=cl><span class=m>8192</span> inodes per group
+</span></span><span class=line><span class=cl>Superblock backups stored on blocks:
+</span></span><span class=line><span class=cl>        32768, 98304, 163840, 229376, 294912, 819200, <span class=m>884736</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Allocating group tables: <span class=k>done</span>
+</span></span><span class=line><span class=cl>Writing inode tables: <span class=k>done</span>
+</span></span><span class=line><span class=cl>Creating journal <span class=o>(</span><span class=m>32768</span> blocks<span class=o>)</span>: <span class=k>done</span>
+</span></span><span class=line><span class=cl>Writing superblocks and filesystem accounting information: <span class=k>done</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=o>[</span>root@localhost ~<span class=o>]</span><span class=c1># mkdir /test</span>
+</span></span><span class=line><span class=cl><span class=o>[</span>root@localhost ~<span class=o>]</span><span class=c1># mount /dev/centos/test_lv /test</span>
+</span></span><span class=line><span class=cl><span class=o>[</span>root@localhost ~<span class=o>]</span><span class=c1># lsblk</span>
+</span></span><span class=line><span class=cl>NAME             MAJ:MIN RM  SIZE RO TYPE MOUNTPOINT
+</span></span><span class=line><span class=cl>sda                8:0    <span class=m>0</span>   20G  <span class=m>0</span> disk
+</span></span><span class=line><span class=cl>├─sda1             8:1    <span class=m>0</span>    1G  <span class=m>0</span> part /boot
+</span></span><span class=line><span class=cl>└─sda2             8:2    <span class=m>0</span>   19G  <span class=m>0</span> part
+</span></span><span class=line><span class=cl>  ├─centos-root  253:0    <span class=m>0</span>   17G  <span class=m>0</span> lvm  /
+</span></span><span class=line><span class=cl>  └─centos-swap  253:1    <span class=m>0</span>    2G  <span class=m>0</span> lvm  <span class=o>[</span>SWAP<span class=o>]</span>
+</span></span><span class=line><span class=cl>sdb                8:16   <span class=m>0</span>   20G  <span class=m>0</span> disk
+</span></span><span class=line><span class=cl>└─centos-test_lv 253:2    <span class=m>0</span>    5G  <span class=m>0</span> lvm  /test
+</span></span><span class=line><span class=cl>sr0               11:0    <span class=m>1</span>  906M  <span class=m>0</span> rom
+</span></span><span class=line><span class=cl><span class=c1># 为了开机自动挂载，将挂载信息写入 /etc/fstab 文件中</span>
+</span></span><span class=line><span class=cl><span class=o>[</span>root@localhost ~<span class=o>]</span><span class=c1># echo &#39;/dev/centos/test_lv /test  ext4 defaults 0 0&#39; &gt;&gt; /etc/fstab</span>
+</span></span></code></pre></td></tr></table></div></div><h2 id=动态-lv-扩容 class=headerLink><a href=#%e5%8a%a8%e6%80%81-lv-%e6%89%a9%e5%ae%b9 class=header-mark></a>动态 lv 扩容</h2><p>现在需要对 root lv 进行动态扩容，vg 中剩余的所有空间都分给 root lv，操作步骤如下</p><p>查看 vg</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=o>[</span>root@localhost ~<span class=o>]</span><span class=c1># vgdisplay</span>
+</span></span><span class=line><span class=cl>  --- Volume group ---
+</span></span><span class=line><span class=cl>  VG Name               centos
+</span></span><span class=line><span class=cl>  System ID
+</span></span><span class=line><span class=cl>  Format                lvm2
+</span></span><span class=line><span class=cl>  Metadata Areas        <span class=m>2</span>
+</span></span><span class=line><span class=cl>  Metadata Sequence No  <span class=m>7</span>
+</span></span><span class=line><span class=cl>  VG Access             read/write
+</span></span><span class=line><span class=cl>  VG Status             resizable
+</span></span><span class=line><span class=cl>  MAX LV                <span class=m>0</span>
+</span></span><span class=line><span class=cl>  Cur LV                <span class=m>3</span>
+</span></span><span class=line><span class=cl>  Open LV               <span class=m>3</span>
+</span></span><span class=line><span class=cl>  Max PV                <span class=m>0</span>
+</span></span><span class=line><span class=cl>  Cur PV                <span class=m>2</span>
+</span></span><span class=line><span class=cl>  Act PV                <span class=m>2</span>
+</span></span><span class=line><span class=cl>  VG Size               38.99 GiB
+</span></span><span class=line><span class=cl>  PE Size               4.00 MiB
+</span></span><span class=line><span class=cl>  Total PE              <span class=m>9982</span>
+</span></span><span class=line><span class=cl>  Alloc PE / Size       <span class=m>6143</span> / &lt;24.00 GiB
+</span></span><span class=line><span class=cl>  Free  PE / Size       <span class=m>3839</span> / &lt;15.00 GiB
+</span></span><span class=line><span class=cl>  VG UUID               85pJBT-lfvE-sptt-ywZF-j8Ya-m1Xg-ch4Qyf
+</span></span></code></pre></td></tr></table></div></div><blockquote><p>通过上面的信息可以看出，还有 15G 剩余空间可以供分配 (3839 个 PE, 一个 PE 大小为 4M )</p></blockquote><p>现在将 VG 剩余所有空间分配给 root lv</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=o>[</span>root@localhost ~<span class=o>]</span><span class=c1># lvextend -L +15G /dev/centos/root</span>
+</span></span><span class=line><span class=cl>  Insufficient free space: <span class=m>3840</span> extents needed, but only <span class=m>3839</span> available
+</span></span></code></pre></td></tr></table></div></div><blockquote><p>直接使用容量大小时提示可分配空间不足，此我们可以使用 -l 参数通过分配 PE 个数完成扩容操作</p></blockquote><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=o>[</span>root@localhost ~<span class=o>]</span><span class=c1># lvextend -l +3839 /dev/centos/root</span>
+</span></span><span class=line><span class=cl>  Size of logical volume centos/root changed from &lt;17.00 GiB <span class=o>(</span><span class=m>4351</span> extents<span class=o>)</span> to 31.99 GiB <span class=o>(</span><span class=m>8190</span> extents<span class=o>)</span>.
+</span></span><span class=line><span class=cl>  Logical volume centos/root successfully resized.
+</span></span></code></pre></td></tr></table></div></div><blockquote><p>通过 PE 个数分配成功</p></blockquote><p>查看 root lv 信息</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=o>[</span>root@localhost ~<span class=o>]</span><span class=c1># lvdisplay /dev/centos/root</span>
+</span></span><span class=line><span class=cl>  --- Logical volume ---
+</span></span><span class=line><span class=cl>  LV Path                /dev/centos/root
+</span></span><span class=line><span class=cl>  LV Name                root
+</span></span><span class=line><span class=cl>  VG Name                centos
+</span></span><span class=line><span class=cl>  LV UUID                QL4fK3-RjZ0-5XXd-ghsm-W0DQ-Gp3m-A4z45J
+</span></span><span class=line><span class=cl>  LV Write Access        read/write
+</span></span><span class=line><span class=cl>  LV Creation host, <span class=nb>time</span> localhost.localdomain, 2021-09-10 12:03:59 +0800
+</span></span><span class=line><span class=cl>  LV Status              available
+</span></span><span class=line><span class=cl>  <span class=c1># open                 1</span>
+</span></span><span class=line><span class=cl>  LV Size                31.99 GiB
+</span></span><span class=line><span class=cl>  Current LE             <span class=m>8190</span>
+</span></span><span class=line><span class=cl>  Segments               <span class=m>2</span>
+</span></span><span class=line><span class=cl>  Allocation             inherit
+</span></span><span class=line><span class=cl>  Read ahead sectors     auto
+</span></span><span class=line><span class=cl>  - currently <span class=nb>set</span> to     <span class=m>8192</span>
+</span></span><span class=line><span class=cl>  Block device           253:0
+</span></span></code></pre></td></tr></table></div></div><p>再通过 df 查看</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=o>[</span>root@localhost ~<span class=o>]</span><span class=c1># df -hl</span>
+</span></span><span class=line><span class=cl>Filesystem                  Size  Used Avail Use% Mounted on
+</span></span><span class=line><span class=cl>/dev/mapper/centos-root      17G  1.5G   16G   9% /
+</span></span><span class=line><span class=cl>devtmpfs                    224M     <span class=m>0</span>  224M   0% /dev
+</span></span><span class=line><span class=cl>tmpfs                       236M     <span class=m>0</span>  236M   0% /dev/shm
+</span></span><span class=line><span class=cl>tmpfs                       236M  5.5M  230M   3% /run
+</span></span><span class=line><span class=cl>tmpfs                       236M     <span class=m>0</span>  236M   0% /sys/fs/cgroup
+</span></span><span class=line><span class=cl>/dev/sda1                  1014M  130M  885M  13% /boot
+</span></span><span class=line><span class=cl>tmpfs                        48M     <span class=m>0</span>   48M   0% /run/user/0
+</span></span><span class=line><span class=cl>/dev/mapper/centos-test_lv  4.8G   20M  4.6G   1% /test
+</span></span></code></pre></td></tr></table></div></div><blockquote><p>可以看出硬盘空间分配成功，但没有刷新</p></blockquote><p>刷新分区信息</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=o>[</span>root@localhost ~<span class=o>]</span><span class=c1># resize2fs -f /dev/centos/root</span>
+</span></span><span class=line><span class=cl>resize2fs 1.42.9 <span class=o>(</span>28-Dec-2013<span class=o>)</span>
+</span></span><span class=line><span class=cl>resize2fs: Bad magic number in super-block <span class=k>while</span> trying to open /dev/centos/root
+</span></span><span class=line><span class=cl>Couldn<span class=err>&#39;</span>t find valid filesystem superblock.
+</span></span></code></pre></td></tr></table></div></div><blockquote><p>我们使用 <code>resize2fs</code> 命令刷新分区信息出错，这是由于 root lv 的文件系统为 xfs 需要使用 <code>xfs_growfs</code> 命令</p></blockquote><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=o>[</span>root@localhost ~<span class=o>]</span><span class=c1># xfs_growfs /dev/centos/root</span>
+</span></span><span class=line><span class=cl>meta-data<span class=o>=</span>/dev/mapper/centos-root <span class=nv>isize</span><span class=o>=</span><span class=m>512</span>    <span class=nv>agcount</span><span class=o>=</span>4, <span class=nv>agsize</span><span class=o>=</span><span class=m>1113856</span> <span class=nv>blks</span>
+</span></span><span class=line><span class=cl>         <span class=o>=</span>                       <span class=nv>sectsz</span><span class=o>=</span><span class=m>512</span>   <span class=nv>attr</span><span class=o>=</span>2, <span class=nv>projid32bit</span><span class=o>=</span><span class=nv>1</span>
+</span></span><span class=line><span class=cl>         <span class=o>=</span>                       <span class=nv>crc</span><span class=o>=</span><span class=m>1</span>        <span class=nv>finobt</span><span class=o>=</span><span class=m>0</span> <span class=nv>spinodes</span><span class=o>=</span><span class=m>0</span>
+</span></span><span class=line><span class=cl><span class=nv>data</span>     <span class=o>=</span>                       <span class=nv>bsize</span><span class=o>=</span><span class=m>4096</span>   <span class=nv>blocks</span><span class=o>=</span>4455424, <span class=nv>imaxpct</span><span class=o>=</span><span class=nv>25</span>
+</span></span><span class=line><span class=cl>         <span class=o>=</span>                       <span class=nv>sunit</span><span class=o>=</span><span class=m>0</span>      <span class=nv>swidth</span><span class=o>=</span><span class=m>0</span> blks
+</span></span><span class=line><span class=cl><span class=nv>naming</span>   <span class=o>=</span>version <span class=m>2</span>              <span class=nv>bsize</span><span class=o>=</span><span class=m>4096</span>   ascii-ci<span class=o>=</span><span class=m>0</span> <span class=nv>ftype</span><span class=o>=</span><span class=m>1</span>
+</span></span><span class=line><span class=cl><span class=nv>log</span>      <span class=o>=</span>internal               <span class=nv>bsize</span><span class=o>=</span><span class=m>4096</span>   <span class=nv>blocks</span><span class=o>=</span>2560, <span class=nv>version</span><span class=o>=</span><span class=nv>2</span>
+</span></span><span class=line><span class=cl>         <span class=o>=</span>                       <span class=nv>sectsz</span><span class=o>=</span><span class=m>512</span>   <span class=nv>sunit</span><span class=o>=</span><span class=m>0</span> blks, lazy-count<span class=o>=</span><span class=m>1</span>
+</span></span><span class=line><span class=cl><span class=nv>realtime</span> <span class=o>=</span>none                   <span class=nv>extsz</span><span class=o>=</span><span class=m>4096</span>   <span class=nv>blocks</span><span class=o>=</span>0, <span class=nv>rtextents</span><span class=o>=</span><span class=m>0</span>
+</span></span><span class=line><span class=cl>data blocks changed from <span class=m>4455424</span> to <span class=m>8386560</span>
+</span></span></code></pre></td></tr></table></div></div><p>再次 <code>df -hl</code> 查看大小</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=o>[</span>root@localhost ~<span class=o>]</span><span class=c1># df -hl</span>
+</span></span><span class=line><span class=cl>Filesystem                  Size  Used Avail Use% Mounted on
+</span></span><span class=line><span class=cl>/dev/mapper/centos-root      32G  1.5G   31G   5% /
+</span></span><span class=line><span class=cl>devtmpfs                    224M     <span class=m>0</span>  224M   0% /dev
+</span></span><span class=line><span class=cl>tmpfs                       236M     <span class=m>0</span>  236M   0% /dev/shm
+</span></span><span class=line><span class=cl>tmpfs                       236M  5.5M  230M   3% /run
+</span></span><span class=line><span class=cl>tmpfs                       236M     <span class=m>0</span>  236M   0% /sys/fs/cgroup
+</span></span><span class=line><span class=cl>/dev/sda1                  1014M  130M  885M  13% /boot
+</span></span><span class=line><span class=cl>tmpfs                        48M     <span class=m>0</span>   48M   0% /run/user/0
+</span></span><span class=line><span class=cl>/dev/mapper/centos-test_lv  4.8G   20M  4.6G   1% /test
+</span></span></code></pre></td></tr></table></div></div><blockquote><p>root lv 的容量大小已刷新成功了</p></blockquote></div><div class=post-footer id=post-footer><div class=post-info><div class=post-info-line><div class=post-info-mod><span>更新于 2021-12-16</span></div><div class=post-info-license></div></div><div class=post-info-line><div class=post-info-md><span><a class=link-to-mardown href=/posts/lvm/index.md target=_blank rel="noopener noreferrer">阅读原始文档</a></span></div><div class=post-info-share><span><a href=# title="分享到 Twitter" data-sharer=twitter data-url=https://liwanggui.com/posts/lvm/ data-title="使用 LVM 管理硬盘空间" data-hashtags=lvm><i class="fab fa-twitter fa-fw"></i></a><a href=# title="分享到 Facebook" data-sharer=facebook data-url=https://liwanggui.com/posts/lvm/ data-hashtag=lvm><i class="fab fa-facebook-square fa-fw"></i></a><a href=# title="分享到 WhatsApp" data-sharer=whatsapp data-url=https://liwanggui.com/posts/lvm/ data-title="使用 LVM 管理硬盘空间" data-web><i class="fab fa-whatsapp fa-fw"></i></a><a href=# title="分享到 Line" data-sharer=line data-url=https://liwanggui.com/posts/lvm/ data-title="使用 LVM 管理硬盘空间"><i data-svg-src=/lib/simple-icons/icons/line.min.svg></i></a><a href=# title="分享到 微博" data-sharer=weibo data-url=https://liwanggui.com/posts/lvm/ data-title="使用 LVM 管理硬盘空间"><i class="fab fa-weibo fa-fw"></i></a><a href=# title="分享到 Myspace" data-sharer=myspace data-url=https://liwanggui.com/posts/lvm/ data-title="使用 LVM 管理硬盘空间" data-description><i data-svg-src=/lib/simple-icons/icons/myspace.min.svg></i></a><a href=# title="分享到 Blogger" data-sharer=blogger data-url=https://liwanggui.com/posts/lvm/ data-title="使用 LVM 管理硬盘空间" data-description><i class="fab fa-blogger fa-fw"></i></a><a href=# title="分享到 百度" data-sharer=baidu data-url=https://liwanggui.com/posts/lvm/ data-title="使用 LVM 管理硬盘空间"><i data-svg-src=/lib/simple-icons/icons/baidu.min.svg></i></a><a href=# title="分享到 Evernote" data-sharer=evernote data-url=https://liwanggui.com/posts/lvm/ data-title="使用 LVM 管理硬盘空间"><i class="fab fa-evernote fa-fw"></i></a></span></div></div></div><div class=post-info-more><section class=post-tags><i class="fas fa-tags fa-fw"></i>&nbsp;<a href=/tags/lvm/>lvm</a></section><section><span><a href=javascript:void(0); onclick=window.history.back()>返回</a></span>&nbsp;|&nbsp;<span><a href=/>主页</a></span></section></div><div class=post-nav><a href=/posts/stunnel/ class=prev rel=prev title="使用 stunnel 加密保护你的连接"><i class="fas fa-angle-left fa-fw"></i>使用 stunnel 加密保护你的连接</a>
+<a href=/posts/bash-while/ class=next rel=next title="Bash - while read 问题">Bash - while read 问题<i class="fas fa-angle-right fa-fw"></i></a></div></div><div id=comments><div id=giscus></div><noscript>Please enable JavaScript to view the comments powered by <a href=https://giscus.app/>giscus</a>.</noscript></div></article></div></main><footer class=footer><div class=footer-container><div class=footer-line>由 <a href=https://gohugo.io/ target=_blank rel="noopener noreferrer" title="Hugo 0.101.0">Hugo</a> 强力驱动&nbsp;|&nbsp;主题 - <a href=https://github.com/HEIGE-PCloud/DoIt target=_blank rel="noopener noreferrer" title="DoIt 0.3.0"><i class="far fa-edit fa-fw"></i> DoIt</a></div><div class=footer-line><i class="far fa-copyright fa-fw"></i><span itemprop=copyrightYear>2017 - 2024</span><span class=author itemprop=copyrightHolder>&nbsp;<a href=/about/ target=_blank rel="noopener noreferrer">李王贵</a></span><span class=icp-splitter>&nbsp;|&nbsp;</span><br class=icp-br><span class=icp><a href=https://beian.miit.gov.cn target=_blank>赣ICP备2023001395号</a></span></div><div class=footer-line></div><div class=footer-line></div></div></footer></div><div id=fixed-buttons><a href=#back-to-top id=back-to-top-button class=fixed-button title=回到顶部><i class="fas fa-arrow-up fa-fw"></i>
+</a><a href=# id=view-comments class=fixed-button title=查看评论><i class="fas fa-comment fa-fw"></i></a></div><div id=cookieconsent-container></div><div class=assets><link rel=stylesheet href=/lib/lightgallery/lightgallery.min.css><link rel=stylesheet href=/lib/katex/katex.min.css><link rel=preload as=style onload='this.onload=null,this.rel="stylesheet"' href=/lib/katex/copy-tex.min.css><noscript><link rel=stylesheet href=/lib/katex/copy-tex.min.css></noscript><link rel=stylesheet href=/lib/cookieconsent/cookieconsent.min.css><script type=text/javascript>window.config={code:{copyTitle:"复制到剪贴板",maxShownLines:10},comment:{giscus:{darkTheme:"dark",dataCategory:"Announcements",dataCategoryId:"DIC_kwDOE7mEQ84CY9pq",dataEmitMetadata:"1",dataInputPosition:"top",dataLang:"zh-CN",dataMapping:"pathname",dataReactionsEnabled:"1",dataRepo:"liwanggui/liwanggui.github.io",dataRepoId:"MDEwOlJlcG9zaXRvcnkzMzA5MjUxMjM=",dataStrict:"0",lightTheme:"light"}},cookieconsent:{content:{dismiss:"同意",link:"了解更多",message:"本网站使用 Cookies 来改善您的浏览体验."},enable:!0,palette:{button:{background:"#f0f0f0"},popup:{background:"#1aa3ff"}},theme:"edgeless"},lightGallery:{actualSize:!1,exThumbImage:"data-thumbnail",hideBarsDelay:2e3,selector:".lightgallery",speed:400,thumbContHeight:80,thumbWidth:80,thumbnail:!0},math:{delimiters:[{display:!0,left:"$$",right:"$$"},{display:!0,left:"\\[",right:"\\]"},{display:!1,left:"$",right:"$"},{display:!1,left:"\\(",right:"\\)"}],strict:!1},search:{distance:100,findAllMatches:!1,fuseIndexURL:"/index.json",highlightTag:"em",ignoreFieldNorm:!1,ignoreLocation:!1,isCaseSensitive:!1,location:0,maxResultLength:10,minMatchCharLength:2,noResultsFound:"没有找到结果",snippetLength:50,threshold:.3,type:"fuse",useExtendedSearch:!1},sharerjs:!0,twemoji:!0}</script><script type=text/javascript src=/js/giscus.min.js defer></script><script type=text/javascript src=/lib/twemoji/twemoji.min.js defer></script><script type=text/javascript src=/js/twemoji.min.js defer></script><script type=text/javascript src=/lib/lightgallery/lightgallery.min.js></script><script type=text/javascript src=/lib/lightgallery/lg-thumbnail.min.js></script><script type=text/javascript src=/lib/lightgallery/lg-zoom.min.js></script><script type=text/javascript src=/lib/clipboard/clipboard.min.js></script><script type=text/javascript src=/lib/sharer/sharer.min.js></script><script type=text/javascript src=/lib/katex/katex.min.js defer></script><script type=text/javascript src=/lib/katex/auto-render.min.js defer></script><script type=text/javascript src=/lib/katex/copy-tex.min.js defer></script><script type=text/javascript src=/lib/katex/mhchem.min.js defer></script><script type=text/javascript src=/js/katex.min.js defer></script><script type=text/javascript src=/lib/cookieconsent/cookieconsent.min.js defer></script><script type=text/javascript src=/js/cookieconsent.min.js defer></script><script type=text/javascript src=/js/theme.min.js defer></script></div></body></html>

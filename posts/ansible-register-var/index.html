@@ -1,0 +1,635 @@
+<!doctype html><html lang=zh-cn><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><meta name=robots content="noodp"><title>Ansible 变量注册 - _浅行</title><meta name=Description content="_浅行"><meta property="og:title" content="Ansible 变量注册"><meta property="og:description" content="使用 register 注册变量当 playbook 运行的时候，经常需要中途收集一些数据，后面使用它。 使用 register 注册变量是最简单、最常用的一种方式。 执行一条命令并把返回结果注册为"><meta property="og:type" content="article"><meta property="og:url" content="https://liwanggui.com/posts/ansible-register-var/"><meta property="og:image" content="https://liwanggui.com/logo.png"><meta property="article:section" content="posts"><meta property="article:published_time" content="2023-08-30T15:51:29+08:00"><meta property="article:modified_time" content="2023-08-30T15:51:29+08:00"><meta name=twitter:card content="summary_large_image"><meta name=twitter:image content="https://liwanggui.com/logo.png"><meta name=twitter:title content="Ansible 变量注册"><meta name=twitter:description content="使用 register 注册变量当 playbook 运行的时候，经常需要中途收集一些数据，后面使用它。 使用 register 注册变量是最简单、最常用的一种方式。 执行一条命令并把返回结果注册为"><meta name=application-name content="LoveIt"><meta name=apple-mobile-web-app-title content="LoveIt"><meta name=theme-color content="#f8f8f8"><meta name=msapplication-TileColor content="#da532c"><link rel=canonical href=https://liwanggui.com/posts/ansible-register-var/><link rel=prev href=https://liwanggui.com/posts/ansible-inventory-hostname/><link rel=next href=https://liwanggui.com/posts/docker-compose-advanced-tutorials/><link rel=stylesheet href=/lib/normalize/normalize.min.css><link rel=stylesheet href=/css/color.css><link rel=stylesheet href=/css/style.min.css><link rel=preload as=style onload='this.onload=null,this.rel="stylesheet"' href=/lib/fontawesome-free/all.min.css><noscript><link rel=stylesheet href=/lib/fontawesome-free/all.min.css></noscript><link rel=preload as=style onload='this.onload=null,this.rel="stylesheet"' href=/lib/animate/animate.min.css><noscript><link rel=stylesheet href=/lib/animate/animate.min.css></noscript><script type=application/ld+json>{"@context":"http://schema.org","@type":"BlogPosting","headline":"Ansible 变量注册","inLanguage":"zh-CN","mainEntityOfPage":{"@type":"WebPage","@id":"https:\/\/liwanggui.com\/posts\/ansible-register-var\/"},"genre":"posts","keywords":"ansible","wordcount":1412,"url":"https:\/\/liwanggui.com\/posts\/ansible-register-var\/","datePublished":"2023-08-30T15:51:29+08:00","dateModified":"2023-08-30T15:51:29+08:00","publisher":{"@type":"Organization","name":""},"author":{"@type":"Person","name":"李王贵"},"description":""}</script><script src=//instant.page/5.1.1 defer type=module integrity=sha384-MWfCL6g1OTGsbSwfuMHc8+8J2u71/LA8dzlIN3ycajckxuZZmF+DNjdm7O6H3PSq></script></head><body header-desktop=fixed header-mobile=auto><script type=text/javascript>function setTheme(e){document.body.setAttribute("theme",e),document.documentElement.style.setProperty("color-scheme",e==="light"?"light":"dark")}function saveTheme(e){window.localStorage&&localStorage.setItem("theme",e)}function getMeta(e){const t=document.getElementsByTagName("meta");for(let n=0;n<t.length;n++)if(t[n].getAttribute("name")===e)return t[n];return""}if(window.localStorage&&localStorage.getItem("theme")){let e=localStorage.getItem("theme");e==="light"||e==="dark"||e==="black"?setTheme(e):setTheme(window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light")}else"auto"==="light"||"auto"==="dark"||"auto"==="black"?(setTheme("auto"),saveTheme("auto")):(saveTheme("auto"),setTheme(window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"));let metaColors={light:"#f8f8f8",dark:"#252627",black:"#000000"};getMeta("theme-color").content=metaColors[document.body.getAttribute("theme")]</script><div id=back-to-top></div><div id=mask></div><div class=wrapper><header class=desktop id=header-desktop><div class=header-wrapper><div class=header-title><a href=/ title=_浅行><span class=header-title-pre><i class='far fa-kiss-wink-heart fa-fw'></i></span>_浅行</a></div><div class=menu><div class=menu-inner><a class=menu-item href=/posts/ title=文章列表>文章 </a><a class=menu-item href=/tags/ title=标签云>标签 </a><a class=menu-item href=/categories/ title=分类>分类 </a><a class=menu-item href=https://cook.liwanggui.com/ title=程序员做饭指南 rel="noopener noreferrer" target=_blank>烹饪 </a><a class=menu-item href=/about/index.html title=关于>关于 </a><span class="menu-item delimiter"></span><span class="menu-item search" id=search-desktop>
+<input type=text placeholder=搜索文章标题或内容... id=search-input-desktop>
+<a href=# class="search-button search-toggle" id=search-toggle-desktop title=搜索><i class="fas fa-search fa-fw"></i></a>
+<a href=# class="search-button search-clear" id=search-clear-desktop title=清空><i class="fas fa-times-circle fa-fw"></i></a>
+<span class="search-button search-loading" id=search-loading-desktop><i class="fas fa-spinner fa-fw fa-spin"></i></span>
+</span><a href=# class="menu-item theme-switch" title=切换主题><i class="fas fa-adjust fa-fw"></i></a></div></div></div></header><header class=mobile id=header-mobile><div class=header-container><div class=header-wrapper><div class=header-title><a href=/ title=_浅行><span class=header-title-pre><i class='far fa-kiss-wink-heart fa-fw'></i></span>_浅行</a></div><div class=menu-toggle id=menu-toggle-mobile><span></span><span></span><span></span></div></div><div class=menu id=menu-mobile><div class=search-wrapper><div class="search mobile" id=search-mobile><input type=text placeholder=搜索文章标题或内容... id=search-input-mobile>
+<a href=# class="search-button search-toggle" id=search-toggle-mobile title=搜索><i class="fas fa-search fa-fw"></i></a>
+<a href=# class="search-button search-clear" id=search-clear-mobile title=清空><i class="fas fa-times-circle fa-fw"></i></a>
+<span class="search-button search-loading" id=search-loading-mobile><i class="fas fa-spinner fa-fw fa-spin"></i></span></div><a href=# class=search-cancel id=search-cancel-mobile>取消</a></div><a class=menu-item href=/posts/ title=文章列表>文章</a><a class=menu-item href=/tags/ title=标签云>标签</a><a class=menu-item href=/categories/ title=分类>分类</a><a class=menu-item href=https://cook.liwanggui.com/ title=程序员做饭指南 rel="noopener noreferrer" target=_blank>烹饪</a><a class=menu-item href=/about/index.html title=关于>关于</a><a href=# class="menu-item theme-switch" title=切换主题>
+<i class="fas fa-adjust fa-fw"></i></a></div></div></header><div class="search-dropdown desktop"><div id=search-dropdown-desktop></div></div><div class="search-dropdown mobile"><div id=search-dropdown-mobile></div></div><main class=main><div class=container><div class=toc id=toc-auto><h2 class=toc-title>目录</h2><div class=toc-content id=toc-content-auto><nav id=TableOfContents><ul><li><a href=#使用-register-注册变量>使用 register 注册变量</a><ul><li><a href=#执行一条命令并把返回结果注册为变量>执行一条命令并把返回结果注册为变量</a></li><li><a href=#列表遍历的结果注册为变量>列表遍历的结果注册为变量</a></li></ul></li><li><a href=#使用-set_fact-注册变量>使用 set_fact 注册变量</a><ul><li><a href=#使用-set_fact-注册一个普通变量>使用 set_fact 注册一个普通变量</a></li></ul></li></ul></nav></div></div><script>document.getElementsByTagName("main")[0].setAttribute("pageStyle","normal")</script><script>document.getElementsByTagName("main")[0].setAttribute("autoTOC","true")</script><article class="page single"><h1 class="single-title animate__animated animate__flipInX">Ansible 变量注册</h1><div class=post-meta><div class=post-meta-line><span class=post-author><i class="author fas fa-user-circle fa-fw"></i><a href=/about/ title=Author rel=author class=author>李王贵</a>
+</span>&nbsp;<span class=post-category>收录于 </span>&nbsp;<span class=post-category>类别 <a href=/categories/devops/><i class="far fa-folder fa-fw"></i>devops</a>&nbsp;<a href=/categories/ansible/><i class="far fa-folder fa-fw"></i>ansible</a></span></div><div class=post-meta-line><i class="far fa-calendar-alt fa-fw"></i>&nbsp;<time datetime=2023-08-30>2023-08-30</time>&nbsp;<i class="far fa-edit fa-fw"></i>&nbsp;<time datetime=2023-08-30>2023-08-30</time>&nbsp;<i class="fas fa-pencil-alt fa-fw"></i>&nbsp;约 1412 字&nbsp;
+<i class="far fa-clock fa-fw"></i>&nbsp;预计阅读 3 分钟&nbsp;</div></div><div class="details toc" id=toc-static kept><div class="details-summary toc-title"><span>目录</span>
+<span><i class="details-icon fas fa-angle-right"></i></span></div><div class="details-content toc-content" id=toc-content-static><nav id=TableOfContents><ul><li><a href=#使用-register-注册变量>使用 register 注册变量</a><ul><li><a href=#执行一条命令并把返回结果注册为变量>执行一条命令并把返回结果注册为变量</a></li><li><a href=#列表遍历的结果注册为变量>列表遍历的结果注册为变量</a></li></ul></li><li><a href=#使用-set_fact-注册变量>使用 set_fact 注册变量</a><ul><li><a href=#使用-set_fact-注册一个普通变量>使用 set_fact 注册一个普通变量</a></li></ul></li></ul></nav></div></div><div class=content id=content><h2 id=使用-register-注册变量 class=headerLink><a href=#%e4%bd%bf%e7%94%a8-register-%e6%b3%a8%e5%86%8c%e5%8f%98%e9%87%8f class=header-mark></a>使用 register 注册变量</h2><p>当 <code>playbook</code> 运行的时候，经常需要中途收集一些数据，后面使用它。 使用 <code>register</code> 注册变量是最简单、最常用的一种方式。</p><h3 id=执行一条命令并把返回结果注册为变量 class=headerLink><a href=#%e6%89%a7%e8%a1%8c%e4%b8%80%e6%9d%a1%e5%91%bd%e4%bb%a4%e5%b9%b6%e6%8a%8a%e8%bf%94%e5%9b%9e%e7%bb%93%e6%9e%9c%e6%b3%a8%e5%86%8c%e4%b8%ba%e5%8f%98%e9%87%8f class=header-mark></a>执行一条命令并把返回结果注册为变量</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-yaml data-lang=yaml><span class=line><span class=cl>- <span class=nt>hosts</span><span class=p>:</span><span class=w> </span><span class=l>all</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>tasks</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span>- <span class=nt>name</span><span class=p>:</span><span class=w> </span><span class=l>define a var1</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>shell</span><span class=p>:</span><span class=w> </span><span class=s2>&#34;whoami&#34;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>register</span><span class=p>:</span><span class=w> </span><span class=l>whoami</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span>- <span class=nt>name</span><span class=p>:</span><span class=w> </span><span class=l>show var</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>debug</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span><span class=nt>msg</span><span class=p>:</span><span class=w> </span><span class=s2>&#34;whoami: {{ whoami }}&#34;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span>- <span class=nt>name</span><span class=p>:</span><span class=w> </span><span class=l>show var.stdout</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>debug</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span><span class=nt>msg</span><span class=p>:</span><span class=w> </span><span class=s2>&#34;whoami.stdout: {{ whoami.stdout }}&#34;</span><span class=w>
+</span></span></span></code></pre></td></tr></table></div></div><p><em>执行结果输出</em></p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>PLAY <span class=o>[</span>all<span class=o>]</span> ****************************************************************************************************************
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>TASK <span class=o>[</span>Gathering Facts<span class=o>]</span> ****************************************************************************************************
+</span></span><span class=line><span class=cl>ok: <span class=o>[</span>192.168.142.20<span class=o>]</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>TASK <span class=o>[</span>define a var1<span class=o>]</span> ******************************************************************************************************
+</span></span><span class=line><span class=cl>changed: <span class=o>[</span>192.168.142.20<span class=o>]</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>TASK <span class=o>[</span>show var<span class=o>]</span> ***********************************************************************************************************
+</span></span><span class=line><span class=cl>ok: <span class=o>[</span>192.168.142.20<span class=o>]</span> <span class=o>=</span>&gt; <span class=o>{</span>
+</span></span><span class=line><span class=cl>    <span class=s2>&#34;msg&#34;</span>: <span class=s2>&#34;whoami: {&#39;cmd&#39;: &#39;whoami&#39;, &#39;stdout&#39;: &#39;root&#39;, &#39;stderr&#39;: &#39;&#39;, &#39;rc&#39;: 0, &#39;start&#39;: &#39;2023-08-30 16:02:55.497249&#39;, &#39;end&#39;: &#39;2023-08-30 16:02:55.501304&#39;, &#39;delta&#39;: &#39;0:00:00.004055&#39;, &#39;changed&#39;: True, &#39;stdout_lines&#39;: [&#39;root&#39;], &#39;stderr_lines&#39;: [], &#39;failed&#39;: False}&#34;</span>
+</span></span><span class=line><span class=cl><span class=o>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>TASK <span class=o>[</span>show var.stdout<span class=o>]</span> ****************************************************************************************************
+</span></span><span class=line><span class=cl>ok: <span class=o>[</span>192.168.142.20<span class=o>]</span> <span class=o>=</span>&gt; <span class=o>{</span>
+</span></span><span class=line><span class=cl>    <span class=s2>&#34;msg&#34;</span>: <span class=s2>&#34;whoami.stdout: root&#34;</span>
+</span></span><span class=line><span class=cl><span class=o>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>PLAY RECAP ****************************************************************************************************************
+</span></span><span class=line><span class=cl>192.168.142.20             : <span class=nv>ok</span><span class=o>=</span><span class=m>4</span>    <span class=nv>changed</span><span class=o>=</span><span class=m>1</span>    <span class=nv>unreachable</span><span class=o>=</span><span class=m>0</span>    <span class=nv>failed</span><span class=o>=</span><span class=m>0</span>    <span class=nv>skipped</span><span class=o>=</span><span class=m>0</span>    <span class=nv>rescued</span><span class=o>=</span><span class=m>0</span>    <span class=nv>ignored</span><span class=o>=</span><span class=m>0</span>
+</span></span></code></pre></td></tr></table></div></div><blockquote><p>注意： <code>ansible</code> 执行结果一般都会返回一个字典类型的数据，你会看到很多你不关心的字段，可以通过指定字典的 <code>key</code>，例如 <code>stdout</code> <code>或stdout_lines</code> ，只看到你关心的数据。</p></blockquote><h3 id=列表遍历的结果注册为变量 class=headerLink><a href=#%e5%88%97%e8%a1%a8%e9%81%8d%e5%8e%86%e7%9a%84%e7%bb%93%e6%9e%9c%e6%b3%a8%e5%86%8c%e4%b8%ba%e5%8f%98%e9%87%8f class=header-mark></a>列表遍历的结果注册为变量</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span><span class=lnt>26
+</span><span class=lnt>27
+</span><span class=lnt>28
+</span><span class=lnt>29
+</span><span class=lnt>30
+</span><span class=lnt>31
+</span><span class=lnt>32
+</span><span class=lnt>33
+</span><span class=lnt>34
+</span><span class=lnt>35
+</span><span class=lnt>36
+</span><span class=lnt>37
+</span><span class=lnt>38
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-yaml data-lang=yaml><span class=line><span class=cl>- <span class=nt>hosts</span><span class=p>:</span><span class=w> </span><span class=l>all</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>vars</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>userss</span><span class=p>:</span><span class=w> </span><span class=p>[]</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>tasks</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span>- <span class=nt>name</span><span class=p>:</span><span class=w> </span><span class=l>define users in a loop</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span><span class=nt>shell</span><span class=p>:</span><span class=w> </span><span class=s2>&#34;grep {{ item }} /etc/passwd&#34;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span><span class=nt>register</span><span class=p>:</span><span class=w> </span><span class=l>users</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span><span class=nt>with_items</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span>- <span class=l>root</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span>- <span class=l>nginx</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    
+</span></span></span><span class=line><span class=cl><span class=w>    </span>- <span class=nt>name</span><span class=p>:</span><span class=w> </span><span class=l>show users</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span><span class=nt>debug</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=nt>msg</span><span class=p>:</span><span class=w> </span><span class=s2>&#34;{{ users }}&#34;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span>- <span class=nt>name</span><span class=p>:</span><span class=w> </span><span class=l>show users.results</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span><span class=nt>debug</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=nt>msg</span><span class=p>:</span><span class=w> </span><span class=s2>&#34;{{ users.results }}&#34;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span>- <span class=nt>name</span><span class=p>:</span><span class=w> </span><span class=l>define userss by set_fact</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span><span class=nt>set_fact</span><span class=p>:</span><span class=w> 
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=nt>userss</span><span class=p>:</span><span class=w> </span><span class=s2>&#34;{{userss +item.stdout_lines}}&#34;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span><span class=nt>with_list</span><span class=p>:</span><span class=w> </span><span class=s2>&#34;{{ users.results }}&#34;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span>- <span class=nt>name</span><span class=p>:</span><span class=w> </span><span class=l>print userss</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span><span class=nt>debug</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=nt>msg</span><span class=p>:</span><span class=w> </span><span class=s2>&#34;{{ userss }}&#34;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    
+</span></span></span><span class=line><span class=cl><span class=w>    </span>- <span class=nt>name</span><span class=p>:</span><span class=w> </span><span class=l>print userss one by one</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span><span class=nt>debug</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=nt>msg</span><span class=p>:</span><span class=w> </span><span class=s2>&#34;{{ item }}&#34;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span><span class=nt>with_list</span><span class=p>:</span><span class=w> </span><span class=s2>&#34;{{ userss}}&#34;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span>- <span class=nt>name</span><span class=p>:</span><span class=w> </span><span class=l>print part of userss one by one</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span><span class=nt>debug</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=nt>msg</span><span class=p>:</span><span class=w> </span><span class=s2>&#34;{{ item.split(&#39;:&#39;)[6] }}&#34;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span><span class=nt>with_list</span><span class=p>:</span><span class=w> </span><span class=s2>&#34;{{ userss}}&#34;</span><span class=w>
+</span></span></span></code></pre></td></tr></table></div></div><p><em>执行结果输出</em></p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>  1
+</span><span class=lnt>  2
+</span><span class=lnt>  3
+</span><span class=lnt>  4
+</span><span class=lnt>  5
+</span><span class=lnt>  6
+</span><span class=lnt>  7
+</span><span class=lnt>  8
+</span><span class=lnt>  9
+</span><span class=lnt> 10
+</span><span class=lnt> 11
+</span><span class=lnt> 12
+</span><span class=lnt> 13
+</span><span class=lnt> 14
+</span><span class=lnt> 15
+</span><span class=lnt> 16
+</span><span class=lnt> 17
+</span><span class=lnt> 18
+</span><span class=lnt> 19
+</span><span class=lnt> 20
+</span><span class=lnt> 21
+</span><span class=lnt> 22
+</span><span class=lnt> 23
+</span><span class=lnt> 24
+</span><span class=lnt> 25
+</span><span class=lnt> 26
+</span><span class=lnt> 27
+</span><span class=lnt> 28
+</span><span class=lnt> 29
+</span><span class=lnt> 30
+</span><span class=lnt> 31
+</span><span class=lnt> 32
+</span><span class=lnt> 33
+</span><span class=lnt> 34
+</span><span class=lnt> 35
+</span><span class=lnt> 36
+</span><span class=lnt> 37
+</span><span class=lnt> 38
+</span><span class=lnt> 39
+</span><span class=lnt> 40
+</span><span class=lnt> 41
+</span><span class=lnt> 42
+</span><span class=lnt> 43
+</span><span class=lnt> 44
+</span><span class=lnt> 45
+</span><span class=lnt> 46
+</span><span class=lnt> 47
+</span><span class=lnt> 48
+</span><span class=lnt> 49
+</span><span class=lnt> 50
+</span><span class=lnt> 51
+</span><span class=lnt> 52
+</span><span class=lnt> 53
+</span><span class=lnt> 54
+</span><span class=lnt> 55
+</span><span class=lnt> 56
+</span><span class=lnt> 57
+</span><span class=lnt> 58
+</span><span class=lnt> 59
+</span><span class=lnt> 60
+</span><span class=lnt> 61
+</span><span class=lnt> 62
+</span><span class=lnt> 63
+</span><span class=lnt> 64
+</span><span class=lnt> 65
+</span><span class=lnt> 66
+</span><span class=lnt> 67
+</span><span class=lnt> 68
+</span><span class=lnt> 69
+</span><span class=lnt> 70
+</span><span class=lnt> 71
+</span><span class=lnt> 72
+</span><span class=lnt> 73
+</span><span class=lnt> 74
+</span><span class=lnt> 75
+</span><span class=lnt> 76
+</span><span class=lnt> 77
+</span><span class=lnt> 78
+</span><span class=lnt> 79
+</span><span class=lnt> 80
+</span><span class=lnt> 81
+</span><span class=lnt> 82
+</span><span class=lnt> 83
+</span><span class=lnt> 84
+</span><span class=lnt> 85
+</span><span class=lnt> 86
+</span><span class=lnt> 87
+</span><span class=lnt> 88
+</span><span class=lnt> 89
+</span><span class=lnt> 90
+</span><span class=lnt> 91
+</span><span class=lnt> 92
+</span><span class=lnt> 93
+</span><span class=lnt> 94
+</span><span class=lnt> 95
+</span><span class=lnt> 96
+</span><span class=lnt> 97
+</span><span class=lnt> 98
+</span><span class=lnt> 99
+</span><span class=lnt>100
+</span><span class=lnt>101
+</span><span class=lnt>102
+</span><span class=lnt>103
+</span><span class=lnt>104
+</span><span class=lnt>105
+</span><span class=lnt>106
+</span><span class=lnt>107
+</span><span class=lnt>108
+</span><span class=lnt>109
+</span><span class=lnt>110
+</span><span class=lnt>111
+</span><span class=lnt>112
+</span><span class=lnt>113
+</span><span class=lnt>114
+</span><span class=lnt>115
+</span><span class=lnt>116
+</span><span class=lnt>117
+</span><span class=lnt>118
+</span><span class=lnt>119
+</span><span class=lnt>120
+</span><span class=lnt>121
+</span><span class=lnt>122
+</span><span class=lnt>123
+</span><span class=lnt>124
+</span><span class=lnt>125
+</span><span class=lnt>126
+</span><span class=lnt>127
+</span><span class=lnt>128
+</span><span class=lnt>129
+</span><span class=lnt>130
+</span><span class=lnt>131
+</span><span class=lnt>132
+</span><span class=lnt>133
+</span><span class=lnt>134
+</span><span class=lnt>135
+</span><span class=lnt>136
+</span><span class=lnt>137
+</span><span class=lnt>138
+</span><span class=lnt>139
+</span><span class=lnt>140
+</span><span class=lnt>141
+</span><span class=lnt>142
+</span><span class=lnt>143
+</span><span class=lnt>144
+</span><span class=lnt>145
+</span><span class=lnt>146
+</span><span class=lnt>147
+</span><span class=lnt>148
+</span><span class=lnt>149
+</span><span class=lnt>150
+</span><span class=lnt>151
+</span><span class=lnt>152
+</span><span class=lnt>153
+</span><span class=lnt>154
+</span><span class=lnt>155
+</span><span class=lnt>156
+</span><span class=lnt>157
+</span><span class=lnt>158
+</span><span class=lnt>159
+</span><span class=lnt>160
+</span><span class=lnt>161
+</span><span class=lnt>162
+</span><span class=lnt>163
+</span><span class=lnt>164
+</span><span class=lnt>165
+</span><span class=lnt>166
+</span><span class=lnt>167
+</span><span class=lnt>168
+</span><span class=lnt>169
+</span><span class=lnt>170
+</span><span class=lnt>171
+</span><span class=lnt>172
+</span><span class=lnt>173
+</span><span class=lnt>174
+</span><span class=lnt>175
+</span><span class=lnt>176
+</span><span class=lnt>177
+</span><span class=lnt>178
+</span><span class=lnt>179
+</span><span class=lnt>180
+</span><span class=lnt>181
+</span><span class=lnt>182
+</span><span class=lnt>183
+</span><span class=lnt>184
+</span><span class=lnt>185
+</span><span class=lnt>186
+</span><span class=lnt>187
+</span><span class=lnt>188
+</span><span class=lnt>189
+</span><span class=lnt>190
+</span><span class=lnt>191
+</span><span class=lnt>192
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>PLAY <span class=o>[</span>all<span class=o>]</span> ****************************************************************************************************************
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>TASK <span class=o>[</span>Gathering Facts<span class=o>]</span> ****************************************************************************************************
+</span></span><span class=line><span class=cl>ok: <span class=o>[</span>192.168.142.20<span class=o>]</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>TASK <span class=o>[</span>define users in a loop<span class=o>]</span> *********************************************************************************************
+</span></span><span class=line><span class=cl>changed: <span class=o>[</span>192.168.142.20<span class=o>]</span> <span class=o>=</span>&gt; <span class=o>(</span><span class=nv>item</span><span class=o>=</span>root<span class=o>)</span>
+</span></span><span class=line><span class=cl>changed: <span class=o>[</span>192.168.142.20<span class=o>]</span> <span class=o>=</span>&gt; <span class=o>(</span><span class=nv>item</span><span class=o>=</span>nginx<span class=o>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>TASK <span class=o>[</span>show users<span class=o>]</span> *********************************************************************************************************
+</span></span><span class=line><span class=cl>ok: <span class=o>[</span>192.168.142.20<span class=o>]</span> <span class=o>=</span>&gt; <span class=o>{</span>
+</span></span><span class=line><span class=cl>    <span class=s2>&#34;msg&#34;</span>: <span class=o>{</span>
+</span></span><span class=line><span class=cl>        <span class=s2>&#34;changed&#34;</span>: true,
+</span></span><span class=line><span class=cl>        <span class=s2>&#34;msg&#34;</span>: <span class=s2>&#34;All items completed&#34;</span>,
+</span></span><span class=line><span class=cl>        <span class=s2>&#34;results&#34;</span>: <span class=o>[</span>
+</span></span><span class=line><span class=cl>            <span class=o>{</span>
+</span></span><span class=line><span class=cl>                <span class=s2>&#34;ansible_loop_var&#34;</span>: <span class=s2>&#34;item&#34;</span>,
+</span></span><span class=line><span class=cl>                <span class=s2>&#34;changed&#34;</span>: true,
+</span></span><span class=line><span class=cl>                <span class=s2>&#34;cmd&#34;</span>: <span class=s2>&#34;grep root /etc/passwd&#34;</span>,
+</span></span><span class=line><span class=cl>                <span class=s2>&#34;delta&#34;</span>: <span class=s2>&#34;0:00:00.003829&#34;</span>,
+</span></span><span class=line><span class=cl>                <span class=s2>&#34;end&#34;</span>: <span class=s2>&#34;2023-08-30 16:05:18.237586&#34;</span>,
+</span></span><span class=line><span class=cl>                <span class=s2>&#34;failed&#34;</span>: false,
+</span></span><span class=line><span class=cl>                <span class=s2>&#34;invocation&#34;</span>: <span class=o>{</span>
+</span></span><span class=line><span class=cl>                    <span class=s2>&#34;module_args&#34;</span>: <span class=o>{</span>
+</span></span><span class=line><span class=cl>                        <span class=s2>&#34;_raw_params&#34;</span>: <span class=s2>&#34;grep root /etc/passwd&#34;</span>,
+</span></span><span class=line><span class=cl>                        <span class=s2>&#34;_uses_shell&#34;</span>: true,
+</span></span><span class=line><span class=cl>                        <span class=s2>&#34;argv&#34;</span>: null,
+</span></span><span class=line><span class=cl>                        <span class=s2>&#34;chdir&#34;</span>: null,
+</span></span><span class=line><span class=cl>                        <span class=s2>&#34;creates&#34;</span>: null,
+</span></span><span class=line><span class=cl>                        <span class=s2>&#34;executable&#34;</span>: null,
+</span></span><span class=line><span class=cl>                        <span class=s2>&#34;removes&#34;</span>: null,
+</span></span><span class=line><span class=cl>                        <span class=s2>&#34;stdin&#34;</span>: null,
+</span></span><span class=line><span class=cl>                        <span class=s2>&#34;stdin_add_newline&#34;</span>: true,
+</span></span><span class=line><span class=cl>                        <span class=s2>&#34;strip_empty_ends&#34;</span>: true,
+</span></span><span class=line><span class=cl>                        <span class=s2>&#34;warn&#34;</span>: <span class=nb>true</span>
+</span></span><span class=line><span class=cl>                    <span class=o>}</span>
+</span></span><span class=line><span class=cl>                <span class=o>}</span>,
+</span></span><span class=line><span class=cl>                <span class=s2>&#34;item&#34;</span>: <span class=s2>&#34;root&#34;</span>,
+</span></span><span class=line><span class=cl>                <span class=s2>&#34;rc&#34;</span>: 0,
+</span></span><span class=line><span class=cl>                <span class=s2>&#34;start&#34;</span>: <span class=s2>&#34;2023-08-30 16:05:18.233757&#34;</span>,
+</span></span><span class=line><span class=cl>                <span class=s2>&#34;stderr&#34;</span>: <span class=s2>&#34;&#34;</span>,
+</span></span><span class=line><span class=cl>                <span class=s2>&#34;stderr_lines&#34;</span>: <span class=o>[]</span>,
+</span></span><span class=line><span class=cl>                <span class=s2>&#34;stdout&#34;</span>: <span class=s2>&#34;root:x:0:0:root:/root:/bin/bash\noperator:x:11:0:operator:/root:/sbin/nologin&#34;</span>,
+</span></span><span class=line><span class=cl>                <span class=s2>&#34;stdout_lines&#34;</span>: <span class=o>[</span>
+</span></span><span class=line><span class=cl>                    <span class=s2>&#34;root:x:0:0:root:/root:/bin/bash&#34;</span>,
+</span></span><span class=line><span class=cl>                    <span class=s2>&#34;operator:x:11:0:operator:/root:/sbin/nologin&#34;</span>
+</span></span><span class=line><span class=cl>                <span class=o>]</span>
+</span></span><span class=line><span class=cl>            <span class=o>}</span>,
+</span></span><span class=line><span class=cl>            <span class=o>{</span>
+</span></span><span class=line><span class=cl>                <span class=s2>&#34;ansible_loop_var&#34;</span>: <span class=s2>&#34;item&#34;</span>,
+</span></span><span class=line><span class=cl>                <span class=s2>&#34;changed&#34;</span>: true,
+</span></span><span class=line><span class=cl>                <span class=s2>&#34;cmd&#34;</span>: <span class=s2>&#34;grep nginx /etc/passwd&#34;</span>,
+</span></span><span class=line><span class=cl>                <span class=s2>&#34;delta&#34;</span>: <span class=s2>&#34;0:00:00.005357&#34;</span>,
+</span></span><span class=line><span class=cl>                <span class=s2>&#34;end&#34;</span>: <span class=s2>&#34;2023-08-30 16:05:18.620858&#34;</span>,
+</span></span><span class=line><span class=cl>                <span class=s2>&#34;failed&#34;</span>: false,
+</span></span><span class=line><span class=cl>                <span class=s2>&#34;invocation&#34;</span>: <span class=o>{</span>
+</span></span><span class=line><span class=cl>                    <span class=s2>&#34;module_args&#34;</span>: <span class=o>{</span>
+</span></span><span class=line><span class=cl>                        <span class=s2>&#34;_raw_params&#34;</span>: <span class=s2>&#34;grep nginx /etc/passwd&#34;</span>,
+</span></span><span class=line><span class=cl>                        <span class=s2>&#34;_uses_shell&#34;</span>: true,
+</span></span><span class=line><span class=cl>                        <span class=s2>&#34;argv&#34;</span>: null,
+</span></span><span class=line><span class=cl>                        <span class=s2>&#34;chdir&#34;</span>: null,
+</span></span><span class=line><span class=cl>                        <span class=s2>&#34;creates&#34;</span>: null,
+</span></span><span class=line><span class=cl>                        <span class=s2>&#34;executable&#34;</span>: null,
+</span></span><span class=line><span class=cl>                        <span class=s2>&#34;removes&#34;</span>: null,
+</span></span><span class=line><span class=cl>                        <span class=s2>&#34;stdin&#34;</span>: null,
+</span></span><span class=line><span class=cl>                        <span class=s2>&#34;stdin_add_newline&#34;</span>: true,
+</span></span><span class=line><span class=cl>                        <span class=s2>&#34;strip_empty_ends&#34;</span>: true,
+</span></span><span class=line><span class=cl>                        <span class=s2>&#34;warn&#34;</span>: <span class=nb>true</span>
+</span></span><span class=line><span class=cl>                    <span class=o>}</span>
+</span></span><span class=line><span class=cl>                <span class=o>}</span>,
+</span></span><span class=line><span class=cl>                <span class=s2>&#34;item&#34;</span>: <span class=s2>&#34;nginx&#34;</span>,
+</span></span><span class=line><span class=cl>                <span class=s2>&#34;rc&#34;</span>: 0,
+</span></span><span class=line><span class=cl>                <span class=s2>&#34;start&#34;</span>: <span class=s2>&#34;2023-08-30 16:05:18.615501&#34;</span>,
+</span></span><span class=line><span class=cl>                <span class=s2>&#34;stderr&#34;</span>: <span class=s2>&#34;&#34;</span>,
+</span></span><span class=line><span class=cl>                <span class=s2>&#34;stderr_lines&#34;</span>: <span class=o>[]</span>,
+</span></span><span class=line><span class=cl>                <span class=s2>&#34;stdout&#34;</span>: <span class=s2>&#34;nginx:x:1000:1001::/home/nginx:/bin/bash&#34;</span>,
+</span></span><span class=line><span class=cl>                <span class=s2>&#34;stdout_lines&#34;</span>: <span class=o>[</span>
+</span></span><span class=line><span class=cl>                    <span class=s2>&#34;nginx:x:1000:1001::/home/nginx:/bin/bash&#34;</span>
+</span></span><span class=line><span class=cl>                <span class=o>]</span>
+</span></span><span class=line><span class=cl>            <span class=o>}</span>
+</span></span><span class=line><span class=cl>        <span class=o>]</span>
+</span></span><span class=line><span class=cl>    <span class=o>}</span>
+</span></span><span class=line><span class=cl><span class=o>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>TASK <span class=o>[</span>show users.results<span class=o>]</span> *************************************************************************************************
+</span></span><span class=line><span class=cl>ok: <span class=o>[</span>192.168.142.20<span class=o>]</span> <span class=o>=</span>&gt; <span class=o>{</span>
+</span></span><span class=line><span class=cl>    <span class=s2>&#34;msg&#34;</span>: <span class=o>[</span>
+</span></span><span class=line><span class=cl>        <span class=o>{</span>
+</span></span><span class=line><span class=cl>            <span class=s2>&#34;ansible_loop_var&#34;</span>: <span class=s2>&#34;item&#34;</span>,
+</span></span><span class=line><span class=cl>            <span class=s2>&#34;changed&#34;</span>: true,
+</span></span><span class=line><span class=cl>            <span class=s2>&#34;cmd&#34;</span>: <span class=s2>&#34;grep root /etc/passwd&#34;</span>,
+</span></span><span class=line><span class=cl>            <span class=s2>&#34;delta&#34;</span>: <span class=s2>&#34;0:00:00.003829&#34;</span>,
+</span></span><span class=line><span class=cl>            <span class=s2>&#34;end&#34;</span>: <span class=s2>&#34;2023-08-30 16:05:18.237586&#34;</span>,
+</span></span><span class=line><span class=cl>            <span class=s2>&#34;failed&#34;</span>: false,
+</span></span><span class=line><span class=cl>            <span class=s2>&#34;invocation&#34;</span>: <span class=o>{</span>
+</span></span><span class=line><span class=cl>                <span class=s2>&#34;module_args&#34;</span>: <span class=o>{</span>
+</span></span><span class=line><span class=cl>                    <span class=s2>&#34;_raw_params&#34;</span>: <span class=s2>&#34;grep root /etc/passwd&#34;</span>,
+</span></span><span class=line><span class=cl>                    <span class=s2>&#34;_uses_shell&#34;</span>: true,
+</span></span><span class=line><span class=cl>                    <span class=s2>&#34;argv&#34;</span>: null,
+</span></span><span class=line><span class=cl>                    <span class=s2>&#34;chdir&#34;</span>: null,
+</span></span><span class=line><span class=cl>                    <span class=s2>&#34;creates&#34;</span>: null,
+</span></span><span class=line><span class=cl>                    <span class=s2>&#34;executable&#34;</span>: null,
+</span></span><span class=line><span class=cl>                    <span class=s2>&#34;removes&#34;</span>: null,
+</span></span><span class=line><span class=cl>                    <span class=s2>&#34;stdin&#34;</span>: null,
+</span></span><span class=line><span class=cl>                    <span class=s2>&#34;stdin_add_newline&#34;</span>: true,
+</span></span><span class=line><span class=cl>                    <span class=s2>&#34;strip_empty_ends&#34;</span>: true,
+</span></span><span class=line><span class=cl>                    <span class=s2>&#34;warn&#34;</span>: <span class=nb>true</span>
+</span></span><span class=line><span class=cl>                <span class=o>}</span>
+</span></span><span class=line><span class=cl>            <span class=o>}</span>,
+</span></span><span class=line><span class=cl>            <span class=s2>&#34;item&#34;</span>: <span class=s2>&#34;root&#34;</span>,
+</span></span><span class=line><span class=cl>            <span class=s2>&#34;rc&#34;</span>: 0,
+</span></span><span class=line><span class=cl>            <span class=s2>&#34;start&#34;</span>: <span class=s2>&#34;2023-08-30 16:05:18.233757&#34;</span>,
+</span></span><span class=line><span class=cl>            <span class=s2>&#34;stderr&#34;</span>: <span class=s2>&#34;&#34;</span>,
+</span></span><span class=line><span class=cl>            <span class=s2>&#34;stderr_lines&#34;</span>: <span class=o>[]</span>,
+</span></span><span class=line><span class=cl>            <span class=s2>&#34;stdout&#34;</span>: <span class=s2>&#34;root:x:0:0:root:/root:/bin/bash\noperator:x:11:0:operator:/root:/sbin/nologin&#34;</span>,
+</span></span><span class=line><span class=cl>            <span class=s2>&#34;stdout_lines&#34;</span>: <span class=o>[</span>
+</span></span><span class=line><span class=cl>                <span class=s2>&#34;root:x:0:0:root:/root:/bin/bash&#34;</span>,
+</span></span><span class=line><span class=cl>                <span class=s2>&#34;operator:x:11:0:operator:/root:/sbin/nologin&#34;</span>
+</span></span><span class=line><span class=cl>            <span class=o>]</span>
+</span></span><span class=line><span class=cl>        <span class=o>}</span>,
+</span></span><span class=line><span class=cl>        <span class=o>{</span>
+</span></span><span class=line><span class=cl>            <span class=s2>&#34;ansible_loop_var&#34;</span>: <span class=s2>&#34;item&#34;</span>,
+</span></span><span class=line><span class=cl>            <span class=s2>&#34;changed&#34;</span>: true,
+</span></span><span class=line><span class=cl>            <span class=s2>&#34;cmd&#34;</span>: <span class=s2>&#34;grep nginx /etc/passwd&#34;</span>,
+</span></span><span class=line><span class=cl>            <span class=s2>&#34;delta&#34;</span>: <span class=s2>&#34;0:00:00.005357&#34;</span>,
+</span></span><span class=line><span class=cl>            <span class=s2>&#34;end&#34;</span>: <span class=s2>&#34;2023-08-30 16:05:18.620858&#34;</span>,
+</span></span><span class=line><span class=cl>            <span class=s2>&#34;failed&#34;</span>: false,
+</span></span><span class=line><span class=cl>            <span class=s2>&#34;invocation&#34;</span>: <span class=o>{</span>
+</span></span><span class=line><span class=cl>                <span class=s2>&#34;module_args&#34;</span>: <span class=o>{</span>
+</span></span><span class=line><span class=cl>                    <span class=s2>&#34;_raw_params&#34;</span>: <span class=s2>&#34;grep nginx /etc/passwd&#34;</span>,
+</span></span><span class=line><span class=cl>                    <span class=s2>&#34;_uses_shell&#34;</span>: true,
+</span></span><span class=line><span class=cl>                    <span class=s2>&#34;argv&#34;</span>: null,
+</span></span><span class=line><span class=cl>                    <span class=s2>&#34;chdir&#34;</span>: null,
+</span></span><span class=line><span class=cl>                    <span class=s2>&#34;creates&#34;</span>: null,
+</span></span><span class=line><span class=cl>                    <span class=s2>&#34;executable&#34;</span>: null,
+</span></span><span class=line><span class=cl>                    <span class=s2>&#34;removes&#34;</span>: null,
+</span></span><span class=line><span class=cl>                    <span class=s2>&#34;stdin&#34;</span>: null,
+</span></span><span class=line><span class=cl>                    <span class=s2>&#34;stdin_add_newline&#34;</span>: true,
+</span></span><span class=line><span class=cl>                    <span class=s2>&#34;strip_empty_ends&#34;</span>: true,
+</span></span><span class=line><span class=cl>                    <span class=s2>&#34;warn&#34;</span>: <span class=nb>true</span>
+</span></span><span class=line><span class=cl>                <span class=o>}</span>
+</span></span><span class=line><span class=cl>            <span class=o>}</span>,
+</span></span><span class=line><span class=cl>            <span class=s2>&#34;item&#34;</span>: <span class=s2>&#34;nginx&#34;</span>,
+</span></span><span class=line><span class=cl>            <span class=s2>&#34;rc&#34;</span>: 0,
+</span></span><span class=line><span class=cl>            <span class=s2>&#34;start&#34;</span>: <span class=s2>&#34;2023-08-30 16:05:18.615501&#34;</span>,
+</span></span><span class=line><span class=cl>            <span class=s2>&#34;stderr&#34;</span>: <span class=s2>&#34;&#34;</span>,
+</span></span><span class=line><span class=cl>            <span class=s2>&#34;stderr_lines&#34;</span>: <span class=o>[]</span>,
+</span></span><span class=line><span class=cl>            <span class=s2>&#34;stdout&#34;</span>: <span class=s2>&#34;nginx:x:1000:1001::/home/nginx:/bin/bash&#34;</span>,
+</span></span><span class=line><span class=cl>            <span class=s2>&#34;stdout_lines&#34;</span>: <span class=o>[</span>
+</span></span><span class=line><span class=cl>                <span class=s2>&#34;nginx:x:1000:1001::/home/nginx:/bin/bash&#34;</span>
+</span></span><span class=line><span class=cl>            <span class=o>]</span>
+</span></span><span class=line><span class=cl>        <span class=o>}</span>
+</span></span><span class=line><span class=cl>    <span class=o>]</span>
+</span></span><span class=line><span class=cl><span class=o>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>TASK <span class=o>[</span>define userss by set_fact<span class=o>]</span> ******************************************************************************************
+</span></span><span class=line><span class=cl>ok: <span class=o>[</span>192.168.142.20<span class=o>]</span> <span class=o>=</span>&gt; <span class=o>(</span><span class=nv>item</span><span class=o>={</span><span class=s1>&#39;cmd&#39;</span>: <span class=s1>&#39;grep root /etc/passwd&#39;</span>, <span class=s1>&#39;stdout&#39;</span>: <span class=s1>&#39;root:x:0:0:root:/root:/bin/bash\noperator:x:11:0:operator:/root:/sbin/nologin&#39;</span>, <span class=s1>&#39;stderr&#39;</span>: <span class=s1>&#39;&#39;</span>, <span class=s1>&#39;rc&#39;</span>: 0, <span class=s1>&#39;start&#39;</span>: <span class=s1>&#39;2023-08-30 16:05:18.233757&#39;</span>, <span class=s1>&#39;end&#39;</span>: <span class=s1>&#39;2023-08-30 16:05:18.237586&#39;</span>, <span class=s1>&#39;delta&#39;</span>: <span class=s1>&#39;0:00:00.003829&#39;</span>, <span class=s1>&#39;changed&#39;</span>: True, <span class=s1>&#39;invocation&#39;</span>: <span class=o>{</span><span class=s1>&#39;module_args&#39;</span>: <span class=o>{</span><span class=s1>&#39;_raw_params&#39;</span>: <span class=s1>&#39;grep root /etc/passwd&#39;</span>, <span class=s1>&#39;_uses_shell&#39;</span>: True, <span class=s1>&#39;warn&#39;</span>: True, <span class=s1>&#39;stdin_add_newline&#39;</span>: True, <span class=s1>&#39;strip_empty_ends&#39;</span>: True, <span class=s1>&#39;argv&#39;</span>: None, <span class=s1>&#39;chdir&#39;</span>: None, <span class=s1>&#39;executable&#39;</span>: None, <span class=s1>&#39;creates&#39;</span>: None, <span class=s1>&#39;removes&#39;</span>: None, <span class=s1>&#39;stdin&#39;</span>: None<span class=o>}}</span>, <span class=s1>&#39;stdout_lines&#39;</span>: <span class=o>[</span><span class=s1>&#39;root:x:0:0:root:/root:/bin/bash&#39;</span>, <span class=s1>&#39;operator:x:11:0:operator:/root:/sbin/nologin&#39;</span><span class=o>]</span>, <span class=s1>&#39;stderr_lines&#39;</span>: <span class=o>[]</span>, <span class=s1>&#39;failed&#39;</span>: False, <span class=s1>&#39;item&#39;</span>: <span class=s1>&#39;root&#39;</span>, <span class=s1>&#39;ansible_loop_var&#39;</span>: <span class=s1>&#39;item&#39;</span><span class=o>})</span>
+</span></span><span class=line><span class=cl>ok: <span class=o>[</span>192.168.142.20<span class=o>]</span> <span class=o>=</span>&gt; <span class=o>(</span><span class=nv>item</span><span class=o>={</span><span class=s1>&#39;cmd&#39;</span>: <span class=s1>&#39;grep nginx /etc/passwd&#39;</span>, <span class=s1>&#39;stdout&#39;</span>: <span class=s1>&#39;nginx:x:1000:1001::/home/nginx:/bin/bash&#39;</span>, <span class=s1>&#39;stderr&#39;</span>: <span class=s1>&#39;&#39;</span>, <span class=s1>&#39;rc&#39;</span>: 0, <span class=s1>&#39;start&#39;</span>: <span class=s1>&#39;2023-08-30 16:05:18.615501&#39;</span>, <span class=s1>&#39;end&#39;</span>: <span class=s1>&#39;2023-08-30 16:05:18.620858&#39;</span>, <span class=s1>&#39;delta&#39;</span>: <span class=s1>&#39;0:00:00.005357&#39;</span>, <span class=s1>&#39;changed&#39;</span>: True, <span class=s1>&#39;invocation&#39;</span>: <span class=o>{</span><span class=s1>&#39;module_args&#39;</span>: <span class=o>{</span><span class=s1>&#39;_raw_params&#39;</span>: <span class=s1>&#39;grep nginx /etc/passwd&#39;</span>, <span class=s1>&#39;_uses_shell&#39;</span>: True, <span class=s1>&#39;warn&#39;</span>: True, <span class=s1>&#39;stdin_add_newline&#39;</span>: True, <span class=s1>&#39;strip_empty_ends&#39;</span>: True, <span class=s1>&#39;argv&#39;</span>: None, <span class=s1>&#39;chdir&#39;</span>: None, <span class=s1>&#39;executable&#39;</span>: None, <span class=s1>&#39;creates&#39;</span>: None, <span class=s1>&#39;removes&#39;</span>: None, <span class=s1>&#39;stdin&#39;</span>: None<span class=o>}}</span>, <span class=s1>&#39;stdout_lines&#39;</span>: <span class=o>[</span><span class=s1>&#39;nginx:x:1000:1001::/home/nginx:/bin/bash&#39;</span><span class=o>]</span>, <span class=s1>&#39;stderr_lines&#39;</span>: <span class=o>[]</span>, <span class=s1>&#39;failed&#39;</span>: False, <span class=s1>&#39;item&#39;</span>: <span class=s1>&#39;nginx&#39;</span>, <span class=s1>&#39;ansible_loop_var&#39;</span>: <span class=s1>&#39;item&#39;</span><span class=o>})</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>TASK <span class=o>[</span>print userss<span class=o>]</span> *******************************************************************************************************
+</span></span><span class=line><span class=cl>ok: <span class=o>[</span>192.168.142.20<span class=o>]</span> <span class=o>=</span>&gt; <span class=o>{</span>
+</span></span><span class=line><span class=cl>    <span class=s2>&#34;msg&#34;</span>: <span class=o>[</span>
+</span></span><span class=line><span class=cl>        <span class=s2>&#34;root:x:0:0:root:/root:/bin/bash&#34;</span>,
+</span></span><span class=line><span class=cl>        <span class=s2>&#34;operator:x:11:0:operator:/root:/sbin/nologin&#34;</span>,
+</span></span><span class=line><span class=cl>        <span class=s2>&#34;nginx:x:1000:1001::/home/nginx:/bin/bash&#34;</span>
+</span></span><span class=line><span class=cl>    <span class=o>]</span>
+</span></span><span class=line><span class=cl><span class=o>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>TASK <span class=o>[</span>print userss one by one<span class=o>]</span> ********************************************************************************************
+</span></span><span class=line><span class=cl>ok: <span class=o>[</span>192.168.142.20<span class=o>]</span> <span class=o>=</span>&gt; <span class=o>(</span><span class=nv>item</span><span class=o>=</span>root:x:0:0:root:/root:/bin/bash<span class=o>)</span> <span class=o>=</span>&gt; <span class=o>{</span>
+</span></span><span class=line><span class=cl>    <span class=s2>&#34;msg&#34;</span>: <span class=s2>&#34;root:x:0:0:root:/root:/bin/bash&#34;</span>
+</span></span><span class=line><span class=cl><span class=o>}</span>
+</span></span><span class=line><span class=cl>ok: <span class=o>[</span>192.168.142.20<span class=o>]</span> <span class=o>=</span>&gt; <span class=o>(</span><span class=nv>item</span><span class=o>=</span>operator:x:11:0:operator:/root:/sbin/nologin<span class=o>)</span> <span class=o>=</span>&gt; <span class=o>{</span>
+</span></span><span class=line><span class=cl>    <span class=s2>&#34;msg&#34;</span>: <span class=s2>&#34;operator:x:11:0:operator:/root:/sbin/nologin&#34;</span>
+</span></span><span class=line><span class=cl><span class=o>}</span>
+</span></span><span class=line><span class=cl>ok: <span class=o>[</span>192.168.142.20<span class=o>]</span> <span class=o>=</span>&gt; <span class=o>(</span><span class=nv>item</span><span class=o>=</span>nginx:x:1000:1001::/home/nginx:/bin/bash<span class=o>)</span> <span class=o>=</span>&gt; <span class=o>{</span>
+</span></span><span class=line><span class=cl>    <span class=s2>&#34;msg&#34;</span>: <span class=s2>&#34;nginx:x:1000:1001::/home/nginx:/bin/bash&#34;</span>
+</span></span><span class=line><span class=cl><span class=o>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>TASK <span class=o>[</span>print part of userss one by one<span class=o>]</span> ************************************************************************************
+</span></span><span class=line><span class=cl>ok: <span class=o>[</span>192.168.142.20<span class=o>]</span> <span class=o>=</span>&gt; <span class=o>(</span><span class=nv>item</span><span class=o>=</span>root:x:0:0:root:/root:/bin/bash<span class=o>)</span> <span class=o>=</span>&gt; <span class=o>{</span>
+</span></span><span class=line><span class=cl>    <span class=s2>&#34;msg&#34;</span>: <span class=s2>&#34;/bin/bash&#34;</span>
+</span></span><span class=line><span class=cl><span class=o>}</span>
+</span></span><span class=line><span class=cl>ok: <span class=o>[</span>192.168.142.20<span class=o>]</span> <span class=o>=</span>&gt; <span class=o>(</span><span class=nv>item</span><span class=o>=</span>operator:x:11:0:operator:/root:/sbin/nologin<span class=o>)</span> <span class=o>=</span>&gt; <span class=o>{</span>
+</span></span><span class=line><span class=cl>    <span class=s2>&#34;msg&#34;</span>: <span class=s2>&#34;/sbin/nologin&#34;</span>
+</span></span><span class=line><span class=cl><span class=o>}</span>
+</span></span><span class=line><span class=cl>ok: <span class=o>[</span>192.168.142.20<span class=o>]</span> <span class=o>=</span>&gt; <span class=o>(</span><span class=nv>item</span><span class=o>=</span>nginx:x:1000:1001::/home/nginx:/bin/bash<span class=o>)</span> <span class=o>=</span>&gt; <span class=o>{</span>
+</span></span><span class=line><span class=cl>    <span class=s2>&#34;msg&#34;</span>: <span class=s2>&#34;/bin/bash&#34;</span>
+</span></span><span class=line><span class=cl><span class=o>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>PLAY RECAP ****************************************************************************************************************
+</span></span><span class=line><span class=cl>192.168.142.20             : <span class=nv>ok</span><span class=o>=</span><span class=m>8</span>    <span class=nv>changed</span><span class=o>=</span><span class=m>1</span>    <span class=nv>unreachable</span><span class=o>=</span><span class=m>0</span>    <span class=nv>failed</span><span class=o>=</span><span class=m>0</span>    <span class=nv>skipped</span><span class=o>=</span><span class=m>0</span>    <span class=nv>rescued</span><span class=o>=</span><span class=m>0</span>    <span class=nv>ignored</span><span class=o>=</span><span class=m>0</span>
+</span></span></code></pre></td></tr></table></div></div><h2 id=使用-set_fact-注册变量 class=headerLink><a href=#%e4%bd%bf%e7%94%a8-set_fact-%e6%b3%a8%e5%86%8c%e5%8f%98%e9%87%8f class=header-mark></a>使用 set_fact 注册变量</h2><h3 id=使用-set_fact-注册一个普通变量 class=headerLink><a href=#%e4%bd%bf%e7%94%a8-set_fact-%e6%b3%a8%e5%86%8c%e4%b8%80%e4%b8%aa%e6%99%ae%e9%80%9a%e5%8f%98%e9%87%8f class=header-mark></a>使用 set_fact 注册一个普通变量</h3><p><em>playbook</em></p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-yaml data-lang=yaml><span class=line><span class=cl>- <span class=nt>hosts</span><span class=p>:</span><span class=w> </span><span class=l>all</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>tasks</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span>- <span class=nt>name</span><span class=p>:</span><span class=w> </span><span class=l>define a var1</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span><span class=nt>shell</span><span class=p>:</span><span class=w> </span><span class=s2>&#34;whoami&#34;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span><span class=nt>register</span><span class=p>:</span><span class=w> </span><span class=l>whoami</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span>- <span class=nt>debug</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=nt>msg</span><span class=p>:</span><span class=w> </span><span class=s2>&#34;whoami: {{ whoami }}&#34;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span>- <span class=nt>debug</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=nt>msg</span><span class=p>:</span><span class=w> </span><span class=s2>&#34;whoami.stdout: {{whoami.stdout}}&#34;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span>- <span class=nt>name</span><span class=p>:</span><span class=w> </span><span class=l>define a var by set_fact</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span><span class=nt>set_fact</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>         </span><span class=nt>whoami</span><span class=p>:</span><span class=w> </span><span class=s2>&#34;{{ whoami.stdout  }}&#34;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span>- <span class=nt>name</span><span class=p>:</span><span class=w>  </span><span class=l>show a var after defined by set_fact</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span><span class=nt>debug</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>         </span><span class=nt>msg</span><span class=p>:</span><span class=w> </span><span class=s2>&#34;{{ whoami }}&#34;</span><span class=w>
+</span></span></span></code></pre></td></tr></table></div></div><p><em>结果输出</em></p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span><span class=lnt>26
+</span><span class=lnt>27
+</span><span class=lnt>28
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>PLAY <span class=o>[</span>all<span class=o>]</span> ****************************************************************************************************************
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>TASK <span class=o>[</span>Gathering Facts<span class=o>]</span> ****************************************************************************************************
+</span></span><span class=line><span class=cl>ok: <span class=o>[</span>192.168.142.20<span class=o>]</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>TASK <span class=o>[</span>define a var1<span class=o>]</span> ******************************************************************************************************
+</span></span><span class=line><span class=cl>changed: <span class=o>[</span>192.168.142.20<span class=o>]</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>TASK <span class=o>[</span>debug<span class=o>]</span> **************************************************************************************************************
+</span></span><span class=line><span class=cl>ok: <span class=o>[</span>192.168.142.20<span class=o>]</span> <span class=o>=</span>&gt; <span class=o>{</span>
+</span></span><span class=line><span class=cl>    <span class=s2>&#34;msg&#34;</span>: <span class=s2>&#34;whoami: {&#39;cmd&#39;: &#39;whoami&#39;, &#39;stdout&#39;: &#39;root&#39;, &#39;stderr&#39;: &#39;&#39;, &#39;rc&#39;: 0, &#39;start&#39;: &#39;2023-08-30 16:08:28.677690&#39;, &#39;end&#39;: &#39;2023-08-30 16:08:28.682671&#39;, &#39;delta&#39;: &#39;0:00:00.004981&#39;, &#39;changed&#39;: True, &#39;stdout_lines&#39;: [&#39;root&#39;], &#39;stderr_lines&#39;: [], &#39;failed&#39;: False}&#34;</span>
+</span></span><span class=line><span class=cl><span class=o>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>TASK <span class=o>[</span>debug<span class=o>]</span> **************************************************************************************************************
+</span></span><span class=line><span class=cl>ok: <span class=o>[</span>192.168.142.20<span class=o>]</span> <span class=o>=</span>&gt; <span class=o>{</span>
+</span></span><span class=line><span class=cl>    <span class=s2>&#34;msg&#34;</span>: <span class=s2>&#34;whoami.stdout: root&#34;</span>
+</span></span><span class=line><span class=cl><span class=o>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>TASK <span class=o>[</span>define a var by set_fact<span class=o>]</span> *******************************************************************************************
+</span></span><span class=line><span class=cl>ok: <span class=o>[</span>192.168.142.20<span class=o>]</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>TASK <span class=o>[</span>show a var after defined by set_fact<span class=o>]</span> *******************************************************************************
+</span></span><span class=line><span class=cl>ok: <span class=o>[</span>192.168.142.20<span class=o>]</span> <span class=o>=</span>&gt; <span class=o>{</span>
+</span></span><span class=line><span class=cl>    <span class=s2>&#34;msg&#34;</span>: <span class=s2>&#34;root&#34;</span>
+</span></span><span class=line><span class=cl><span class=o>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>PLAY RECAP ****************************************************************************************************************
+</span></span><span class=line><span class=cl>192.168.142.20             : <span class=nv>ok</span><span class=o>=</span><span class=m>6</span>    <span class=nv>changed</span><span class=o>=</span><span class=m>1</span>    <span class=nv>unreachable</span><span class=o>=</span><span class=m>0</span>    <span class=nv>failed</span><span class=o>=</span><span class=m>0</span>    <span class=nv>skipped</span><span class=o>=</span><span class=m>0</span>    <span class=nv>rescued</span><span class=o>=</span><span class=m>0</span>    <span class=nv>ignored</span><span class=o>=</span><span class=m>0</span>
+</span></span></code></pre></td></tr></table></div></div><blockquote><p>来源: <a href=https://blog.51cto.com/byygyy/3858303 target=_blank rel="noopener noreferrer">https://blog.51cto.com/byygyy/3858303</a></p></blockquote></div><div class=post-footer id=post-footer><div class=post-info><div class=post-info-line><div class=post-info-mod><span>更新于 2023-08-30</span></div><div class=post-info-license></div></div><div class=post-info-line><div class=post-info-md><span><a class=link-to-mardown href=/posts/ansible-register-var/index.md target=_blank rel="noopener noreferrer">阅读原始文档</a></span></div><div class=post-info-share><span><a href=# title="分享到 Twitter" data-sharer=twitter data-url=https://liwanggui.com/posts/ansible-register-var/ data-title="Ansible 变量注册" data-hashtags=ansible><i class="fab fa-twitter fa-fw"></i></a><a href=# title="分享到 Facebook" data-sharer=facebook data-url=https://liwanggui.com/posts/ansible-register-var/ data-hashtag=ansible><i class="fab fa-facebook-square fa-fw"></i></a><a href=# title="分享到 WhatsApp" data-sharer=whatsapp data-url=https://liwanggui.com/posts/ansible-register-var/ data-title="Ansible 变量注册" data-web><i class="fab fa-whatsapp fa-fw"></i></a><a href=# title="分享到 Line" data-sharer=line data-url=https://liwanggui.com/posts/ansible-register-var/ data-title="Ansible 变量注册"><i data-svg-src=/lib/simple-icons/icons/line.min.svg></i></a><a href=# title="分享到 微博" data-sharer=weibo data-url=https://liwanggui.com/posts/ansible-register-var/ data-title="Ansible 变量注册"><i class="fab fa-weibo fa-fw"></i></a><a href=# title="分享到 Myspace" data-sharer=myspace data-url=https://liwanggui.com/posts/ansible-register-var/ data-title="Ansible 变量注册" data-description><i data-svg-src=/lib/simple-icons/icons/myspace.min.svg></i></a><a href=# title="分享到 Blogger" data-sharer=blogger data-url=https://liwanggui.com/posts/ansible-register-var/ data-title="Ansible 变量注册" data-description><i class="fab fa-blogger fa-fw"></i></a><a href=# title="分享到 百度" data-sharer=baidu data-url=https://liwanggui.com/posts/ansible-register-var/ data-title="Ansible 变量注册"><i data-svg-src=/lib/simple-icons/icons/baidu.min.svg></i></a><a href=# title="分享到 Evernote" data-sharer=evernote data-url=https://liwanggui.com/posts/ansible-register-var/ data-title="Ansible 变量注册"><i class="fab fa-evernote fa-fw"></i></a></span></div></div></div><div class=post-info-more><section class=post-tags><i class="fas fa-tags fa-fw"></i>&nbsp;<a href=/tags/ansible/>ansible</a></section><section><span><a href=javascript:void(0); onclick=window.history.back()>返回</a></span>&nbsp;|&nbsp;<span><a href=/>主页</a></span></section></div><div class=post-nav><a href=/posts/ansible-inventory-hostname/ class=prev rel=prev title="Ansible 获取 hosts 中的分组 ip"><i class="fas fa-angle-left fa-fw"></i>Ansible 获取 hosts 中的分组 ip</a>
+<a href=/posts/docker-compose-advanced-tutorials/ class=next rel=next title="Docker Compose 进阶篇">Docker Compose 进阶篇<i class="fas fa-angle-right fa-fw"></i></a></div></div><div id=comments><div id=giscus></div><noscript>Please enable JavaScript to view the comments powered by <a href=https://giscus.app/>giscus</a>.</noscript></div></article></div></main><footer class=footer><div class=footer-container><div class=footer-line>由 <a href=https://gohugo.io/ target=_blank rel="noopener noreferrer" title="Hugo 0.101.0">Hugo</a> 强力驱动&nbsp;|&nbsp;主题 - <a href=https://github.com/HEIGE-PCloud/DoIt target=_blank rel="noopener noreferrer" title="DoIt 0.3.0"><i class="far fa-edit fa-fw"></i> DoIt</a></div><div class=footer-line><i class="far fa-copyright fa-fw"></i><span itemprop=copyrightYear>2017 - 2024</span><span class=author itemprop=copyrightHolder>&nbsp;<a href=/about/ target=_blank rel="noopener noreferrer">李王贵</a></span><span class=icp-splitter>&nbsp;|&nbsp;</span><br class=icp-br><span class=icp><a href=https://beian.miit.gov.cn target=_blank>赣ICP备2023001395号</a></span></div><div class=footer-line></div><div class=footer-line></div></div></footer></div><div id=fixed-buttons><a href=#back-to-top id=back-to-top-button class=fixed-button title=回到顶部><i class="fas fa-arrow-up fa-fw"></i>
+</a><a href=# id=view-comments class=fixed-button title=查看评论><i class="fas fa-comment fa-fw"></i></a></div><div id=cookieconsent-container></div><div class=assets><link rel=stylesheet href=/lib/lightgallery/lightgallery.min.css><link rel=stylesheet href=/lib/katex/katex.min.css><link rel=preload as=style onload='this.onload=null,this.rel="stylesheet"' href=/lib/katex/copy-tex.min.css><noscript><link rel=stylesheet href=/lib/katex/copy-tex.min.css></noscript><link rel=stylesheet href=/lib/cookieconsent/cookieconsent.min.css><script type=text/javascript>window.config={code:{copyTitle:"复制到剪贴板",maxShownLines:10},comment:{giscus:{darkTheme:"dark",dataCategory:"Announcements",dataCategoryId:"DIC_kwDOE7mEQ84CY9pq",dataEmitMetadata:"1",dataInputPosition:"top",dataLang:"zh-CN",dataMapping:"pathname",dataReactionsEnabled:"1",dataRepo:"liwanggui/liwanggui.github.io",dataRepoId:"MDEwOlJlcG9zaXRvcnkzMzA5MjUxMjM=",dataStrict:"0",lightTheme:"light"}},cookieconsent:{content:{dismiss:"同意",link:"了解更多",message:"本网站使用 Cookies 来改善您的浏览体验."},enable:!0,palette:{button:{background:"#f0f0f0"},popup:{background:"#1aa3ff"}},theme:"edgeless"},lightGallery:{actualSize:!1,exThumbImage:"data-thumbnail",hideBarsDelay:2e3,selector:".lightgallery",speed:400,thumbContHeight:80,thumbWidth:80,thumbnail:!0},math:{delimiters:[{display:!0,left:"$$",right:"$$"},{display:!0,left:"\\[",right:"\\]"},{display:!1,left:"$",right:"$"},{display:!1,left:"\\(",right:"\\)"}],strict:!1},search:{distance:100,findAllMatches:!1,fuseIndexURL:"/index.json",highlightTag:"em",ignoreFieldNorm:!1,ignoreLocation:!1,isCaseSensitive:!1,location:0,maxResultLength:10,minMatchCharLength:2,noResultsFound:"没有找到结果",snippetLength:50,threshold:.3,type:"fuse",useExtendedSearch:!1},sharerjs:!0,twemoji:!0}</script><script type=text/javascript src=/js/giscus.min.js defer></script><script type=text/javascript src=/lib/twemoji/twemoji.min.js defer></script><script type=text/javascript src=/js/twemoji.min.js defer></script><script type=text/javascript src=/lib/lightgallery/lightgallery.min.js></script><script type=text/javascript src=/lib/lightgallery/lg-thumbnail.min.js></script><script type=text/javascript src=/lib/lightgallery/lg-zoom.min.js></script><script type=text/javascript src=/lib/clipboard/clipboard.min.js></script><script type=text/javascript src=/lib/sharer/sharer.min.js></script><script type=text/javascript src=/lib/katex/katex.min.js defer></script><script type=text/javascript src=/lib/katex/auto-render.min.js defer></script><script type=text/javascript src=/lib/katex/copy-tex.min.js defer></script><script type=text/javascript src=/lib/katex/mhchem.min.js defer></script><script type=text/javascript src=/js/katex.min.js defer></script><script type=text/javascript src=/lib/cookieconsent/cookieconsent.min.js defer></script><script type=text/javascript src=/js/cookieconsent.min.js defer></script><script type=text/javascript src=/js/theme.min.js defer></script></div></body></html>

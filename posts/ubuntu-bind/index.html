@@ -1,0 +1,291 @@
+<!doctype html><html lang=zh-cn><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><meta name=robots content="noodp"><title>Ubuntu Server 安装配置 bind9 - _浅行</title><meta name=Description content="_浅行"><meta property="og:title" content="Ubuntu Server 安装配置 bind9"><meta property="og:description" content="域名服务（DNS）是一种Internet服务，可将IP地址和标准域名（FQDN）相互映射。这样，DNS减轻了记住IP地址的需要。运行DNS的"><meta property="og:type" content="article"><meta property="og:url" content="https://liwanggui.com/posts/ubuntu-bind/"><meta property="og:image" content="https://liwanggui.com/logo.png"><meta property="article:section" content="posts"><meta property="article:published_time" content="2021-03-04T10:10:10+08:00"><meta property="article:modified_time" content="2021-03-04T10:10:10+08:00"><meta name=twitter:card content="summary_large_image"><meta name=twitter:image content="https://liwanggui.com/logo.png"><meta name=twitter:title content="Ubuntu Server 安装配置 bind9"><meta name=twitter:description content="域名服务（DNS）是一种Internet服务，可将IP地址和标准域名（FQDN）相互映射。这样，DNS减轻了记住IP地址的需要。运行DNS的"><meta name=application-name content="LoveIt"><meta name=apple-mobile-web-app-title content="LoveIt"><meta name=theme-color content="#f8f8f8"><meta name=msapplication-TileColor content="#da532c"><link rel=canonical href=https://liwanggui.com/posts/ubuntu-bind/><link rel=prev href=https://liwanggui.com/posts/ubuntu-network/><link rel=next href=https://liwanggui.com/posts/ubuntu-flushdns/><link rel=stylesheet href=/lib/normalize/normalize.min.css><link rel=stylesheet href=/css/color.css><link rel=stylesheet href=/css/style.min.css><link rel=preload as=style onload='this.onload=null,this.rel="stylesheet"' href=/lib/fontawesome-free/all.min.css><noscript><link rel=stylesheet href=/lib/fontawesome-free/all.min.css></noscript><link rel=preload as=style onload='this.onload=null,this.rel="stylesheet"' href=/lib/animate/animate.min.css><noscript><link rel=stylesheet href=/lib/animate/animate.min.css></noscript><script type=application/ld+json>{"@context":"http://schema.org","@type":"BlogPosting","headline":"Ubuntu Server 安装配置 bind9","inLanguage":"zh-CN","mainEntityOfPage":{"@type":"WebPage","@id":"https:\/\/liwanggui.com\/posts\/ubuntu-bind\/"},"genre":"posts","keywords":"ubuntu, bind, dns","wordcount":3948,"url":"https:\/\/liwanggui.com\/posts\/ubuntu-bind\/","datePublished":"2021-03-04T10:10:10+08:00","dateModified":"2021-03-04T10:10:10+08:00","publisher":{"@type":"Organization","name":""},"author":{"@type":"Person","name":"李王贵"},"description":""}</script><script src=//instant.page/5.1.1 defer type=module integrity=sha384-MWfCL6g1OTGsbSwfuMHc8+8J2u71/LA8dzlIN3ycajckxuZZmF+DNjdm7O6H3PSq></script></head><body header-desktop=fixed header-mobile=auto><script type=text/javascript>function setTheme(e){document.body.setAttribute("theme",e),document.documentElement.style.setProperty("color-scheme",e==="light"?"light":"dark")}function saveTheme(e){window.localStorage&&localStorage.setItem("theme",e)}function getMeta(e){const t=document.getElementsByTagName("meta");for(let n=0;n<t.length;n++)if(t[n].getAttribute("name")===e)return t[n];return""}if(window.localStorage&&localStorage.getItem("theme")){let e=localStorage.getItem("theme");e==="light"||e==="dark"||e==="black"?setTheme(e):setTheme(window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light")}else"auto"==="light"||"auto"==="dark"||"auto"==="black"?(setTheme("auto"),saveTheme("auto")):(saveTheme("auto"),setTheme(window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"));let metaColors={light:"#f8f8f8",dark:"#252627",black:"#000000"};getMeta("theme-color").content=metaColors[document.body.getAttribute("theme")]</script><div id=back-to-top></div><div id=mask></div><div class=wrapper><header class=desktop id=header-desktop><div class=header-wrapper><div class=header-title><a href=/ title=_浅行><span class=header-title-pre><i class='far fa-kiss-wink-heart fa-fw'></i></span>_浅行</a></div><div class=menu><div class=menu-inner><a class=menu-item href=/posts/ title=文章列表>文章 </a><a class=menu-item href=/tags/ title=标签云>标签 </a><a class=menu-item href=/categories/ title=分类>分类 </a><a class=menu-item href=https://cook.liwanggui.com/ title=程序员做饭指南 rel="noopener noreferrer" target=_blank>烹饪 </a><a class=menu-item href=/about/index.html title=关于>关于 </a><span class="menu-item delimiter"></span><span class="menu-item search" id=search-desktop>
+<input type=text placeholder=搜索文章标题或内容... id=search-input-desktop>
+<a href=# class="search-button search-toggle" id=search-toggle-desktop title=搜索><i class="fas fa-search fa-fw"></i></a>
+<a href=# class="search-button search-clear" id=search-clear-desktop title=清空><i class="fas fa-times-circle fa-fw"></i></a>
+<span class="search-button search-loading" id=search-loading-desktop><i class="fas fa-spinner fa-fw fa-spin"></i></span>
+</span><a href=# class="menu-item theme-switch" title=切换主题><i class="fas fa-adjust fa-fw"></i></a></div></div></div></header><header class=mobile id=header-mobile><div class=header-container><div class=header-wrapper><div class=header-title><a href=/ title=_浅行><span class=header-title-pre><i class='far fa-kiss-wink-heart fa-fw'></i></span>_浅行</a></div><div class=menu-toggle id=menu-toggle-mobile><span></span><span></span><span></span></div></div><div class=menu id=menu-mobile><div class=search-wrapper><div class="search mobile" id=search-mobile><input type=text placeholder=搜索文章标题或内容... id=search-input-mobile>
+<a href=# class="search-button search-toggle" id=search-toggle-mobile title=搜索><i class="fas fa-search fa-fw"></i></a>
+<a href=# class="search-button search-clear" id=search-clear-mobile title=清空><i class="fas fa-times-circle fa-fw"></i></a>
+<span class="search-button search-loading" id=search-loading-mobile><i class="fas fa-spinner fa-fw fa-spin"></i></span></div><a href=# class=search-cancel id=search-cancel-mobile>取消</a></div><a class=menu-item href=/posts/ title=文章列表>文章</a><a class=menu-item href=/tags/ title=标签云>标签</a><a class=menu-item href=/categories/ title=分类>分类</a><a class=menu-item href=https://cook.liwanggui.com/ title=程序员做饭指南 rel="noopener noreferrer" target=_blank>烹饪</a><a class=menu-item href=/about/index.html title=关于>关于</a><a href=# class="menu-item theme-switch" title=切换主题>
+<i class="fas fa-adjust fa-fw"></i></a></div></div></header><div class="search-dropdown desktop"><div id=search-dropdown-desktop></div></div><div class="search-dropdown mobile"><div id=search-dropdown-mobile></div></div><main class=main><div class=container><div class=toc id=toc-auto><h2 class=toc-title>目录</h2><div class=toc-content id=toc-content-auto><nav id=TableOfContents><ul><li><a href=#安装>安装</a></li><li><a href=#配置角色>配置角色</a></li><li><a href=#配置文件概览>配置文件概览</a></li><li><a href=#缓存名称服务器>缓存名称服务器</a></li><li><a href=#主服务器>主服务器</a><ul><li><a href=#转发区域文件>转发区域文件</a></li><li><a href=#反向区域文件>反向区域文件</a></li></ul></li><li><a href=#辅助服务器>辅助服务器</a></li><li><a href=#测试>测试</a><ul><li><a href=#resolvconf>resolv.conf</a></li><li><a href=#dig>dig</a></li><li><a href=#ping>ping</a></li><li><a href=#named-checkzone>named-checkzone</a></li></ul></li><li><a href=#日志>日志</a></li></ul></nav></div></div><script>document.getElementsByTagName("main")[0].setAttribute("pageStyle","normal")</script><script>document.getElementsByTagName("main")[0].setAttribute("autoTOC","true")</script><article class="page single"><h1 class="single-title animate__animated animate__flipInX">Ubuntu Server 安装配置 bind9</h1><div class=post-meta><div class=post-meta-line><span class=post-author><i class="author fas fa-user-circle fa-fw"></i><a href=/about/ title=Author rel=author class=author>李王贵</a>
+</span>&nbsp;<span class=post-category>收录于 </span>&nbsp;<span class=post-category>类别 <a href=/categories/devops/><i class="far fa-folder fa-fw"></i>devops</a>&nbsp;<a href=/categories/ubuntu/><i class="far fa-folder fa-fw"></i>ubuntu</a></span></div><div class=post-meta-line><i class="far fa-calendar-alt fa-fw"></i>&nbsp;<time datetime=2021-03-04>2021-03-04</time>&nbsp;<i class="far fa-edit fa-fw"></i>&nbsp;<time datetime=2021-03-04>2021-03-04</time>&nbsp;<i class="fas fa-pencil-alt fa-fw"></i>&nbsp;约 3948 字&nbsp;
+<i class="far fa-clock fa-fw"></i>&nbsp;预计阅读 8 分钟&nbsp;</div></div><div class="details toc" id=toc-static kept><div class="details-summary toc-title"><span>目录</span>
+<span><i class="details-icon fas fa-angle-right"></i></span></div><div class="details-content toc-content" id=toc-content-static><nav id=TableOfContents><ul><li><a href=#安装>安装</a></li><li><a href=#配置角色>配置角色</a></li><li><a href=#配置文件概览>配置文件概览</a></li><li><a href=#缓存名称服务器>缓存名称服务器</a></li><li><a href=#主服务器>主服务器</a><ul><li><a href=#转发区域文件>转发区域文件</a></li><li><a href=#反向区域文件>反向区域文件</a></li></ul></li><li><a href=#辅助服务器>辅助服务器</a></li><li><a href=#测试>测试</a><ul><li><a href=#resolvconf>resolv.conf</a></li><li><a href=#dig>dig</a></li><li><a href=#ping>ping</a></li><li><a href=#named-checkzone>named-checkzone</a></li></ul></li><li><a href=#日志>日志</a></li></ul></nav></div></div><div class=content id=content><p>域名服务（DNS）是一种Internet服务，可将IP地址和标准域名（FQDN）相互映射。这样，DNS减轻了记住IP地址的需要。运行DNS的计算机称为名称服务器。Ubuntu附带了BIND (Berkley Internet Naming Daemon)，BIND是用于在Linux上维护名称服务器的最常用程序。</p><h2 id=安装 class=headerLink><a href=#%e5%ae%89%e8%a3%85 class=header-mark></a>安装</h2><p>在终端提示符下，输入以下命令安装 dns:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>sudo apt install bind9
+</span></span></code></pre></td></tr></table></div></div><p>dnsutils 软件包是测试和解决 DNS 问题非常有用的。 这些工具通常已经安装，但是要检查或安装 dnsutils，请输入以下内容：</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>sudo apt install dnsutils
+</span></span></code></pre></td></tr></table></div></div><h2 id=配置角色 class=headerLink><a href=#%e9%85%8d%e7%bd%ae%e8%a7%92%e8%89%b2 class=header-mark></a>配置角色</h2><p>有许多方法可以配置BIND9。一些最常见的配置是缓存名称服务器，主服务器和辅助服务器。</p><ul><li>当配置为缓存名称服务器时，BIND9将找到名称查询的答案，并在再次查询域时记住答案。</li><li>作为主要服务器，BIND9从其主机上的文件中读取区域的数据，并且对该区域具有权威性。</li><li>作为辅助服务器，BIND9从另一个对该区域具有权威性的名称服务器获取区域数据。</li></ul><h2 id=配置文件概览 class=headerLink><a href=#%e9%85%8d%e7%bd%ae%e6%96%87%e4%bb%b6%e6%a6%82%e8%a7%88 class=header-mark></a>配置文件概览</h2><p>DNS配置文件存储在 <code>/etc/bind</code> 目录中。主要配置文件是 <code>/etc/bind/named.conf</code> ，在软件包提供的布局中仅包括这些文件。</p><ul><li>/etc/bind/named.conf.options：DNS 全局选项配置文件</li><li>/etc/bind/named.conf.local：自定义区域配置文件</li><li>/etc/bind/named.conf.default-zones：默认区域，例如localhost，其反向和根提示
+根名称服务器曾经在文件中描述过 <code>/etc/bind/db.root</code> 。 现在由软件包 <code>/usr/share/dns/root.hints</code> 附带的文件提供了此功能 dns-root-data，并且在 <code>named.conf.default-zones</code> 上面的配置文件中对此进行了引用。</li></ul><p>可以将同一服务器配置为缓存名称服务器，主要和辅助名称服务器：这都取决于它所服务的区域。服务器可以是一个区域的授权开始（SOA），同时为另一区域提供辅助服务。同时为本地LAN上的主机提供缓存服务。</p><h2 id=缓存名称服务器 class=headerLink><a href=#%e7%bc%93%e5%ad%98%e5%90%8d%e7%a7%b0%e6%9c%8d%e5%8a%a1%e5%99%a8 class=header-mark></a>缓存名称服务器</h2><p>默认配置充当缓存服务器。只需取消注释并编辑 <code>/etc/bind/named.conf.options</code> 即可设置ISP的DNS服务器的IP地址：</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>forwarders {
+</span></span><span class=line><span class=cl>    1.2.3.4;
+</span></span><span class=line><span class=cl>    5.6.7.8;
+</span></span><span class=line><span class=cl>};
+</span></span></code></pre></td></tr></table></div></div><blockquote><p>注意:
+用实际 DNS 服务器的IP地址替换 1.2.3.4 和 5.6.7.8。</p></blockquote><p>要启用新配置，请重新启动DNS服务器。在终端提示下：</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>sudo systemctl restart bind9.service
+</span></span></code></pre></td></tr></table></div></div><h2 id=主服务器 class=headerLink><a href=#%e4%b8%bb%e6%9c%8d%e5%8a%a1%e5%99%a8 class=header-mark></a>主服务器</h2><p>在本节中，将BIND9配置为域的主服务器 <code>example.com</code>。只需 <code>example.com</code> 用您的FQDN（完全合格的域名）替换即可。</p><h3 id=转发区域文件 class=headerLink><a href=#%e8%bd%ac%e5%8f%91%e5%8c%ba%e5%9f%9f%e6%96%87%e4%bb%b6 class=header-mark></a>转发区域文件</h3><p>要将DNS区域添加到BIND9，将BIND9变成主服务器，请首先编辑 <code>/etc/bind/named.conf.local</code>：</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>zone &#34;example.com&#34; {
+</span></span><span class=line><span class=cl>    type master;
+</span></span><span class=line><span class=cl>    file &#34;/etc/bind/db.example.com&#34;;
+</span></span><span class=line><span class=cl>};
+</span></span></code></pre></td></tr></table></div></div><blockquote><p>注意
+如果bind将像使用DDNS一样接收文件的自动更新，请在此处以及下面的复制命令中使用 <code>/var/lib/bind/db.example.com</code> 而不是 <code>/etc/bind/db.example.com</code>。</p></blockquote><p>现在，使用现有的区域文件作为模板来创建 <code>/etc/bind/db.example.com</code> 文件：</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>sudo cp /etc/bind/db.local /etc/bind/db.example.com
+</span></span></code></pre></td></tr></table></div></div><p>编辑新的区域文件，<code>/etc/bind/db.example.com</code> 然后更改 localhost.为服务器的FQDN，.在末尾保留其他文件。更改 <code>127.0.0.1</code> 为名称服务器的IP地址和 <code>root.localhost</code> 有效的电子邮件地址，但用<code>.</code>代替通常的<code>@</code>符号，并再次.在末尾保留。更改注释以指示此文件所针对的域。</p><p>为基本域创建<code>A</code>记录<code>example.com</code>。此外，创建一个<code>A</code>记录的<code>ns.example.com</code>，在这个例子中，域名服务器：</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>;
+</span></span><span class=line><span class=cl>; BIND data file for example.com
+</span></span><span class=line><span class=cl>;
+</span></span><span class=line><span class=cl>$TTL    604800
+</span></span><span class=line><span class=cl>@       IN      SOA     example.com. root.example.com. (
+</span></span><span class=line><span class=cl>                              2         ; Serial
+</span></span><span class=line><span class=cl>                         604800         ; Refresh
+</span></span><span class=line><span class=cl>                          86400         ; Retry
+</span></span><span class=line><span class=cl>                        2419200         ; Expire
+</span></span><span class=line><span class=cl>                         604800 )       ; Negative Cache TTL
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>@       IN      NS      ns.example.com.
+</span></span><span class=line><span class=cl>@       IN      A       192.168.1.10
+</span></span><span class=line><span class=cl>@       IN      AAAA    ::1
+</span></span><span class=line><span class=cl>ns      IN      A       192.168.1.10
+</span></span></code></pre></td></tr></table></div></div><p>每次更改区域文件时，都必须增加序列号(Serial)。如果在重新启动BIND9之前进行了多次更改，只需增加一次串行。</p><p>现在，您可以将DNS记录添加到区域文件的底部。有关详细信息，请<a href=https://ubuntu.com/server/docs/service-domain-name-service-dns#heading--dns-record-types target=_blank rel="noopener noreferrer">参阅公共记录类型</a>。</p><blockquote><p>注意，许多管理员喜欢使用最后编辑的日期作为区域的序列号(Serial)，例如2020012100，它是yyyymmddss(其中ss是序列号)</p></blockquote><p>对区域文件进行了更改之后，需要重新启动BIND9以使更改生效</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>sudo systemctl restart bind9.service
+</span></span></code></pre></td></tr></table></div></div><h3 id=反向区域文件 class=headerLink><a href=#%e5%8f%8d%e5%90%91%e5%8c%ba%e5%9f%9f%e6%96%87%e4%bb%b6 class=header-mark></a>反向区域文件</h3><p>现在已经设置了区域并将名称解析为IP地址，现在需要添加反向区域以允许DNS将地址解析为名称。</p><p>编辑 <code>/etc/bind/named.conf.local</code> 并添加以下内容：</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>zone &#34;1.168.192.in-addr.arpa&#34; {
+</span></span><span class=line><span class=cl>    type master;
+</span></span><span class=line><span class=cl>    file &#34;/etc/bind/db.192&#34;;
+</span></span><span class=line><span class=cl>};
+</span></span></code></pre></td></tr></table></div></div><blockquote><p>注意:
+将 <code>1.168.192</code> 替换为所用网络的前三个八位位组。 另外，适当命名区域文件 <code>/etc/bind/db.192</code>。 它应与网络的第一个八位位组匹配。</p></blockquote><p>现在创建 <code>/etc/bind/db.192</code> 文件:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>sudo cp /etc/bind/db.127 /etc/bind/db.192
+</span></span></code></pre></td></tr></table></div></div><p>接下来编辑 <code>/etc/bind/db.192</code>，更改与<code>/etc/bind/db.example.com</code>相同的选项：</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>;
+</span></span><span class=line><span class=cl>; BIND reverse data file for local 192.168.1.XXX net
+</span></span><span class=line><span class=cl>;
+</span></span><span class=line><span class=cl>$TTL    604800
+</span></span><span class=line><span class=cl>@       IN      SOA     ns.example.com. root.example.com. (
+</span></span><span class=line><span class=cl>                              2         ; Serial
+</span></span><span class=line><span class=cl>                         604800         ; Refresh
+</span></span><span class=line><span class=cl>                          86400         ; Retry
+</span></span><span class=line><span class=cl>                        2419200         ; Expire
+</span></span><span class=line><span class=cl>                         604800 )       ; Negative Cache TTL
+</span></span><span class=line><span class=cl>;
+</span></span><span class=line><span class=cl>@       IN      NS      ns.
+</span></span><span class=line><span class=cl>10      IN      PTR     ns.example.com.
+</span></span></code></pre></td></tr></table></div></div><p>每次更改时，“反向”区域中的序列号也需要增加。 对于您在<code>/etc/bind/db.example.com</code>中配置的每个A记录（即针对另一个地址），您需要在<code>/etc/bind/db.192</code>中创建一个PTR记录。</p><p>创建反向区域文件后，重新启动BIND9</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>sudo systemctl restart bind9.service
+</span></span></code></pre></td></tr></table></div></div><h2 id=辅助服务器 class=headerLink><a href=#%e8%be%85%e5%8a%a9%e6%9c%8d%e5%8a%a1%e5%99%a8 class=header-mark></a>辅助服务器</h2><p>一旦配置了主服务器，强烈建议使用辅助服务器，以在主服务器不可用时维持域的可用性。</p><p>首先，在主服务器上，需要允许区域传输。将 <code>allow-transfer</code> 选项添加到示例正向和反向区域定义中 <code>/etc/bind/named.conf.local</code>：</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>zone &#34;example.com&#34; {
+</span></span><span class=line><span class=cl>    type master;
+</span></span><span class=line><span class=cl>    file &#34;/etc/bind/db.example.com&#34;;
+</span></span><span class=line><span class=cl>    allow-transfer { 192.168.1.11; };
+</span></span><span class=line><span class=cl>};
+</span></span><span class=line><span class=cl>    
+</span></span><span class=line><span class=cl>zone &#34;1.168.192.in-addr.arpa&#34; {
+</span></span><span class=line><span class=cl>    type master;
+</span></span><span class=line><span class=cl>    file &#34;/etc/bind/db.192&#34;;
+</span></span><span class=line><span class=cl>    allow-transfer { 192.168.1.11; };
+</span></span><span class=line><span class=cl>};
+</span></span></code></pre></td></tr></table></div></div><blockquote><p>注意
+替换192.168.1.11为辅助名称服务器的IP地址。</p></blockquote><p>在主服务器上重新启动BIND9：</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>sudo systemctl restart bind9.service
+</span></span></code></pre></td></tr></table></div></div><p>接下来，在辅助服务器上，以与主服务器相同的方式安装bind9软件包。然后编辑，<code>/etc/bind/named.conf.local</code> 并为正向和反向区域添加以下声明：</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>zone &#34;example.com&#34; {
+</span></span><span class=line><span class=cl>    type slave;
+</span></span><span class=line><span class=cl>    file &#34;db.example.com&#34;;
+</span></span><span class=line><span class=cl>    masters { 192.168.1.10; };
+</span></span><span class=line><span class=cl>};        
+</span></span><span class=line><span class=cl>          
+</span></span><span class=line><span class=cl>zone &#34;1.168.192.in-addr.arpa&#34; {
+</span></span><span class=line><span class=cl>    type slave;
+</span></span><span class=line><span class=cl>    file &#34;db.192&#34;;
+</span></span><span class=line><span class=cl>    masters { 192.168.1.10; };
+</span></span><span class=line><span class=cl>};
+</span></span></code></pre></td></tr></table></div></div><blockquote><p>注意
+替换<code>192.168.1.10</code>为您的主要名称服务器的IP地址。</p></blockquote><p>在辅助服务器上重新启动BIND9：</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>sudo systemctl restart bind9.service
+</span></span></code></pre></td></tr></table></div></div><p>在其中，<code>/var/log/syslog</code> 您应该看到类似以下内容的内容（为了适应本文档的格式，对某些行进行了拆分）：</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>client 192.168.1.10#39448: received notify for zone &#39;1.168.192.in-addr.arpa&#39;
+</span></span><span class=line><span class=cl>zone 1.168.192.in-addr.arpa/IN: Transfer started.
+</span></span><span class=line><span class=cl>transfer of &#39;100.18.172.in-addr.arpa/IN&#39; from 192.168.1.10#53:
+</span></span><span class=line><span class=cl> connected using 192.168.1.11#37531
+</span></span><span class=line><span class=cl>zone 1.168.192.in-addr.arpa/IN: transferred serial 5
+</span></span><span class=line><span class=cl>transfer of &#39;100.18.172.in-addr.arpa/IN&#39; from 192.168.1.10#53:
+</span></span><span class=line><span class=cl> Transfer completed: 1 messages, 
+</span></span><span class=line><span class=cl>6 records, 212 bytes, 0.002 secs (106000 bytes/sec)
+</span></span><span class=line><span class=cl>zone 1.168.192.in-addr.arpa/IN: sending notifies (serial 5)
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>client 192.168.1.10#20329: received notify for zone &#39;example.com&#39;
+</span></span><span class=line><span class=cl>zone example.com/IN: Transfer started.
+</span></span><span class=line><span class=cl>transfer of &#39;example.com/IN&#39; from 192.168.1.10#53: connected using 192.168.1.11#38577
+</span></span><span class=line><span class=cl>zone example.com/IN: transferred serial 5
+</span></span><span class=line><span class=cl>transfer of &#39;example.com/IN&#39; from 192.168.1.10#53: Transfer completed: 1 messages, 
+</span></span><span class=line><span class=cl>8 records, 225 bytes, 0.002 secs (112500 bytes/sec)
+</span></span></code></pre></td></tr></table></div></div><blockquote><p>注意：仅当主服务器上的序列号大于辅助服务器上的序列号时，才会传输区域。如果要让您的主DNS通知其他辅助DNS服务器区域更改，则可以将其添加<code>also-notify { ipaddress; };</code>到<code>/etc/bind/named.conf.local</code>以下示例中：</p></blockquote><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>zone &#34;example.com&#34; {
+</span></span><span class=line><span class=cl>    type master;
+</span></span><span class=line><span class=cl>    file &#34;/etc/bind/db.example.com&#34;;
+</span></span><span class=line><span class=cl>    allow-transfer { 192.168.1.11; };
+</span></span><span class=line><span class=cl>    also-notify { 192.168.1.11; }; 
+</span></span><span class=line><span class=cl>};
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>zone &#34;1.168.192.in-addr.arpa&#34; {
+</span></span><span class=line><span class=cl>    type master;
+</span></span><span class=line><span class=cl>    file &#34;/etc/bind/db.192&#34;;
+</span></span><span class=line><span class=cl>    allow-transfer { 192.168.1.11; };
+</span></span><span class=line><span class=cl>    also-notify { 192.168.1.11; }; 
+</span></span><span class=line><span class=cl>};
+</span></span></code></pre></td></tr></table></div></div><blockquote><p>注意
+非权威区域文件的默认目录为<code>/var/cache/bind/</code>。该目录还在AppArmor中配置为允许命名守护程序向其写入。有关AppArmor的更多信息，请参见<a href=https://ubuntu.com/server/docs/security-apparmor target=_blank rel="noopener noreferrer">Security-AppArmor</a>。</p></blockquote><h2 id=测试 class=headerLink><a href=#%e6%b5%8b%e8%af%95 class=header-mark></a>测试</h2><h3 id=resolvconf class=headerLink><a href=#resolvconf class=header-mark></a>resolv.conf</h3><p>测试BIND9的第一步是将名称服务器的IP地址添加到主机解析器。应该配置主要名称服务器以及另一个主机，以仔细检查。有关将名称服务器地址添加到网络客户端的详细信息，请参阅DNS客户端配置。最后，您的<code>nameserver</code>一行<code>/etc/resolv.conf</code>应指向，<code>127.0.0.53</code>并且您应该<code>search</code>为您的域指定一个参数。像这样：</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>nameserver  127.0.0.53
+</span></span><span class=line><span class=cl>search example.com
+</span></span></code></pre></td></tr></table></div></div><p>要检查您的本地解析器正在使用哪个DNS服务器，请运行：</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>systemd-resolve --status
+</span></span></code></pre></td></tr></table></div></div><blockquote><p>注意
+如果主要服务器不可用，您还应该将辅助名称服务器的IP地址添加到客户端配置中。</p></blockquote><h3 id=dig class=headerLink><a href=#dig class=header-mark></a>dig</h3><p>如果安装了dnsutils软件包，则可以使用DNS查找实用程序dig测试设置：</p><p>安装完BIND9之后，请对环回接口使用dig来确保它正在侦听端口53。从终端提示符下：</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>dig -x 127.0.0.1
+</span></span></code></pre></td></tr></table></div></div><p>您应该在命令输出中看到类似于以下内容的行：</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>;; Query time: 1 msec
+</span></span><span class=line><span class=cl>;; SERVER: 192.168.1.10#53(192.168.1.10)
+</span></span></code></pre></td></tr></table></div></div><p>如果您已将BIND9配置为缓存名称服务器，则“挖掘”外部域以检查查询时间：</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>dig ubuntu.com
+</span></span></code></pre></td></tr></table></div></div><p>注意查询时间接近命令输出的末尾：</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>;; Query time: 49 msec
+</span></span></code></pre></td></tr></table></div></div><p>经过第二次挖掘后，应该有所改进：</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>;; Query time: 1 msec
+</span></span></code></pre></td></tr></table></div></div><h3 id=ping class=headerLink><a href=#ping class=header-mark></a>ping</h3><p>现在演示应用程序如何使用DNS解析主机名，使用ping实用程序发送ICMP回显请求：</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>ping example.com
+</span></span></code></pre></td></tr></table></div></div><p>这测试名称服务器是否可以将名称解析为<code>ns.example.com</code> IP 地址。 命令输出应类似于：</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>PING ns.example.com (192.168.1.10) 56(84) bytes of data.
+</span></span><span class=line><span class=cl>64 bytes from 192.168.1.10: icmp_seq=1 ttl=64 time=0.800 ms
+</span></span><span class=line><span class=cl>64 bytes from 192.168.1.10: icmp_seq=2 ttl=64 time=0.813 ms
+</span></span></code></pre></td></tr></table></div></div><h3 id=named-checkzone class=headerLink><a href=#named-checkzone class=header-mark></a>named-checkzone</h3><p>测试区域文件的一种好方法是使用 <code>named-checkzone</code> 与bind9软件包一起安装的实用程序。使用此实用程序，可以在重新启动BIND9并使更改生效之前确保配置正确。</p><p>要测试我们的示例正向区域文件，请从命令提示符处输入以下内容：</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>named-checkzone example.com /etc/bind/db.example.com
+</span></span></code></pre></td></tr></table></div></div><p>如果一切配置正确，您应该会看到类似以下的输出：</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>zone example.com/IN: loaded serial 6
+</span></span><span class=line><span class=cl>OK
+</span></span></code></pre></td></tr></table></div></div><p>同样，要测试反向区域文件，请输入以下内容：</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>named-checkzone 1.168.192.in-addr.arpa /etc/bind/db.192
+</span></span></code></pre></td></tr></table></div></div><p>输出应类似于：</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>zone 1.168.192.in-addr.arpa/IN: loaded serial 3
+</span></span><span class=line><span class=cl>OK
+</span></span></code></pre></td></tr></table></div></div><h2 id=日志 class=headerLink><a href=#%e6%97%a5%e5%bf%97 class=header-mark></a>日志</h2><p>BIND9有多种可用的日志记录配置选项，但是两个主要的选项是<code>channel</code>和<code>category</code>，它们分别配置日志的去向和要记录的信息。</p><p>如果未配置任何日志记录选项，则默认配置为：</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>logging {
+</span></span><span class=line><span class=cl>     category default { default_syslog; default_debug; };
+</span></span><span class=line><span class=cl>     category unmatched { null; };
+</span></span><span class=line><span class=cl>};
+</span></span></code></pre></td></tr></table></div></div><p>让我们将BIND9配置为将与DNS查询相关的调试消息发送到单独的文件。</p><p>我们需要配置一个通道以指定要将消息发送到的文件，以及一个category。在此示例中，类别将记录所有查询。编辑<code>/etc/bind/named.conf.local</code>并添加以下内容：</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span><span class=lnt>7
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>logging {
+</span></span><span class=line><span class=cl>    channel query.log {
+</span></span><span class=line><span class=cl>        file &#34;/var/log/named/query.log&#34;;
+</span></span><span class=line><span class=cl>        severity debug 3;
+</span></span><span class=line><span class=cl>    };
+</span></span><span class=line><span class=cl>    category queries { query.log; };
+</span></span><span class=line><span class=cl>};
+</span></span></code></pre></td></tr></table></div></div><blockquote><p>注意
+该调试选项可以从1设置为3。如果没有指定级别，1级是默认的。</p></blockquote><p>由于命名守护程序以绑定用户身份运行，因此<code>/var/log/named</code>必须创建目录并更改所有权：</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>sudo mkdir /var/log/named
+</span></span><span class=line><span class=cl>sudo chown bind:bind /var/log/named
+</span></span></code></pre></td></tr></table></div></div><p>现在重新启动BIND9，以使更改生效：</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>sudo systemctl restart bind9.service
+</span></span></code></pre></td></tr></table></div></div><p>您应该看到文件中<code>/var/log/named/query.log</code>填充了查询信息。这是BIND9日志记录选项的简单示例。</p><blockquote><p>注意
+您的区域文件的序列号可能会有所不同。</p></blockquote></div><div class=post-footer id=post-footer><div class=post-info><div class=post-info-line><div class=post-info-mod><span>更新于 2021-03-04</span></div><div class=post-info-license></div></div><div class=post-info-line><div class=post-info-md><span><a class=link-to-mardown href=/posts/ubuntu-bind/index.md target=_blank rel="noopener noreferrer">阅读原始文档</a></span></div><div class=post-info-share><span><a href=# title="分享到 Twitter" data-sharer=twitter data-url=https://liwanggui.com/posts/ubuntu-bind/ data-title="Ubuntu Server 安装配置 bind9" data-hashtags=ubuntu,bind,dns><i class="fab fa-twitter fa-fw"></i></a><a href=# title="分享到 Facebook" data-sharer=facebook data-url=https://liwanggui.com/posts/ubuntu-bind/ data-hashtag=ubuntu><i class="fab fa-facebook-square fa-fw"></i></a><a href=# title="分享到 WhatsApp" data-sharer=whatsapp data-url=https://liwanggui.com/posts/ubuntu-bind/ data-title="Ubuntu Server 安装配置 bind9" data-web><i class="fab fa-whatsapp fa-fw"></i></a><a href=# title="分享到 Line" data-sharer=line data-url=https://liwanggui.com/posts/ubuntu-bind/ data-title="Ubuntu Server 安装配置 bind9"><i data-svg-src=/lib/simple-icons/icons/line.min.svg></i></a><a href=# title="分享到 微博" data-sharer=weibo data-url=https://liwanggui.com/posts/ubuntu-bind/ data-title="Ubuntu Server 安装配置 bind9"><i class="fab fa-weibo fa-fw"></i></a><a href=# title="分享到 Myspace" data-sharer=myspace data-url=https://liwanggui.com/posts/ubuntu-bind/ data-title="Ubuntu Server 安装配置 bind9" data-description><i data-svg-src=/lib/simple-icons/icons/myspace.min.svg></i></a><a href=# title="分享到 Blogger" data-sharer=blogger data-url=https://liwanggui.com/posts/ubuntu-bind/ data-title="Ubuntu Server 安装配置 bind9" data-description><i class="fab fa-blogger fa-fw"></i></a><a href=# title="分享到 百度" data-sharer=baidu data-url=https://liwanggui.com/posts/ubuntu-bind/ data-title="Ubuntu Server 安装配置 bind9"><i data-svg-src=/lib/simple-icons/icons/baidu.min.svg></i></a><a href=# title="分享到 Evernote" data-sharer=evernote data-url=https://liwanggui.com/posts/ubuntu-bind/ data-title="Ubuntu Server 安装配置 bind9"><i class="fab fa-evernote fa-fw"></i></a></span></div></div></div><div class=post-info-more><section class=post-tags><i class="fas fa-tags fa-fw"></i>&nbsp;<a href=/tags/ubuntu/>ubuntu</a>,&nbsp;<a href=/tags/bind/>bind</a>,&nbsp;<a href=/tags/dns/>dns</a></section><section><span><a href=javascript:void(0); onclick=window.history.back()>返回</a></span>&nbsp;|&nbsp;<span><a href=/>主页</a></span></section></div><div class=post-nav><a href=/posts/ubuntu-network/ class=prev rel=prev title="Ubuntu Server 网络配置"><i class="fas fa-angle-left fa-fw"></i>Ubuntu Server 网络配置</a>
+<a href=/posts/ubuntu-flushdns/ class=next rel=next title="Ubuntu 刷新/删除 DNS 缓存">Ubuntu 刷新/删除 DNS 缓存<i class="fas fa-angle-right fa-fw"></i></a></div></div><div id=comments><div id=giscus></div><noscript>Please enable JavaScript to view the comments powered by <a href=https://giscus.app/>giscus</a>.</noscript></div></article></div></main><footer class=footer><div class=footer-container><div class=footer-line>由 <a href=https://gohugo.io/ target=_blank rel="noopener noreferrer" title="Hugo 0.101.0">Hugo</a> 强力驱动&nbsp;|&nbsp;主题 - <a href=https://github.com/HEIGE-PCloud/DoIt target=_blank rel="noopener noreferrer" title="DoIt 0.3.0"><i class="far fa-edit fa-fw"></i> DoIt</a></div><div class=footer-line><i class="far fa-copyright fa-fw"></i><span itemprop=copyrightYear>2017 - 2024</span><span class=author itemprop=copyrightHolder>&nbsp;<a href=/about/ target=_blank rel="noopener noreferrer">李王贵</a></span><span class=icp-splitter>&nbsp;|&nbsp;</span><br class=icp-br><span class=icp><a href=https://beian.miit.gov.cn target=_blank>赣ICP备2023001395号</a></span></div><div class=footer-line></div><div class=footer-line></div></div></footer></div><div id=fixed-buttons><a href=#back-to-top id=back-to-top-button class=fixed-button title=回到顶部><i class="fas fa-arrow-up fa-fw"></i>
+</a><a href=# id=view-comments class=fixed-button title=查看评论><i class="fas fa-comment fa-fw"></i></a></div><div id=cookieconsent-container></div><div class=assets><link rel=stylesheet href=/lib/lightgallery/lightgallery.min.css><link rel=stylesheet href=/lib/katex/katex.min.css><link rel=preload as=style onload='this.onload=null,this.rel="stylesheet"' href=/lib/katex/copy-tex.min.css><noscript><link rel=stylesheet href=/lib/katex/copy-tex.min.css></noscript><link rel=stylesheet href=/lib/cookieconsent/cookieconsent.min.css><script type=text/javascript>window.config={code:{copyTitle:"复制到剪贴板",maxShownLines:10},comment:{giscus:{darkTheme:"dark",dataCategory:"Announcements",dataCategoryId:"DIC_kwDOE7mEQ84CY9pq",dataEmitMetadata:"1",dataInputPosition:"top",dataLang:"zh-CN",dataMapping:"pathname",dataReactionsEnabled:"1",dataRepo:"liwanggui/liwanggui.github.io",dataRepoId:"MDEwOlJlcG9zaXRvcnkzMzA5MjUxMjM=",dataStrict:"0",lightTheme:"light"}},cookieconsent:{content:{dismiss:"同意",link:"了解更多",message:"本网站使用 Cookies 来改善您的浏览体验."},enable:!0,palette:{button:{background:"#f0f0f0"},popup:{background:"#1aa3ff"}},theme:"edgeless"},lightGallery:{actualSize:!1,exThumbImage:"data-thumbnail",hideBarsDelay:2e3,selector:".lightgallery",speed:400,thumbContHeight:80,thumbWidth:80,thumbnail:!0},math:{delimiters:[{display:!0,left:"$$",right:"$$"},{display:!0,left:"\\[",right:"\\]"},{display:!1,left:"$",right:"$"},{display:!1,left:"\\(",right:"\\)"}],strict:!1},search:{distance:100,findAllMatches:!1,fuseIndexURL:"/index.json",highlightTag:"em",ignoreFieldNorm:!1,ignoreLocation:!1,isCaseSensitive:!1,location:0,maxResultLength:10,minMatchCharLength:2,noResultsFound:"没有找到结果",snippetLength:50,threshold:.3,type:"fuse",useExtendedSearch:!1},sharerjs:!0,twemoji:!0}</script><script type=text/javascript src=/js/giscus.min.js defer></script><script type=text/javascript src=/lib/twemoji/twemoji.min.js defer></script><script type=text/javascript src=/js/twemoji.min.js defer></script><script type=text/javascript src=/lib/lightgallery/lightgallery.min.js></script><script type=text/javascript src=/lib/lightgallery/lg-thumbnail.min.js></script><script type=text/javascript src=/lib/lightgallery/lg-zoom.min.js></script><script type=text/javascript src=/lib/clipboard/clipboard.min.js></script><script type=text/javascript src=/lib/sharer/sharer.min.js></script><script type=text/javascript src=/lib/katex/katex.min.js defer></script><script type=text/javascript src=/lib/katex/auto-render.min.js defer></script><script type=text/javascript src=/lib/katex/copy-tex.min.js defer></script><script type=text/javascript src=/lib/katex/mhchem.min.js defer></script><script type=text/javascript src=/js/katex.min.js defer></script><script type=text/javascript src=/lib/cookieconsent/cookieconsent.min.js defer></script><script type=text/javascript src=/js/cookieconsent.min.js defer></script><script type=text/javascript src=/js/theme.min.js defer></script></div></body></html>

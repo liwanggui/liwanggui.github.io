@@ -1,0 +1,205 @@
+<!doctype html><html lang=zh-cn><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><meta name=robots content="noodp"><title>Ansible Playbook 示例 - _浅行</title><meta name=Description content="_浅行"><meta property="og:title" content="Ansible Playbook 示例"><meta property="og:description" content="playbook 示例1使用 ansible-playbook (单文件)批量安装 vsftp 服务 playbook 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 --- - hosts: all # 指定操作的主机 vars: # 定义变量，此变量会传入模板 userlist: /etc/vsftpd/user_list welcome: /etc/vsftpd/welcome.txt"><meta property="og:type" content="article"><meta property="og:url" content="https://liwanggui.com/posts/ansible-playbook/"><meta property="og:image" content="https://liwanggui.com/logo.png"><meta property="article:section" content="posts"><meta property="article:published_time" content="2021-06-12T17:36:14+08:00"><meta property="article:modified_time" content="2021-06-12T17:36:14+08:00"><meta name=twitter:card content="summary_large_image"><meta name=twitter:image content="https://liwanggui.com/logo.png"><meta name=twitter:title content="Ansible Playbook 示例"><meta name=twitter:description content="playbook 示例1使用 ansible-playbook (单文件)批量安装 vsftp 服务 playbook 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 --- - hosts: all # 指定操作的主机 vars: # 定义变量，此变量会传入模板 userlist: /etc/vsftpd/user_list welcome: /etc/vsftpd/welcome.txt"><meta name=application-name content="LoveIt"><meta name=apple-mobile-web-app-title content="LoveIt"><meta name=theme-color content="#f8f8f8"><meta name=msapplication-TileColor content="#da532c"><link rel=canonical href=https://liwanggui.com/posts/ansible-playbook/><link rel=prev href=https://liwanggui.com/posts/ansible-modules/><link rel=next href=https://liwanggui.com/posts/cobbler/><link rel=stylesheet href=/lib/normalize/normalize.min.css><link rel=stylesheet href=/css/color.css><link rel=stylesheet href=/css/style.min.css><link rel=preload as=style onload='this.onload=null,this.rel="stylesheet"' href=/lib/fontawesome-free/all.min.css><noscript><link rel=stylesheet href=/lib/fontawesome-free/all.min.css></noscript><link rel=preload as=style onload='this.onload=null,this.rel="stylesheet"' href=/lib/animate/animate.min.css><noscript><link rel=stylesheet href=/lib/animate/animate.min.css></noscript><script type=application/ld+json>{"@context":"http://schema.org","@type":"BlogPosting","headline":"Ansible Playbook 示例","inLanguage":"zh-CN","mainEntityOfPage":{"@type":"WebPage","@id":"https:\/\/liwanggui.com\/posts\/ansible-playbook\/"},"genre":"posts","keywords":"ansible","wordcount":395,"url":"https:\/\/liwanggui.com\/posts\/ansible-playbook\/","datePublished":"2021-06-12T17:36:14+08:00","dateModified":"2021-06-12T17:36:14+08:00","publisher":{"@type":"Organization","name":""},"author":{"@type":"Person","name":"李王贵"},"description":""}</script><script src=//instant.page/5.1.1 defer type=module integrity=sha384-MWfCL6g1OTGsbSwfuMHc8+8J2u71/LA8dzlIN3ycajckxuZZmF+DNjdm7O6H3PSq></script></head><body header-desktop=fixed header-mobile=auto><script type=text/javascript>function setTheme(e){document.body.setAttribute("theme",e),document.documentElement.style.setProperty("color-scheme",e==="light"?"light":"dark")}function saveTheme(e){window.localStorage&&localStorage.setItem("theme",e)}function getMeta(e){const t=document.getElementsByTagName("meta");for(let n=0;n<t.length;n++)if(t[n].getAttribute("name")===e)return t[n];return""}if(window.localStorage&&localStorage.getItem("theme")){let e=localStorage.getItem("theme");e==="light"||e==="dark"||e==="black"?setTheme(e):setTheme(window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light")}else"auto"==="light"||"auto"==="dark"||"auto"==="black"?(setTheme("auto"),saveTheme("auto")):(saveTheme("auto"),setTheme(window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"));let metaColors={light:"#f8f8f8",dark:"#252627",black:"#000000"};getMeta("theme-color").content=metaColors[document.body.getAttribute("theme")]</script><div id=back-to-top></div><div id=mask></div><div class=wrapper><header class=desktop id=header-desktop><div class=header-wrapper><div class=header-title><a href=/ title=_浅行><span class=header-title-pre><i class='far fa-kiss-wink-heart fa-fw'></i></span>_浅行</a></div><div class=menu><div class=menu-inner><a class=menu-item href=/posts/ title=文章列表>文章 </a><a class=menu-item href=/tags/ title=标签云>标签 </a><a class=menu-item href=/categories/ title=分类>分类 </a><a class=menu-item href=https://cook.liwanggui.com/ title=程序员做饭指南 rel="noopener noreferrer" target=_blank>烹饪 </a><a class=menu-item href=/about/index.html title=关于>关于 </a><span class="menu-item delimiter"></span><span class="menu-item search" id=search-desktop>
+<input type=text placeholder=搜索文章标题或内容... id=search-input-desktop>
+<a href=# class="search-button search-toggle" id=search-toggle-desktop title=搜索><i class="fas fa-search fa-fw"></i></a>
+<a href=# class="search-button search-clear" id=search-clear-desktop title=清空><i class="fas fa-times-circle fa-fw"></i></a>
+<span class="search-button search-loading" id=search-loading-desktop><i class="fas fa-spinner fa-fw fa-spin"></i></span>
+</span><a href=# class="menu-item theme-switch" title=切换主题><i class="fas fa-adjust fa-fw"></i></a></div></div></div></header><header class=mobile id=header-mobile><div class=header-container><div class=header-wrapper><div class=header-title><a href=/ title=_浅行><span class=header-title-pre><i class='far fa-kiss-wink-heart fa-fw'></i></span>_浅行</a></div><div class=menu-toggle id=menu-toggle-mobile><span></span><span></span><span></span></div></div><div class=menu id=menu-mobile><div class=search-wrapper><div class="search mobile" id=search-mobile><input type=text placeholder=搜索文章标题或内容... id=search-input-mobile>
+<a href=# class="search-button search-toggle" id=search-toggle-mobile title=搜索><i class="fas fa-search fa-fw"></i></a>
+<a href=# class="search-button search-clear" id=search-clear-mobile title=清空><i class="fas fa-times-circle fa-fw"></i></a>
+<span class="search-button search-loading" id=search-loading-mobile><i class="fas fa-spinner fa-fw fa-spin"></i></span></div><a href=# class=search-cancel id=search-cancel-mobile>取消</a></div><a class=menu-item href=/posts/ title=文章列表>文章</a><a class=menu-item href=/tags/ title=标签云>标签</a><a class=menu-item href=/categories/ title=分类>分类</a><a class=menu-item href=https://cook.liwanggui.com/ title=程序员做饭指南 rel="noopener noreferrer" target=_blank>烹饪</a><a class=menu-item href=/about/index.html title=关于>关于</a><a href=# class="menu-item theme-switch" title=切换主题>
+<i class="fas fa-adjust fa-fw"></i></a></div></div></header><div class="search-dropdown desktop"><div id=search-dropdown-desktop></div></div><div class="search-dropdown mobile"><div id=search-dropdown-mobile></div></div><main class=main><div class=container><div class=toc id=toc-auto><h2 class=toc-title>目录</h2><div class=toc-content id=toc-content-auto><nav id=TableOfContents><ul><li><a href=#playbook-示例1>playbook 示例1</a></li><li><a href=#playbook-示例2>playbook 示例2</a></li></ul></nav></div></div><script>document.getElementsByTagName("main")[0].setAttribute("pageStyle","normal")</script><script>document.getElementsByTagName("main")[0].setAttribute("autoTOC","true")</script><article class="page single"><h1 class="single-title animate__animated animate__flipInX">Ansible Playbook 示例</h1><div class=post-meta><div class=post-meta-line><span class=post-author><i class="author fas fa-user-circle fa-fw"></i><a href=/about/ title=Author rel=author class=author>李王贵</a>
+</span>&nbsp;<span class=post-category>收录于 </span>&nbsp;<span class=post-category>类别 <a href=/categories/devops/><i class="far fa-folder fa-fw"></i>devops</a>&nbsp;<a href=/categories/ansible/><i class="far fa-folder fa-fw"></i>ansible</a></span></div><div class=post-meta-line><i class="far fa-calendar-alt fa-fw"></i>&nbsp;<time datetime=2021-06-12>2021-06-12</time>&nbsp;<i class="far fa-edit fa-fw"></i>&nbsp;<time datetime=2021-06-12>2021-06-12</time>&nbsp;<i class="fas fa-pencil-alt fa-fw"></i>&nbsp;约 395 字&nbsp;
+<i class="far fa-clock fa-fw"></i>&nbsp;预计阅读 1 分钟&nbsp;</div></div><div class="details toc" id=toc-static kept><div class="details-summary toc-title"><span>目录</span>
+<span><i class="details-icon fas fa-angle-right"></i></span></div><div class="details-content toc-content" id=toc-content-static><nav id=TableOfContents><ul><li><a href=#playbook-示例1>playbook 示例1</a></li><li><a href=#playbook-示例2>playbook 示例2</a></li></ul></nav></div></div><div class=content id=content><h2 id=playbook-示例1 class=headerLink><a href=#playbook-%e7%a4%ba%e4%be%8b1 class=header-mark></a>playbook 示例1</h2><p>使用 <code>ansible-playbook</code> (单文件)批量安装 <code>vsftp</code> 服务</p><p><em>playbook</em></p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-yaml data-lang=yaml><span class=line><span class=cl><span class=nn>---</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span>- <span class=nt>hosts</span><span class=p>:</span><span class=w> </span><span class=l>all  </span><span class=w> </span><span class=c># 指定操作的主机</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>vars</span><span class=p>:</span><span class=w>  </span><span class=c># 定义变量，此变量会传入模板</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>userlist</span><span class=p>:</span><span class=w> </span><span class=l>/etc/vsftpd/user_list</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>welcome</span><span class=p>:</span><span class=w> </span><span class=l>/etc/vsftpd/welcome.txt</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>remote_user</span><span class=p>:</span><span class=w> </span><span class=l>root</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>tasks</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span>- <span class=nt>name</span><span class=p>:</span><span class=w> </span><span class=l>install vsftpd</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>yum</span><span class=p>:</span><span class=w> </span><span class=l>pkg=vsftpd state=latest</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span>- <span class=nt>name</span><span class=p>:</span><span class=w> </span><span class=l>write vsftp config file</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>template</span><span class=p>:</span><span class=w> </span><span class=l>src=/root/playbook/templates/vsftpd.conf dest=/etc/vsftpd/vsftpd.conf</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=c># 只有配置发生变化才会触发以下任务</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>notify</span><span class=p>:</span><span class=w> </span><span class=c># 触发任务，下面指定任务名</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span>- <span class=l>restart vsftpd</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span>- <span class=nt>name</span><span class=p>:</span><span class=w> </span><span class=l>start vsftpd</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>service</span><span class=p>:</span><span class=w> </span><span class=l>name=vsftpd state=started</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>handlers</span><span class=p>:</span><span class=w>  </span><span class=c># 定义触发任务</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span>- <span class=nt>name</span><span class=p>:</span><span class=w> </span><span class=l>restart vsftpd</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span><span class=nt>service</span><span class=p>:</span><span class=w> </span><span class=l>name=vsftpd state=restarted</span><span class=w>
+</span></span></span></code></pre></td></tr></table></div></div><p><em>templates</em> 模板</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=nv>anonymous_enable</span><span class=o>=</span>NO
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=nv>local_enable</span><span class=o>=</span>YES
+</span></span><span class=line><span class=cl><span class=nv>write_enable</span><span class=o>=</span>YES
+</span></span><span class=line><span class=cl><span class=nv>local_umask</span><span class=o>=</span><span class=m>022</span>
+</span></span><span class=line><span class=cl><span class=nv>local_root</span><span class=o>=</span>/var/ftp
+</span></span><span class=line><span class=cl><span class=nv>userlist_enable</span><span class=o>=</span>YES
+</span></span><span class=line><span class=cl><span class=nv>userlist_deny</span><span class=o>=</span>YES
+</span></span><span class=line><span class=cl><span class=nv>userlist_file</span><span class=o>={{</span> userlist <span class=o>}}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=nv>use_localtime</span><span class=o>=</span>YES
+</span></span><span class=line><span class=cl><span class=nv>dirmessage_enable</span><span class=o>=</span>YES
+</span></span><span class=line><span class=cl><span class=nv>xferlog_enable</span><span class=o>=</span>YES
+</span></span><span class=line><span class=cl><span class=nv>connect_from_port_20</span><span class=o>=</span>YES
+</span></span><span class=line><span class=cl><span class=nv>xferlog_std_format</span><span class=o>=</span>YES
+</span></span><span class=line><span class=cl><span class=nv>listen</span><span class=o>=</span>YES
+</span></span><span class=line><span class=cl><span class=nv>pam_service_name</span><span class=o>=</span>vsftpd
+</span></span><span class=line><span class=cl><span class=nv>tcp_wrappers</span><span class=o>=</span>YES
+</span></span><span class=line><span class=cl><span class=nv>banner_file</span><span class=o>={{</span> welcome <span class=o>}}</span>
+</span></span><span class=line><span class=cl><span class=nv>chroot_local_user</span><span class=o>=</span>YES
+</span></span><span class=line><span class=cl><span class=nv>pasv_min_port</span><span class=o>=</span><span class=m>65530</span>
+</span></span><span class=line><span class=cl><span class=nv>pasv_max_port</span><span class=o>=</span><span class=m>65535</span>
+</span></span></code></pre></td></tr></table></div></div><h2 id=playbook-示例2 class=headerLink><a href=#playbook-%e7%a4%ba%e4%be%8b2 class=header-mark></a>playbook 示例2</h2><p>将 playbook 分解成多个文件方便复用，文件夹结构如下：</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span><span class=lnt>7
+</span><span class=lnt>8
+</span><span class=lnt>9
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=o>[</span>root@localhost playbook<span class=o>]</span><span class=c1># tree</span>
+</span></span><span class=line><span class=cl>.
+</span></span><span class=line><span class=cl>├── handlers
+</span></span><span class=line><span class=cl>│   └── restart.yaml
+</span></span><span class=line><span class=cl>├── services
+</span></span><span class=line><span class=cl>│   └── vsftpd.yaml
+</span></span><span class=line><span class=cl>├── templates
+</span></span><span class=line><span class=cl>│   └── vsftpd.conf
+</span></span><span class=line><span class=cl>└── vsftpd.yaml
+</span></span></code></pre></td></tr></table></div></div><p><em>vsftpd.yaml</em></p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>---
+</span></span><span class=line><span class=cl>- hosts: all
+</span></span><span class=line><span class=cl>  remote_user: root
+</span></span><span class=line><span class=cl>  vars:
+</span></span><span class=line><span class=cl>    userlist: /etc/vsftpd/user_list
+</span></span><span class=line><span class=cl>    welcome: /etc/vsftpd/welcome.txt
+</span></span><span class=line><span class=cl>  tasks:
+</span></span><span class=line><span class=cl>    - include: /root/playbook/services/vsftpd.yaml
+</span></span><span class=line><span class=cl>  handlers:
+</span></span><span class=line><span class=cl>    - include: /root/playbook/handlers/restart.yaml <span class=nv>server_name</span><span class=o>=</span>vsftpd
+</span></span></code></pre></td></tr></table></div></div><p><em>services/vsftpd.yaml</em></p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span><span class=lnt>7
+</span><span class=lnt>8
+</span><span class=lnt>9
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>---
+</span></span><span class=line><span class=cl>- name: install vsftpd
+</span></span><span class=line><span class=cl>  yum: <span class=nv>name</span><span class=o>=</span>vsftpd <span class=nv>state</span><span class=o>=</span>present
+</span></span><span class=line><span class=cl>- name: start vsftpd
+</span></span><span class=line><span class=cl>  service: <span class=nv>name</span><span class=o>=</span>vsftpd <span class=nv>state</span><span class=o>=</span>started
+</span></span><span class=line><span class=cl>- name: configure vsftpd
+</span></span><span class=line><span class=cl>  template: <span class=nv>src</span><span class=o>=</span>/root/playbook/templates/vsftpd.conf <span class=nv>dest</span><span class=o>=</span>/etc/vsftpd/vsftpd.conf
+</span></span><span class=line><span class=cl>  notify:
+</span></span><span class=line><span class=cl>  - restart vsftpd
+</span></span></code></pre></td></tr></table></div></div><p><em>templates/vsftpd.conf</em></p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=nv>anonymous_enable</span><span class=o>=</span>NO
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=nv>local_enable</span><span class=o>=</span>YES
+</span></span><span class=line><span class=cl><span class=nv>write_enable</span><span class=o>=</span>YES
+</span></span><span class=line><span class=cl><span class=nv>local_umask</span><span class=o>=</span><span class=m>022</span>
+</span></span><span class=line><span class=cl><span class=nv>local_root</span><span class=o>=</span>/var/ftp
+</span></span><span class=line><span class=cl><span class=nv>userlist_enable</span><span class=o>=</span>YES
+</span></span><span class=line><span class=cl><span class=nv>userlist_deny</span><span class=o>=</span>YES
+</span></span><span class=line><span class=cl><span class=nv>userlist_file</span><span class=o>={{</span> userlist <span class=o>}}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=nv>use_localtime</span><span class=o>=</span>YES
+</span></span><span class=line><span class=cl><span class=nv>dirmessage_enable</span><span class=o>=</span>YES
+</span></span><span class=line><span class=cl><span class=nv>xferlog_enable</span><span class=o>=</span>YES
+</span></span><span class=line><span class=cl><span class=nv>connect_from_port_20</span><span class=o>=</span>YES
+</span></span><span class=line><span class=cl><span class=nv>xferlog_std_format</span><span class=o>=</span>YES
+</span></span><span class=line><span class=cl><span class=nv>listen</span><span class=o>=</span>YES
+</span></span><span class=line><span class=cl><span class=nv>pam_service_name</span><span class=o>=</span>vsftpd
+</span></span><span class=line><span class=cl><span class=nv>tcp_wrappers</span><span class=o>=</span>YES
+</span></span><span class=line><span class=cl><span class=nv>banner_file</span><span class=o>={{</span> welcome <span class=o>}}</span>
+</span></span><span class=line><span class=cl><span class=nv>chroot_local_user</span><span class=o>=</span>YES
+</span></span><span class=line><span class=cl><span class=nv>pasv_min_port</span><span class=o>=</span><span class=m>65530</span>
+</span></span><span class=line><span class=cl><span class=nv>pasv_max_port</span><span class=o>=</span><span class=m>65535</span>
+</span></span></code></pre></td></tr></table></div></div><p><em>handlers/restart.yaml</em></p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>---
+</span></span><span class=line><span class=cl>- name: restart <span class=o>{{</span> server_name <span class=o>}}</span>
+</span></span><span class=line><span class=cl>  service: <span class=nv>name</span><span class=o>={{</span> server_name <span class=o>}}</span> <span class=nv>state</span><span class=o>=</span>restarted
+</span></span></code></pre></td></tr></table></div></div></div><div class=post-footer id=post-footer><div class=post-info><div class=post-info-line><div class=post-info-mod><span>更新于 2021-06-12</span></div><div class=post-info-license></div></div><div class=post-info-line><div class=post-info-md><span><a class=link-to-mardown href=/posts/ansible-playbook/index.md target=_blank rel="noopener noreferrer">阅读原始文档</a></span></div><div class=post-info-share><span><a href=# title="分享到 Twitter" data-sharer=twitter data-url=https://liwanggui.com/posts/ansible-playbook/ data-title="Ansible Playbook 示例" data-hashtags=ansible><i class="fab fa-twitter fa-fw"></i></a><a href=# title="分享到 Facebook" data-sharer=facebook data-url=https://liwanggui.com/posts/ansible-playbook/ data-hashtag=ansible><i class="fab fa-facebook-square fa-fw"></i></a><a href=# title="分享到 WhatsApp" data-sharer=whatsapp data-url=https://liwanggui.com/posts/ansible-playbook/ data-title="Ansible Playbook 示例" data-web><i class="fab fa-whatsapp fa-fw"></i></a><a href=# title="分享到 Line" data-sharer=line data-url=https://liwanggui.com/posts/ansible-playbook/ data-title="Ansible Playbook 示例"><i data-svg-src=/lib/simple-icons/icons/line.min.svg></i></a><a href=# title="分享到 微博" data-sharer=weibo data-url=https://liwanggui.com/posts/ansible-playbook/ data-title="Ansible Playbook 示例"><i class="fab fa-weibo fa-fw"></i></a><a href=# title="分享到 Myspace" data-sharer=myspace data-url=https://liwanggui.com/posts/ansible-playbook/ data-title="Ansible Playbook 示例" data-description><i data-svg-src=/lib/simple-icons/icons/myspace.min.svg></i></a><a href=# title="分享到 Blogger" data-sharer=blogger data-url=https://liwanggui.com/posts/ansible-playbook/ data-title="Ansible Playbook 示例" data-description><i class="fab fa-blogger fa-fw"></i></a><a href=# title="分享到 百度" data-sharer=baidu data-url=https://liwanggui.com/posts/ansible-playbook/ data-title="Ansible Playbook 示例"><i data-svg-src=/lib/simple-icons/icons/baidu.min.svg></i></a><a href=# title="分享到 Evernote" data-sharer=evernote data-url=https://liwanggui.com/posts/ansible-playbook/ data-title="Ansible Playbook 示例"><i class="fab fa-evernote fa-fw"></i></a></span></div></div></div><div class=post-info-more><section class=post-tags><i class="fas fa-tags fa-fw"></i>&nbsp;<a href=/tags/ansible/>ansible</a></section><section><span><a href=javascript:void(0); onclick=window.history.back()>返回</a></span>&nbsp;|&nbsp;<span><a href=/>主页</a></span></section></div><div class=post-nav><a href=/posts/ansible-modules/ class=prev rel=prev title="Ansible 常用模块"><i class="fas fa-angle-left fa-fw"></i>Ansible 常用模块</a>
+<a href=/posts/cobbler/ class=next rel=next title="使用 cobbler 批量部署 bclinux7.2">使用 cobbler 批量部署 bclinux7.2<i class="fas fa-angle-right fa-fw"></i></a></div></div><div id=comments><div id=giscus></div><noscript>Please enable JavaScript to view the comments powered by <a href=https://giscus.app/>giscus</a>.</noscript></div></article></div></main><footer class=footer><div class=footer-container><div class=footer-line>由 <a href=https://gohugo.io/ target=_blank rel="noopener noreferrer" title="Hugo 0.101.0">Hugo</a> 强力驱动&nbsp;|&nbsp;主题 - <a href=https://github.com/HEIGE-PCloud/DoIt target=_blank rel="noopener noreferrer" title="DoIt 0.3.0"><i class="far fa-edit fa-fw"></i> DoIt</a></div><div class=footer-line><i class="far fa-copyright fa-fw"></i><span itemprop=copyrightYear>2017 - 2024</span><span class=author itemprop=copyrightHolder>&nbsp;<a href=/about/ target=_blank rel="noopener noreferrer">李王贵</a></span><span class=icp-splitter>&nbsp;|&nbsp;</span><br class=icp-br><span class=icp><a href=https://beian.miit.gov.cn target=_blank>赣ICP备2023001395号</a></span></div><div class=footer-line></div><div class=footer-line></div></div></footer></div><div id=fixed-buttons><a href=#back-to-top id=back-to-top-button class=fixed-button title=回到顶部><i class="fas fa-arrow-up fa-fw"></i>
+</a><a href=# id=view-comments class=fixed-button title=查看评论><i class="fas fa-comment fa-fw"></i></a></div><div id=cookieconsent-container></div><div class=assets><link rel=stylesheet href=/lib/lightgallery/lightgallery.min.css><link rel=stylesheet href=/lib/katex/katex.min.css><link rel=preload as=style onload='this.onload=null,this.rel="stylesheet"' href=/lib/katex/copy-tex.min.css><noscript><link rel=stylesheet href=/lib/katex/copy-tex.min.css></noscript><link rel=stylesheet href=/lib/cookieconsent/cookieconsent.min.css><script type=text/javascript>window.config={code:{copyTitle:"复制到剪贴板",maxShownLines:10},comment:{giscus:{darkTheme:"dark",dataCategory:"Announcements",dataCategoryId:"DIC_kwDOE7mEQ84CY9pq",dataEmitMetadata:"1",dataInputPosition:"top",dataLang:"zh-CN",dataMapping:"pathname",dataReactionsEnabled:"1",dataRepo:"liwanggui/liwanggui.github.io",dataRepoId:"MDEwOlJlcG9zaXRvcnkzMzA5MjUxMjM=",dataStrict:"0",lightTheme:"light"}},cookieconsent:{content:{dismiss:"同意",link:"了解更多",message:"本网站使用 Cookies 来改善您的浏览体验."},enable:!0,palette:{button:{background:"#f0f0f0"},popup:{background:"#1aa3ff"}},theme:"edgeless"},lightGallery:{actualSize:!1,exThumbImage:"data-thumbnail",hideBarsDelay:2e3,selector:".lightgallery",speed:400,thumbContHeight:80,thumbWidth:80,thumbnail:!0},math:{delimiters:[{display:!0,left:"$$",right:"$$"},{display:!0,left:"\\[",right:"\\]"},{display:!1,left:"$",right:"$"},{display:!1,left:"\\(",right:"\\)"}],strict:!1},search:{distance:100,findAllMatches:!1,fuseIndexURL:"/index.json",highlightTag:"em",ignoreFieldNorm:!1,ignoreLocation:!1,isCaseSensitive:!1,location:0,maxResultLength:10,minMatchCharLength:2,noResultsFound:"没有找到结果",snippetLength:50,threshold:.3,type:"fuse",useExtendedSearch:!1},sharerjs:!0,twemoji:!0}</script><script type=text/javascript src=/js/giscus.min.js defer></script><script type=text/javascript src=/lib/twemoji/twemoji.min.js defer></script><script type=text/javascript src=/js/twemoji.min.js defer></script><script type=text/javascript src=/lib/lightgallery/lightgallery.min.js></script><script type=text/javascript src=/lib/lightgallery/lg-thumbnail.min.js></script><script type=text/javascript src=/lib/lightgallery/lg-zoom.min.js></script><script type=text/javascript src=/lib/clipboard/clipboard.min.js></script><script type=text/javascript src=/lib/sharer/sharer.min.js></script><script type=text/javascript src=/lib/katex/katex.min.js defer></script><script type=text/javascript src=/lib/katex/auto-render.min.js defer></script><script type=text/javascript src=/lib/katex/copy-tex.min.js defer></script><script type=text/javascript src=/lib/katex/mhchem.min.js defer></script><script type=text/javascript src=/js/katex.min.js defer></script><script type=text/javascript src=/lib/cookieconsent/cookieconsent.min.js defer></script><script type=text/javascript src=/js/cookieconsent.min.js defer></script><script type=text/javascript src=/js/theme.min.js defer></script></div></body></html>

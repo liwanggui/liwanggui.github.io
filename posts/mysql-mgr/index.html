@@ -1,0 +1,1059 @@
+<!doctype html><html lang=zh-cn><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><meta name=robots content="noodp"><title>构建 MySQL 8.x MGR 集群 - _浅行</title><meta name=Description content="_浅行"><meta property="og:title" content="构建 MySQL 8.x MGR 集群"><meta property="og:description" content="本文以 GreatSQL 数据库 为例，介绍构建 MGR 集群配置 1. MGR集群规划本次计划在3台服务器上安装 GreatSQL 数据库并部署 MGR 集群： node ip datadir port role GreatSQL-01 10.10.1.24 /data/GreatSQL/ 3306 PRIMARY GreatSQL-02 10.10.2.3 /data/GreatSQL/ 3306 SECONDARY GreatSQL-03 10.10.2.4 /data/GreatSQL/ 3306"><meta property="og:type" content="article"><meta property="og:url" content="https://liwanggui.com/posts/mysql-mgr/"><meta property="og:image" content="https://liwanggui.com/logo.png"><meta property="article:section" content="posts"><meta property="article:published_time" content="2023-11-07T10:03:59+08:00"><meta property="article:modified_time" content="2023-11-07T10:03:59+08:00"><meta name=twitter:card content="summary_large_image"><meta name=twitter:image content="https://liwanggui.com/logo.png"><meta name=twitter:title content="构建 MySQL 8.x MGR 集群"><meta name=twitter:description content="本文以 GreatSQL 数据库 为例，介绍构建 MGR 集群配置 1. MGR集群规划本次计划在3台服务器上安装 GreatSQL 数据库并部署 MGR 集群： node ip datadir port role GreatSQL-01 10.10.1.24 /data/GreatSQL/ 3306 PRIMARY GreatSQL-02 10.10.2.3 /data/GreatSQL/ 3306 SECONDARY GreatSQL-03 10.10.2.4 /data/GreatSQL/ 3306"><meta name=application-name content="LoveIt"><meta name=apple-mobile-web-app-title content="LoveIt"><meta name=theme-color content="#f8f8f8"><meta name=msapplication-TileColor content="#da532c"><link rel=canonical href=https://liwanggui.com/posts/mysql-mgr/><link rel=prev href=https://liwanggui.com/posts/coredns/><link rel=next href=https://liwanggui.com/posts/ossfs/><link rel=stylesheet href=/lib/normalize/normalize.min.css><link rel=stylesheet href=/css/color.css><link rel=stylesheet href=/css/style.min.css><link rel=preload as=style onload='this.onload=null,this.rel="stylesheet"' href=/lib/fontawesome-free/all.min.css><noscript><link rel=stylesheet href=/lib/fontawesome-free/all.min.css></noscript><link rel=preload as=style onload='this.onload=null,this.rel="stylesheet"' href=/lib/animate/animate.min.css><noscript><link rel=stylesheet href=/lib/animate/animate.min.css></noscript><script type=application/ld+json>{"@context":"http://schema.org","@type":"BlogPosting","headline":"构建 MySQL 8.x MGR 集群","inLanguage":"zh-CN","mainEntityOfPage":{"@type":"WebPage","@id":"https:\/\/liwanggui.com\/posts\/mysql-mgr\/"},"genre":"posts","keywords":"mysql, greatsql","wordcount":5792,"url":"https:\/\/liwanggui.com\/posts\/mysql-mgr\/","datePublished":"2023-11-07T10:03:59+08:00","dateModified":"2023-11-07T10:03:59+08:00","publisher":{"@type":"Organization","name":""},"author":{"@type":"Person","name":"李王贵"},"description":""}</script><script src=//instant.page/5.1.1 defer type=module integrity=sha384-MWfCL6g1OTGsbSwfuMHc8+8J2u71/LA8dzlIN3ycajckxuZZmF+DNjdm7O6H3PSq></script></head><body header-desktop=fixed header-mobile=auto><script type=text/javascript>function setTheme(e){document.body.setAttribute("theme",e),document.documentElement.style.setProperty("color-scheme",e==="light"?"light":"dark")}function saveTheme(e){window.localStorage&&localStorage.setItem("theme",e)}function getMeta(e){const t=document.getElementsByTagName("meta");for(let n=0;n<t.length;n++)if(t[n].getAttribute("name")===e)return t[n];return""}if(window.localStorage&&localStorage.getItem("theme")){let e=localStorage.getItem("theme");e==="light"||e==="dark"||e==="black"?setTheme(e):setTheme(window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light")}else"auto"==="light"||"auto"==="dark"||"auto"==="black"?(setTheme("auto"),saveTheme("auto")):(saveTheme("auto"),setTheme(window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"));let metaColors={light:"#f8f8f8",dark:"#252627",black:"#000000"};getMeta("theme-color").content=metaColors[document.body.getAttribute("theme")]</script><div id=back-to-top></div><div id=mask></div><div class=wrapper><header class=desktop id=header-desktop><div class=header-wrapper><div class=header-title><a href=/ title=_浅行><span class=header-title-pre><i class='far fa-kiss-wink-heart fa-fw'></i></span>_浅行</a></div><div class=menu><div class=menu-inner><a class=menu-item href=/posts/ title=文章列表>文章 </a><a class=menu-item href=/tags/ title=标签云>标签 </a><a class=menu-item href=/categories/ title=分类>分类 </a><a class=menu-item href=https://cook.liwanggui.com/ title=程序员做饭指南 rel="noopener noreferrer" target=_blank>烹饪 </a><a class=menu-item href=/about/index.html title=关于>关于 </a><span class="menu-item delimiter"></span><span class="menu-item search" id=search-desktop>
+<input type=text placeholder=搜索文章标题或内容... id=search-input-desktop>
+<a href=# class="search-button search-toggle" id=search-toggle-desktop title=搜索><i class="fas fa-search fa-fw"></i></a>
+<a href=# class="search-button search-clear" id=search-clear-desktop title=清空><i class="fas fa-times-circle fa-fw"></i></a>
+<span class="search-button search-loading" id=search-loading-desktop><i class="fas fa-spinner fa-fw fa-spin"></i></span>
+</span><a href=# class="menu-item theme-switch" title=切换主题><i class="fas fa-adjust fa-fw"></i></a></div></div></div></header><header class=mobile id=header-mobile><div class=header-container><div class=header-wrapper><div class=header-title><a href=/ title=_浅行><span class=header-title-pre><i class='far fa-kiss-wink-heart fa-fw'></i></span>_浅行</a></div><div class=menu-toggle id=menu-toggle-mobile><span></span><span></span><span></span></div></div><div class=menu id=menu-mobile><div class=search-wrapper><div class="search mobile" id=search-mobile><input type=text placeholder=搜索文章标题或内容... id=search-input-mobile>
+<a href=# class="search-button search-toggle" id=search-toggle-mobile title=搜索><i class="fas fa-search fa-fw"></i></a>
+<a href=# class="search-button search-clear" id=search-clear-mobile title=清空><i class="fas fa-times-circle fa-fw"></i></a>
+<span class="search-button search-loading" id=search-loading-mobile><i class="fas fa-spinner fa-fw fa-spin"></i></span></div><a href=# class=search-cancel id=search-cancel-mobile>取消</a></div><a class=menu-item href=/posts/ title=文章列表>文章</a><a class=menu-item href=/tags/ title=标签云>标签</a><a class=menu-item href=/categories/ title=分类>分类</a><a class=menu-item href=https://cook.liwanggui.com/ title=程序员做饭指南 rel="noopener noreferrer" target=_blank>烹饪</a><a class=menu-item href=/about/index.html title=关于>关于</a><a href=# class="menu-item theme-switch" title=切换主题>
+<i class="fas fa-adjust fa-fw"></i></a></div></div></header><div class="search-dropdown desktop"><div id=search-dropdown-desktop></div></div><div class="search-dropdown mobile"><div id=search-dropdown-mobile></div></div><main class=main><div class=container><div class=toc id=toc-auto><h2 class=toc-title>目录</h2><div class=toc-content id=toc-content-auto><nav id=TableOfContents><ul><li><a href=#1-mgr集群规划>1. MGR集群规划</a></li><li><a href=#2-下载安装包>2. 下载安装包</a></li><li><a href=#3-启动前准备>3. 启动前准备</a></li><li><a href=#4-连接登入-greatsql>4. 连接登入 GreatSQL</a></li><li><a href=#5-安装-mysql-shell>5. 安装 MySQL Shell</a></li><li><a href=#6-利用-mysql-shell-构建-mgr-集群>6. 利用 MySQL Shell 构建 MGR 集群</a></li><li><a href=#7-部署-mgr-集群配置项>7. 部署 MGR 集群配置项</a><ul><li><a href=#group_replication_start_on_boot>group_replication_start_on_boot</a></li><li><a href=#group_replication_bootstrap_group>group_replication_bootstrap_group</a></li><li><a href=#group_replication_recovery_get_public_key>group_replication_recovery_get_public_key</a></li><li><a href=#group_replication_ip_whitelist>group_replication_ip_whitelist</a></li><li><a href=#重启-mgr-集群>重启 MGR 集群</a></li></ul></li></ul></nav></div></div><script>document.getElementsByTagName("main")[0].setAttribute("pageStyle","normal")</script><script>document.getElementsByTagName("main")[0].setAttribute("autoTOC","true")</script><article class="page single"><h1 class="single-title animate__animated animate__flipInX">构建 MySQL 8.x MGR 集群</h1><div class=post-meta><div class=post-meta-line><span class=post-author><i class="author fas fa-user-circle fa-fw"></i><a href=/about/ title=Author rel=author class=author>李王贵</a>
+</span>&nbsp;<span class=post-category>收录于 </span>&nbsp;<span class=post-category>类别 <a href=/categories/mysql/><i class="far fa-folder fa-fw"></i>mysql</a></span></div><div class=post-meta-line><i class="far fa-calendar-alt fa-fw"></i>&nbsp;<time datetime=2023-11-07>2023-11-07</time>&nbsp;<i class="far fa-edit fa-fw"></i>&nbsp;<time datetime=2023-11-07>2023-11-07</time>&nbsp;<i class="fas fa-pencil-alt fa-fw"></i>&nbsp;约 5792 字&nbsp;
+<i class="far fa-clock fa-fw"></i>&nbsp;预计阅读 12 分钟&nbsp;</div></div><div class="details toc" id=toc-static kept><div class="details-summary toc-title"><span>目录</span>
+<span><i class="details-icon fas fa-angle-right"></i></span></div><div class="details-content toc-content" id=toc-content-static><nav id=TableOfContents><ul><li><a href=#1-mgr集群规划>1. MGR集群规划</a></li><li><a href=#2-下载安装包>2. 下载安装包</a></li><li><a href=#3-启动前准备>3. 启动前准备</a></li><li><a href=#4-连接登入-greatsql>4. 连接登入 GreatSQL</a></li><li><a href=#5-安装-mysql-shell>5. 安装 MySQL Shell</a></li><li><a href=#6-利用-mysql-shell-构建-mgr-集群>6. 利用 MySQL Shell 构建 MGR 集群</a></li><li><a href=#7-部署-mgr-集群配置项>7. 部署 MGR 集群配置项</a><ul><li><a href=#group_replication_start_on_boot>group_replication_start_on_boot</a></li><li><a href=#group_replication_bootstrap_group>group_replication_bootstrap_group</a></li><li><a href=#group_replication_recovery_get_public_key>group_replication_recovery_get_public_key</a></li><li><a href=#group_replication_ip_whitelist>group_replication_ip_whitelist</a></li><li><a href=#重启-mgr-集群>重启 MGR 集群</a></li></ul></li></ul></nav></div></div><div class=content id=content><p>本文以 <a href=https://greatsql.cn/docs/8032/user-manual/4-install-guide/3-install-with-tarball.html target=_blank rel="noopener noreferrer"><code>GreatSQL</code> 数据库</a> 为例，介绍构建 MGR 集群配置</p><h2 id=1-mgr集群规划 class=headerLink><a href=#1-mgr%e9%9b%86%e7%be%a4%e8%a7%84%e5%88%92 class=header-mark></a>1. MGR集群规划</h2><p>本次计划在3台服务器上安装 GreatSQL 数据库并部署 MGR 集群：</p><table><thead><tr><th style=text-align:left>node</th><th style=text-align:left>ip</th><th style=text-align:left>datadir</th><th style=text-align:left>port</th><th style=text-align:left>role</th></tr></thead><tbody><tr><td style=text-align:left>GreatSQL-01</td><td style=text-align:left>10.10.1.24</td><td style=text-align:left>/data/GreatSQL/</td><td style=text-align:left>3306</td><td style=text-align:left>PRIMARY</td></tr><tr><td style=text-align:left>GreatSQL-02</td><td style=text-align:left>10.10.2.3</td><td style=text-align:left>/data/GreatSQL/</td><td style=text-align:left>3306</td><td style=text-align:left>SECONDARY</td></tr><tr><td style=text-align:left>GreatSQL-03</td><td style=text-align:left>10.10.2.4</td><td style=text-align:left>/data/GreatSQL/</td><td style=text-align:left>3306</td><td style=text-align:left>SECONDARY</td></tr></tbody></table><p>以下安装配置工作先在三个节点都同样操作一遍。</p><h2 id=2-下载安装包 class=headerLink><a href=#2-%e4%b8%8b%e8%bd%bd%e5%ae%89%e8%a3%85%e5%8c%85 class=header-mark></a>2. 下载安装包</h2><p><a href=https://gitee.com/GreatSQL/GreatSQL/releases/tag/GreatSQL-8.0.32-24 target=_blank rel="noopener noreferrer">点击此处</a> 下载最新的安装包，下载以下一个就可以：</p><ul><li>GreatSQL-8.0.32-24-Linux-glibc2.28-x86_64.tar.xz</li></ul><p>将下载的二进制包放到安装目录下，并解压缩：</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>$ <span class=nb>cd</span> /usr/local/src
+</span></span><span class=line><span class=cl>$ curl -o GreatSQL-8.0.32-24-Linux-glibc2.28-x86_64.tar.xz https://product.greatdb.com/GreatSQL-8.0.32-24/GreatSQL-8.0.32-24-Linux-glibc2.28-x86_64.tar.xz
+</span></span><span class=line><span class=cl>$ tar xf GreatSQL-8.0.32-24-Linux-glibc2.28-x86_64.tar.xz -C /usr/local/
+</span></span><span class=line><span class=cl>$ <span class=nb>cd</span> /usr/local/
+</span></span><span class=line><span class=cl>$ ln -s GreatSQL-8.0.32-24-Linux-glibc2.28-x86_64 greatsql
+</span></span></code></pre></td></tr></table></div></div><p>同时修改设置，将 GreatSQL 加入 PATH 环境变量：</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>$ <span class=nb>echo</span> <span class=s1>&#39;export PATH=/usr/local/greatsql/bin:$PATH&#39;</span> &gt;&gt; ~/.bash_profile
+</span></span><span class=line><span class=cl>$ <span class=nb>source</span> ~/.bash_profile
+</span></span></code></pre></td></tr></table></div></div><blockquote><p>提示： 安装 GreatSQL 需要先安装其他依赖包，可执行下面命令完成： yum install -y pkg-config perl libaio-devel numactl-devel numactl-libs net-tools openssl openssl-devel jemalloc jemalloc-devel perl-Data-Dumper perl-Digest-MD5 更详细的请参考：<a href=https://greatsql.cn/docs/8032/user-manual/4-install-guide/1-install-prepare.html target=_blank rel="noopener noreferrer">安装准备</a>。</p></blockquote><h2 id=3-启动前准备 class=headerLink><a href=#3-%e5%90%af%e5%8a%a8%e5%89%8d%e5%87%86%e5%a4%87 class=header-mark></a>3. 启动前准备</h2><p>修改 <code>/etc/my.cnf</code> 配置文件</p><p>可根据实际情况修改，一般主要涉及数据库文件分区、目录，内存配置等少数几个选项。以下面这份为例：</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>  1
+</span><span class=lnt>  2
+</span><span class=lnt>  3
+</span><span class=lnt>  4
+</span><span class=lnt>  5
+</span><span class=lnt>  6
+</span><span class=lnt>  7
+</span><span class=lnt>  8
+</span><span class=lnt>  9
+</span><span class=lnt> 10
+</span><span class=lnt> 11
+</span><span class=lnt> 12
+</span><span class=lnt> 13
+</span><span class=lnt> 14
+</span><span class=lnt> 15
+</span><span class=lnt> 16
+</span><span class=lnt> 17
+</span><span class=lnt> 18
+</span><span class=lnt> 19
+</span><span class=lnt> 20
+</span><span class=lnt> 21
+</span><span class=lnt> 22
+</span><span class=lnt> 23
+</span><span class=lnt> 24
+</span><span class=lnt> 25
+</span><span class=lnt> 26
+</span><span class=lnt> 27
+</span><span class=lnt> 28
+</span><span class=lnt> 29
+</span><span class=lnt> 30
+</span><span class=lnt> 31
+</span><span class=lnt> 32
+</span><span class=lnt> 33
+</span><span class=lnt> 34
+</span><span class=lnt> 35
+</span><span class=lnt> 36
+</span><span class=lnt> 37
+</span><span class=lnt> 38
+</span><span class=lnt> 39
+</span><span class=lnt> 40
+</span><span class=lnt> 41
+</span><span class=lnt> 42
+</span><span class=lnt> 43
+</span><span class=lnt> 44
+</span><span class=lnt> 45
+</span><span class=lnt> 46
+</span><span class=lnt> 47
+</span><span class=lnt> 48
+</span><span class=lnt> 49
+</span><span class=lnt> 50
+</span><span class=lnt> 51
+</span><span class=lnt> 52
+</span><span class=lnt> 53
+</span><span class=lnt> 54
+</span><span class=lnt> 55
+</span><span class=lnt> 56
+</span><span class=lnt> 57
+</span><span class=lnt> 58
+</span><span class=lnt> 59
+</span><span class=lnt> 60
+</span><span class=lnt> 61
+</span><span class=lnt> 62
+</span><span class=lnt> 63
+</span><span class=lnt> 64
+</span><span class=lnt> 65
+</span><span class=lnt> 66
+</span><span class=lnt> 67
+</span><span class=lnt> 68
+</span><span class=lnt> 69
+</span><span class=lnt> 70
+</span><span class=lnt> 71
+</span><span class=lnt> 72
+</span><span class=lnt> 73
+</span><span class=lnt> 74
+</span><span class=lnt> 75
+</span><span class=lnt> 76
+</span><span class=lnt> 77
+</span><span class=lnt> 78
+</span><span class=lnt> 79
+</span><span class=lnt> 80
+</span><span class=lnt> 81
+</span><span class=lnt> 82
+</span><span class=lnt> 83
+</span><span class=lnt> 84
+</span><span class=lnt> 85
+</span><span class=lnt> 86
+</span><span class=lnt> 87
+</span><span class=lnt> 88
+</span><span class=lnt> 89
+</span><span class=lnt> 90
+</span><span class=lnt> 91
+</span><span class=lnt> 92
+</span><span class=lnt> 93
+</span><span class=lnt> 94
+</span><span class=lnt> 95
+</span><span class=lnt> 96
+</span><span class=lnt> 97
+</span><span class=lnt> 98
+</span><span class=lnt> 99
+</span><span class=lnt>100
+</span><span class=lnt>101
+</span><span class=lnt>102
+</span><span class=lnt>103
+</span><span class=lnt>104
+</span><span class=lnt>105
+</span><span class=lnt>106
+</span><span class=lnt>107
+</span><span class=lnt>108
+</span><span class=lnt>109
+</span><span class=lnt>110
+</span><span class=lnt>111
+</span><span class=lnt>112
+</span><span class=lnt>113
+</span><span class=lnt>114
+</span><span class=lnt>115
+</span><span class=lnt>116
+</span><span class=lnt>117
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-ini data-lang=ini><span class=line><span class=cl><span class=k>[client]</span>
+</span></span><span class=line><span class=cl><span class=na>user</span> <span class=o>=</span> <span class=s>root</span>
+</span></span><span class=line><span class=cl><span class=na>socket</span>	<span class=o>=</span> <span class=s>/data/GreatSQL/mysql.sock</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=k>[mysqld]</span>
+</span></span><span class=line><span class=cl><span class=na>user</span> <span class=o>=</span> <span class=s>mysql</span>
+</span></span><span class=line><span class=cl><span class=na>port</span> <span class=o>=</span> <span class=s>3306</span>
+</span></span><span class=line><span class=cl><span class=c1>#主从复制或MGR集群中，server_id记得要不同</span>
+</span></span><span class=line><span class=cl><span class=c1>#另外，实例启动时会生成 auto.cnf，里面的 server_uuid 值也要不同</span>
+</span></span><span class=line><span class=cl><span class=c1>#server_uuid 的值还可以自己手动指定，只要符合uuid的格式标准就可以</span>
+</span></span><span class=line><span class=cl><span class=na>server_id</span> <span class=o>=</span> <span class=s>3306</span>
+</span></span><span class=line><span class=cl><span class=na>basedir</span> <span class=o>=</span> <span class=s>/usr/local/greatsql</span>
+</span></span><span class=line><span class=cl><span class=na>datadir</span>	<span class=o>=</span> <span class=s>/data/GreatSQL</span>
+</span></span><span class=line><span class=cl><span class=na>socket</span>	<span class=o>=</span> <span class=s>/data/GreatSQL/mysql.sock</span>
+</span></span><span class=line><span class=cl><span class=na>pid-file</span> <span class=o>=</span> <span class=s>mysql.pid</span>
+</span></span><span class=line><span class=cl><span class=na>character-set-server</span> <span class=o>=</span> <span class=s>UTF8MB4</span>
+</span></span><span class=line><span class=cl><span class=na>skip_name_resolve</span> <span class=o>=</span> <span class=s>1</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1>#若你的MySQL数据库主要运行在境外，请务必根据实际情况调整本参数</span>
+</span></span><span class=line><span class=cl><span class=na>default_time_zone</span> <span class=o>=</span> <span class=s>&#34;+8:00&#34;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1>#performance setttings</span>
+</span></span><span class=line><span class=cl><span class=na>lock_wait_timeout</span> <span class=o>=</span> <span class=s>3600</span>
+</span></span><span class=line><span class=cl><span class=na>open_files_limit</span>    <span class=o>=</span> <span class=s>65535</span>
+</span></span><span class=line><span class=cl><span class=na>back_log</span> <span class=o>=</span> <span class=s>1024</span>
+</span></span><span class=line><span class=cl><span class=na>max_connections</span> <span class=o>=</span> <span class=s>512</span>
+</span></span><span class=line><span class=cl><span class=na>max_connect_errors</span> <span class=o>=</span> <span class=s>1000000</span>
+</span></span><span class=line><span class=cl><span class=na>table_open_cache</span> <span class=o>=</span> <span class=s>1024</span>
+</span></span><span class=line><span class=cl><span class=na>table_definition_cache</span> <span class=o>=</span> <span class=s>1024</span>
+</span></span><span class=line><span class=cl><span class=na>thread_stack</span> <span class=o>=</span> <span class=s>512K</span>
+</span></span><span class=line><span class=cl><span class=na>sort_buffer_size</span> <span class=o>=</span> <span class=s>4M</span>
+</span></span><span class=line><span class=cl><span class=na>join_buffer_size</span> <span class=o>=</span> <span class=s>4M</span>
+</span></span><span class=line><span class=cl><span class=na>read_buffer_size</span> <span class=o>=</span> <span class=s>8M</span>
+</span></span><span class=line><span class=cl><span class=na>read_rnd_buffer_size</span> <span class=o>=</span> <span class=s>4M</span>
+</span></span><span class=line><span class=cl><span class=na>bulk_insert_buffer_size</span> <span class=o>=</span> <span class=s>64M</span>
+</span></span><span class=line><span class=cl><span class=na>thread_cache_size</span> <span class=o>=</span> <span class=s>768</span>
+</span></span><span class=line><span class=cl><span class=na>interactive_timeout</span> <span class=o>=</span> <span class=s>600</span>
+</span></span><span class=line><span class=cl><span class=na>wait_timeout</span> <span class=o>=</span> <span class=s>600</span>
+</span></span><span class=line><span class=cl><span class=na>tmp_table_size</span> <span class=o>=</span> <span class=s>32M</span>
+</span></span><span class=line><span class=cl><span class=na>max_heap_table_size</span> <span class=o>=</span> <span class=s>32M</span>
+</span></span><span class=line><span class=cl><span class=na>max_allowed_packet</span> <span class=o>=</span> <span class=s>64M</span>
+</span></span><span class=line><span class=cl><span class=na>net_buffer_shrink_interval</span> <span class=o>=</span> <span class=s>180</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1>#log settings</span>
+</span></span><span class=line><span class=cl><span class=na>log_timestamps</span> <span class=o>=</span> <span class=s>SYSTEM</span>
+</span></span><span class=line><span class=cl><span class=na>log_error</span> <span class=o>=</span> <span class=s>error.log</span>
+</span></span><span class=line><span class=cl><span class=na>log_error_verbosity</span> <span class=o>=</span> <span class=s>3</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=na>log_bin</span> <span class=o>=</span> <span class=s>binlog</span>
+</span></span><span class=line><span class=cl><span class=na>binlog_format</span> <span class=o>=</span> <span class=s>ROW</span>
+</span></span><span class=line><span class=cl><span class=na>sync_binlog</span> <span class=o>=</span> <span class=s>1</span>
+</span></span><span class=line><span class=cl><span class=na>binlog_cache_size</span> <span class=o>=</span> <span class=s>4M</span>
+</span></span><span class=line><span class=cl><span class=na>max_binlog_cache_size</span> <span class=o>=</span> <span class=s>2G</span>
+</span></span><span class=line><span class=cl><span class=na>max_binlog_size</span> <span class=o>=</span> <span class=s>1G</span>
+</span></span><span class=line><span class=cl><span class=c1># 控制binlog总大小，避免磁盘空间被撑爆</span>
+</span></span><span class=line><span class=cl><span class=na>binlog_space_limit</span> <span class=o>=</span> <span class=s>200G</span>
+</span></span><span class=line><span class=cl><span class=na>binlog_rows_query_log_events</span> <span class=o>=</span> <span class=s>1</span>
+</span></span><span class=line><span class=cl><span class=na>binlog_expire_logs_seconds</span> <span class=o>=</span> <span class=s>604800</span>
+</span></span><span class=line><span class=cl><span class=c1># MySQL 8.0.22前，想启用MGR的话，需要设置binlog_checksum=NONE才行</span>
+</span></span><span class=line><span class=cl><span class=na>binlog_checksum</span> <span class=o>=</span> <span class=s>CRC32</span>
+</span></span><span class=line><span class=cl><span class=na>gtid_mode</span> <span class=o>=</span> <span class=s>ON</span>
+</span></span><span class=line><span class=cl><span class=na>enforce_gtid_consistency</span> <span class=o>=</span> <span class=s>TRUE</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># myisam settings</span>
+</span></span><span class=line><span class=cl><span class=na>key_buffer_size</span> <span class=o>=</span> <span class=s>32M</span>
+</span></span><span class=line><span class=cl><span class=na>myisam_sort_buffer_size</span> <span class=o>=</span> <span class=s>128M</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># replication settings</span>
+</span></span><span class=line><span class=cl><span class=na>relay_log_recovery</span> <span class=o>=</span> <span class=s>1</span>
+</span></span><span class=line><span class=cl><span class=na>slave_parallel_type</span> <span class=o>=</span> <span class=s>LOGICAL_CLOCK</span>
+</span></span><span class=line><span class=cl><span class=c1># 可以设置为逻辑CPU数量的2倍</span>
+</span></span><span class=line><span class=cl><span class=na>slave_parallel_workers</span> <span class=o>=</span> <span class=s>64</span>
+</span></span><span class=line><span class=cl><span class=na>binlog_transaction_dependency_tracking</span> <span class=o>=</span> <span class=s>WRITESET</span>
+</span></span><span class=line><span class=cl><span class=na>slave_preserve_commit_order</span> <span class=o>=</span> <span class=s>1</span>
+</span></span><span class=line><span class=cl><span class=na>slave_checkpoint_period</span> <span class=o>=</span> <span class=s>2</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># mgr settings</span>
+</span></span><span class=line><span class=cl><span class=na>loose-plugin_load_add</span> <span class=o>=</span> <span class=s>&#39;mysql_clone.so&#39;</span>
+</span></span><span class=line><span class=cl><span class=na>loose-plugin_load_add</span> <span class=o>=</span> <span class=s>&#39;group_replication.so&#39;</span>
+</span></span><span class=line><span class=cl><span class=na>loose-group_replication_group_name</span> <span class=o>=</span> <span class=s>&#34;aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1&#34;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># MGR本地节点IP:PORT，请自行替换</span>
+</span></span><span class=line><span class=cl><span class=na>loose-group_replication_local_address</span> <span class=o>=</span> <span class=s>&#34;10.10.1.24:33061&#34;</span>
+</span></span><span class=line><span class=cl><span class=na>report_host</span> <span class=o>=</span> <span class=s>&#34;10.10.1.24&#34;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1>##### MGR 集群所有节点IP:PORT，请自行替换</span>
+</span></span><span class=line><span class=cl><span class=c1>## MGR 集群主机白名单配置</span>
+</span></span><span class=line><span class=cl><span class=na>loose-group_replication_ip_whitelist</span> <span class=o>=</span> <span class=s>&#34;10.10.1.24,10.10.2.4,10.10.2.3&#34;  # 或者 10.10.0.0/16</span>
+</span></span><span class=line><span class=cl><span class=c1>## 指定 MGR 集群主机列表</span>
+</span></span><span class=line><span class=cl><span class=na>loose-group_replication_group_seeds</span> <span class=o>=</span> <span class=s>&#34;10.10.1.24:33061,10.10.2.4:33061,10.10.2.3:33061&#34;</span>
+</span></span><span class=line><span class=cl><span class=c1>#### 注意: 由于 mysql8.0 之后加密规则变成 caching_sha2_password，所以使用 MGR 方式复制时，需要打开公钥访问</span>
+</span></span><span class=line><span class=cl><span class=na>loose-group_replication_recovery_get_public_key</span> <span class=o>=</span> <span class=s>ON</span>
+</span></span><span class=line><span class=cl><span class=na>loose-group_replication_start_on_boot</span> <span class=o>=</span> <span class=s>OFF</span>
+</span></span><span class=line><span class=cl><span class=na>loose-group_replication_bootstrap_group</span> <span class=o>=</span> <span class=s>OFF</span>
+</span></span><span class=line><span class=cl><span class=na>loose-group_replication_exit_state_action</span> <span class=o>=</span> <span class=s>READ_ONLY</span>
+</span></span><span class=line><span class=cl><span class=na>loose-group_replication_flow_control_mode</span> <span class=o>=</span> <span class=s>&#34;DISABLED&#34;</span>
+</span></span><span class=line><span class=cl><span class=na>loose-group_replication_single_primary_mode</span> <span class=o>=</span> <span class=s>ON</span>
+</span></span><span class=line><span class=cl><span class=na>loose-group_replication_majority_after_mode</span> <span class=o>=</span> <span class=s>ON</span>
+</span></span><span class=line><span class=cl><span class=na>loose-group_replication_communication_max_message_size</span> <span class=o>=</span> <span class=s>10M</span>
+</span></span><span class=line><span class=cl><span class=na>loose-group_replication_arbitrator</span> <span class=o>=</span> <span class=s>0</span>
+</span></span><span class=line><span class=cl><span class=na>loose-group_replication_single_primary_fast_mode</span> <span class=o>=</span> <span class=s>1</span>
+</span></span><span class=line><span class=cl><span class=na>loose-group_replication_request_time_threshold</span> <span class=o>=</span> <span class=s>100</span>
+</span></span><span class=line><span class=cl><span class=na>loose-group_replication_primary_election_mode</span> <span class=o>=</span> <span class=s>GTID_FIRST</span>
+</span></span><span class=line><span class=cl><span class=na>loose-group_replication_unreachable_majority_timeout</span> <span class=o>=</span> <span class=s>30</span>
+</span></span><span class=line><span class=cl><span class=na>loose-group_replication_member_expel_timeout</span> <span class=o>=</span> <span class=s>5</span>
+</span></span><span class=line><span class=cl><span class=na>loose-group_replication_autorejoin_tries</span> <span class=o>=</span> <span class=s>288</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># innodb settings</span>
+</span></span><span class=line><span class=cl><span class=na>innodb_buffer_pool_size</span> <span class=o>=</span> <span class=s>1G</span>
+</span></span><span class=line><span class=cl><span class=na>innodb_buffer_pool_instances</span> <span class=o>=</span> <span class=s>4</span>
+</span></span><span class=line><span class=cl><span class=na>innodb_data_file_path</span> <span class=o>=</span> <span class=s>ibdata1:12M:autoextend</span>
+</span></span><span class=line><span class=cl><span class=na>innodb_flush_log_at_trx_commit</span> <span class=o>=</span> <span class=s>1</span>
+</span></span><span class=line><span class=cl><span class=na>innodb_log_buffer_size</span> <span class=o>=</span> <span class=s>32M</span>
+</span></span><span class=line><span class=cl><span class=na>innodb_log_file_size</span> <span class=o>=</span> <span class=s>2G</span>
+</span></span><span class=line><span class=cl><span class=na>innodb_log_files_in_group</span> <span class=o>=</span> <span class=s>3</span>
+</span></span><span class=line><span class=cl><span class=na>innodb_redo_log_capacity</span> <span class=o>=</span> <span class=s>6G</span>
+</span></span><span class=line><span class=cl><span class=na>innodb_max_undo_log_size</span> <span class=o>=</span> <span class=s>4G</span>
+</span></span></code></pre></td></tr></table></div></div><p>新建 mysql 用户</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>$ /sbin/groupadd mysql
+</span></span><span class=line><span class=cl>$ /sbin/useradd -g mysql mysql -d /dev/null -s /sbin/nologin
+</span></span></code></pre></td></tr></table></div></div><p>新建数据库主目录，并修改权限模式及属主</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>$ mkdir -p /data/GreatSQL
+</span></span><span class=line><span class=cl>$ chown -R mysql:mysql /data/GreatSQL
+</span></span><span class=line><span class=cl>$ chmod -R <span class=m>700</span> /data/GreatSQL
+</span></span></code></pre></td></tr></table></div></div><p>增加 GreatSQL 系统服务</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span><span class=lnt>26
+</span><span class=lnt>27
+</span><span class=lnt>28
+</span><span class=lnt>29
+</span><span class=lnt>30
+</span><span class=lnt>31
+</span><span class=lnt>32
+</span><span class=lnt>33
+</span><span class=lnt>34
+</span><span class=lnt>35
+</span><span class=lnt>36
+</span><span class=lnt>37
+</span><span class=lnt>38
+</span><span class=lnt>39
+</span><span class=lnt>40
+</span><span class=lnt>41
+</span><span class=lnt>42
+</span><span class=lnt>43
+</span><span class=lnt>44
+</span><span class=lnt>45
+</span><span class=lnt>46
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>$ vim /lib/systemd/system/mysqld.service
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=o>[</span>Unit<span class=o>]</span>
+</span></span><span class=line><span class=cl><span class=nv>Description</span><span class=o>=</span>GreatSQL Server
+</span></span><span class=line><span class=cl><span class=nv>Documentation</span><span class=o>=</span>man:mysqld<span class=o>(</span>8<span class=o>)</span>
+</span></span><span class=line><span class=cl><span class=nv>Documentation</span><span class=o>=</span>http://dev.mysql.com/doc/refman/en/using-systemd.html
+</span></span><span class=line><span class=cl><span class=nv>After</span><span class=o>=</span>network.target
+</span></span><span class=line><span class=cl><span class=nv>After</span><span class=o>=</span>syslog.target
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=o>[</span>Install<span class=o>]</span>
+</span></span><span class=line><span class=cl><span class=nv>WantedBy</span><span class=o>=</span>multi-user.target
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=o>[</span>Service<span class=o>]</span>
+</span></span><span class=line><span class=cl><span class=c1># some limits</span>
+</span></span><span class=line><span class=cl><span class=c1># file size</span>
+</span></span><span class=line><span class=cl><span class=nv>LimitFSIZE</span><span class=o>=</span>infinity
+</span></span><span class=line><span class=cl><span class=c1># cpu time</span>
+</span></span><span class=line><span class=cl><span class=nv>LimitCPU</span><span class=o>=</span>infinity
+</span></span><span class=line><span class=cl><span class=c1># virtual memory size</span>
+</span></span><span class=line><span class=cl><span class=nv>LimitAS</span><span class=o>=</span>infinity
+</span></span><span class=line><span class=cl><span class=c1># open files</span>
+</span></span><span class=line><span class=cl><span class=nv>LimitNOFILE</span><span class=o>=</span><span class=m>65535</span>
+</span></span><span class=line><span class=cl><span class=c1># processes/threads</span>
+</span></span><span class=line><span class=cl><span class=nv>LimitNPROC</span><span class=o>=</span><span class=m>65535</span>
+</span></span><span class=line><span class=cl><span class=c1># locked memory</span>
+</span></span><span class=line><span class=cl><span class=nv>LimitMEMLOCK</span><span class=o>=</span>infinity
+</span></span><span class=line><span class=cl><span class=c1># total threads (user+kernel)</span>
+</span></span><span class=line><span class=cl><span class=nv>TasksMax</span><span class=o>=</span>infinity
+</span></span><span class=line><span class=cl><span class=nv>TasksAccounting</span><span class=o>=</span><span class=nb>false</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=nv>User</span><span class=o>=</span>mysql
+</span></span><span class=line><span class=cl><span class=nv>Group</span><span class=o>=</span>mysql
+</span></span><span class=line><span class=cl><span class=c1>#如果是GreatSQL 5.7版本，此处需要改成simple模式，否则可能服务启用异常</span>
+</span></span><span class=line><span class=cl><span class=c1>#如果是GreatSQL 8.0版本则可以使用notify模式</span>
+</span></span><span class=line><span class=cl><span class=c1>#Type=simple</span>
+</span></span><span class=line><span class=cl><span class=nv>Type</span><span class=o>=</span>notify
+</span></span><span class=line><span class=cl><span class=nv>TimeoutSec</span><span class=o>=</span><span class=m>0</span>
+</span></span><span class=line><span class=cl><span class=nv>PermissionsStartOnly</span><span class=o>=</span><span class=nb>true</span>
+</span></span><span class=line><span class=cl><span class=nv>ExecStartPre</span><span class=o>=</span>/usr/local/greatsql/bin/mysqld_pre_systemd
+</span></span><span class=line><span class=cl><span class=nv>ExecStart</span><span class=o>=</span>/usr/local/greatsql/bin/mysqld <span class=nv>$MYSQLD_OPTS</span>
+</span></span><span class=line><span class=cl><span class=nv>EnvironmentFile</span><span class=o>=</span>-/etc/sysconfig/mysql
+</span></span><span class=line><span class=cl><span class=nv>LimitNOFILE</span> <span class=o>=</span> <span class=m>10000</span>
+</span></span><span class=line><span class=cl><span class=nv>Restart</span><span class=o>=</span>on-failure
+</span></span><span class=line><span class=cl><span class=nv>RestartPreventExitStatus</span><span class=o>=</span><span class=m>1</span>
+</span></span><span class=line><span class=cl><span class=nv>Environment</span><span class=o>=</span><span class=nv>MYSQLD_PARENT_PID</span><span class=o>=</span><span class=m>1</span>
+</span></span><span class=line><span class=cl><span class=nv>PrivateTmp</span><span class=o>=</span><span class=nb>false</span>
+</span></span></code></pre></td></tr></table></div></div><p>执行命令重载 systemd，加入 greatsql 服务，如果没问题就不会报错：</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>$ systemctl daemon-reload
+</span></span></code></pre></td></tr></table></div></div><p>这就安装成功并将 GreatSQL 添加到系统服务中，后面可以用 systemctl 来管理 GreatSQL 服务。</p><p>启动GreatSQL</p><p>执行下面的命令启动 GreatSQL 服务</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>$ systemctl start mysqld
+</span></span></code></pre></td></tr></table></div></div><p>如果是在一个全新环境中首次启动 GreatSQL 数据库，可能会失败，因为在 mysqld_pre_systemd 的初始化处理逻辑中，需要依赖 <code>/var/lib/mysql-files</code> 目录保存一个临时文件。
+如果首次启动失败，可能会有类似下面的报错提示：</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span><span class=lnt>7
+</span><span class=lnt>8
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>Nov  <span class=m>7</span> 10:45:04 ruichang-backend-120 systemd<span class=o>[</span>1<span class=o>]</span>: Starting GreatSQL Server...
+</span></span><span class=line><span class=cl>Nov  <span class=m>7</span> 10:45:04 ruichang-backend-120 mysqld_pre_systemd<span class=o>[</span>3444803<span class=o>]</span>: mktemp: failed to create file via template ‘/var/lib/mysql-files/install-validate-password-plugin.XXXXXX.sql’: No such file or directory
+</span></span><span class=line><span class=cl>Nov  <span class=m>7</span> 10:45:04 ruichang-backend-120 mysqld_pre_systemd<span class=o>[</span>3444804<span class=o>]</span>: chmod: cannot access <span class=s1>&#39;&#39;</span>: No such file or directory
+</span></span><span class=line><span class=cl>Nov  <span class=m>7</span> 10:45:04 ruichang-backend-120 mysqld_pre_systemd<span class=o>[</span>3444801<span class=o>]</span>: /usr/local/greatsql/bin/mysqld_pre_systemd: line 43: : No such file or directory
+</span></span><span class=line><span class=cl>Nov  <span class=m>7</span> 10:45:04 ruichang-backend-120 mysqld_pre_systemd<span class=o>[</span>3444801<span class=o>]</span>: /usr/local/greatsql/bin/mysqld_pre_systemd: line 44: <span class=nv>$initfile</span>: ambiguous redirect
+</span></span><span class=line><span class=cl>Nov  <span class=m>7</span> 10:45:05 ruichang-backend-120 systemd<span class=o>[</span>1<span class=o>]</span>: mysqld.service: Main process exited, <span class=nv>code</span><span class=o>=</span>exited, <span class=nv>status</span><span class=o>=</span>1/FAILURE
+</span></span><span class=line><span class=cl>Nov  <span class=m>7</span> 10:45:05 ruichang-backend-120 systemd<span class=o>[</span>1<span class=o>]</span>: mysqld.service: Failed with result <span class=s1>&#39;exit-code&#39;</span>.
+</span></span><span class=line><span class=cl>Nov  <span class=m>7</span> 10:45:05 ruichang-backend-120 systemd<span class=o>[</span>1<span class=o>]</span>: Failed to start GreatSQL Server.
+</span></span></code></pre></td></tr></table></div></div><p>只需手动创建 <code>/var/lib/mysql-files</code> 目录，再次启动 GreatSQL 服务即可：</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>$ mkdir -p /var/lib/mysql-files <span class=o>&amp;&amp;</span> chown -R mysql:mysql /var/lib/mysql-files
+</span></span><span class=line><span class=cl>$ systemctl start mysqld
+</span></span></code></pre></td></tr></table></div></div><p>检查服务是否已启动，以及进程状态：</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span><span class=lnt>26
+</span><span class=lnt>27
+</span><span class=lnt>28
+</span><span class=lnt>29
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>$ systemctl status mysqld
+</span></span><span class=line><span class=cl>● mysqld.service - GreatSQL Server
+</span></span><span class=line><span class=cl>   Loaded: loaded <span class=o>(</span>/usr/lib/systemd/system/mysqld.service<span class=p>;</span> disabled<span class=p>;</span> vendor preset: disabled<span class=o>)</span>
+</span></span><span class=line><span class=cl>   Active: active <span class=o>(</span>running<span class=o>)</span> since Tue 2023-11-07 10:46:06 CST<span class=p>;</span> 7s ago
+</span></span><span class=line><span class=cl>     Docs: man:mysqld<span class=o>(</span>8<span class=o>)</span>
+</span></span><span class=line><span class=cl>           http://dev.mysql.com/doc/refman/en/using-systemd.html
+</span></span><span class=line><span class=cl>  Process: <span class=m>3444896</span> <span class=nv>ExecStartPre</span><span class=o>=</span>/usr/local/greatsql/bin/mysqld_pre_systemd <span class=o>(</span><span class=nv>code</span><span class=o>=</span>exited, <span class=nv>status</span><span class=o>=</span>0/SUCCESS<span class=o>)</span>
+</span></span><span class=line><span class=cl> Main PID: <span class=m>3444986</span> <span class=o>(</span>mysqld<span class=o>)</span>
+</span></span><span class=line><span class=cl>   Status: <span class=s2>&#34;Server is operational&#34;</span>
+</span></span><span class=line><span class=cl>   Memory: 621.4M
+</span></span><span class=line><span class=cl>   CGroup: /system.slice/mysqld.service
+</span></span><span class=line><span class=cl>           └─3444986 /usr/local/greatsql/bin/mysqld
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Nov <span class=m>07</span> 10:46:00 ruichang-backend-120.79.25.21 systemd<span class=o>[</span>1<span class=o>]</span>: Starting GreatSQL Server...
+</span></span><span class=line><span class=cl>Nov <span class=m>07</span> 10:46:06 ruichang-backend-120.79.25.21 systemd<span class=o>[</span>1<span class=o>]</span>: Started GreatSQL Server.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>$ ps -ef <span class=p>|</span> grep mysqld
+</span></span><span class=line><span class=cl>mysql    <span class=m>3444986</span>       <span class=m>1</span>  <span class=m>7</span> 10:46 ?        00:00:05 /usr/local/greatsql/bin/mysqld
+</span></span><span class=line><span class=cl>root     <span class=m>3445052</span> <span class=m>3415579</span>  <span class=m>0</span> 10:47 pts/0    00:00:00 grep --color<span class=o>=</span>auto mysqld
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>$ ss -lntp <span class=p>|</span> grep mysqld
+</span></span><span class=line><span class=cl>LISTEN <span class=m>0</span>      <span class=m>70</span>                 *:33060            *:*    users:<span class=o>((</span><span class=s2>&#34;mysqld&#34;</span>,pid<span class=o>=</span>3444986,fd<span class=o>=</span>27<span class=o>))</span>
+</span></span><span class=line><span class=cl>LISTEN <span class=m>0</span>      <span class=m>128</span>                *:3306             *:*    users:<span class=o>((</span><span class=s2>&#34;mysqld&#34;</span>,pid<span class=o>=</span>3444986,fd<span class=o>=</span>31<span class=o>))</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>$ ls /data/GreatSQL
+</span></span><span class=line><span class=cl> auto.cnf        ca-key.pem        error.log           <span class=s1>&#39;#ib_16384_3.dblwr&#39;</span>  <span class=s1>&#39;#ib_16384_7.dblwr&#39;</span>  <span class=s1>&#39;#innodb_redo&#39;</span>   mysql.pid            private_key.pem   sys
+</span></span><span class=line><span class=cl> binlog.000001   ca.pem           <span class=s1>&#39;#ib_16384_0.dblwr&#39;</span>  <span class=s1>&#39;#ib_16384_4.dblwr&#39;</span>   ib_buffer_pool      <span class=s1>&#39;#innodb_temp&#39;</span>   mysql.sock           public_key.pem    sys_audit
+</span></span><span class=line><span class=cl> binlog.000002   client-cert.pem  <span class=s1>&#39;#ib_16384_1.dblwr&#39;</span>  <span class=s1>&#39;#ib_16384_5.dblwr&#39;</span>   ibdata1              mysql           mysql.sock.lock      server-cert.pem   undo_001
+</span></span><span class=line><span class=cl> binlog.index    client-key.pem   <span class=s1>&#39;#ib_16384_2.dblwr&#39;</span>  <span class=s1>&#39;#ib_16384_6.dblwr&#39;</span>   ibtmp1               mysql.ibd       performance_schema   server-key.pem    undo_002
+</span></span></code></pre></td></tr></table></div></div><h2 id=4-连接登入-greatsql class=headerLink><a href=#4-%e8%bf%9e%e6%8e%a5%e7%99%bb%e5%85%a5-greatsql class=header-mark></a>4. 连接登入 GreatSQL</h2><p>默认初始化密码在日志文件中查找</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>$ grep password /data/GreatSQL/error.log
+</span></span><span class=line><span class=cl>2023-11-07T10:46:02.690847+08:00 <span class=m>0</span> <span class=o>[</span>Note<span class=o>]</span> <span class=o>[</span>MY-010309<span class=o>]</span> <span class=o>[</span>Server<span class=o>]</span> Auto generated RSA key files through --sha256_password_auto_generate_rsa_keys are placed in data directory.
+</span></span><span class=line><span class=cl>2023-11-07T10:46:02.690881+08:00 <span class=m>0</span> <span class=o>[</span>Note<span class=o>]</span> <span class=o>[</span>MY-010308<span class=o>]</span> <span class=o>[</span>Server<span class=o>]</span> Skipping generation of RSA key pair through --caching_sha2_password_auto_generate_rsa_keys as key files are present in data directory.
+</span></span><span class=line><span class=cl>2023-11-07T10:46:02.711070+08:00 <span class=m>0</span> <span class=o>[</span>Note<span class=o>]</span> <span class=o>[</span>MY-010137<span class=o>]</span> <span class=o>[</span>Server<span class=o>]</span> Execution of init_file <span class=s1>&#39;/var/lib/mysql-files/install-validate-password-plugin.CBx5Ta.sql&#39;</span> started.
+</span></span><span class=line><span class=cl>2023-11-07T10:46:02.711286+08:00 <span class=m>6</span> <span class=o>[</span>Note<span class=o>]</span> <span class=o>[</span>MY-010454<span class=o>]</span> <span class=o>[</span>Server<span class=o>]</span> A temporary password is generated <span class=k>for</span> root@localhost: Xd:hM8uq<span class=p>;</span>Xyi  <span class=c1># 这是初始化密码</span>
+</span></span><span class=line><span class=cl>2023-11-07T10:46:03.728877+08:00 <span class=m>0</span> <span class=o>[</span>Note<span class=o>]</span> <span class=o>[</span>MY-010138<span class=o>]</span> <span class=o>[</span>Server<span class=o>]</span> Execution of init_file <span class=s1>&#39;/var/lib/mysql-files/install-validate-password-plugin.CBx5Ta.sql&#39;</span> ended.
+</span></span></code></pre></td></tr></table></div></div><p>登录修改 root 密码</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>$ mysql -p
+</span></span><span class=line><span class=cl>Enter password:
+</span></span><span class=line><span class=cl>Welcome to the MySQL monitor.  Commands end with <span class=p>;</span> or <span class=se>\g</span>.
+</span></span><span class=line><span class=cl>Your MySQL connection id is <span class=m>11</span>
+</span></span><span class=line><span class=cl>Server version: 8.0.32-24
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Copyright <span class=o>(</span>c<span class=o>)</span> 2021-2023 GreatDB Software Co., Ltd
+</span></span><span class=line><span class=cl>Copyright <span class=o>(</span>c<span class=o>)</span> 2009-2023 Percona LLC and/or its affiliates
+</span></span><span class=line><span class=cl>Copyright <span class=o>(</span>c<span class=o>)</span> 2000, 2023, Oracle and/or its affiliates.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Oracle is a registered trademark of Oracle Corporation and/or its
+</span></span><span class=line><span class=cl>affiliates. Other names may be trademarks of their respective
+</span></span><span class=line><span class=cl>owners.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Type <span class=s1>&#39;help;&#39;</span> or <span class=s1>&#39;\h&#39;</span> <span class=k>for</span> help. Type <span class=s1>&#39;\c&#39;</span> to clear the current input statement.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>mysql&gt; <span class=nb>set</span> <span class=nv>password</span><span class=o>=</span><span class=s1>&#39;Test@123456&#39;</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>Query OK, <span class=m>0</span> rows affected <span class=o>(</span>0.01 sec<span class=o>)</span>
+</span></span></code></pre></td></tr></table></div></div><h2 id=5-安装-mysql-shell class=headerLink><a href=#5-%e5%ae%89%e8%a3%85-mysql-shell class=header-mark></a>5. 安装 MySQL Shell</h2><p>为了支持仲裁节点特性，需要安装 GreatSQL 提供的 MySQL Shell发行包。打开 GreatSQL <a href=https://gitee.com/GreatSQL/GreatSQL/releases/GreatSQL-8.0.32-24 target=_blank rel="noopener noreferrer">下载页面</a>，找到 7. GreateSQL MySQL Shell，下载相应的 MySQL Shell 安装包（目前只提供二进制安装包）。</p><blockquote><p>P.S，如果暂时不想使用仲裁节点特性的话，则可以继续使用相同版本的官方MySQL Shell安装包，可以直接用YUM方式安装，此处略过。</p></blockquote><p>本文场景中，选择下面的二进制包：</p><ul><li>greatsql-shell-8.0.25-16-Linux-glibc2.28-x86_64.tar.xz</li></ul><p>将二进制文件包放在 <code>/usr/local</code> 目录下，解压缩：</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=nb>cd</span> /usr/local/src
+</span></span><span class=line><span class=cl>wget https://product.greatdb.com/GreatSQL-8.0.25-16/greatsql-shell-8.0.25-16-Linux-glibc2.28-x86_64.tar.xz
+</span></span><span class=line><span class=cl>tar xf greatsql-shell-8.0.25-16-Linux-glibc2.28-x86_64.tar.xz -C /usr/local
+</span></span><span class=line><span class=cl><span class=nb>cd</span> .. <span class=o>&amp;&amp;</span> ln -s greatsql-shell-8.0.25-16-Linux-glibc2.28-x86_64 greatsql-shell
+</span></span></code></pre></td></tr></table></div></div><p>直接运行 <code>/usr/local/greatsql-shell-8.0.25-16-Linux-glibc2.28-x86_64/bin/mysqlsh</code> 会报如下错误</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>./bin/mysqlsh: error <span class=k>while</span> loading shared libraries: libpython3.8.so.1.0: cannot open shared object file: No such file or directory
+</span></span></code></pre></td></tr></table></div></div><p>这是因为依赖于 python3.8 , 安装 python3.8 后 MySQL Shell 就可以正常使用</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>yum install -y python38
+</span></span></code></pre></td></tr></table></div></div><h2 id=6-利用-mysql-shell-构建-mgr-集群 class=headerLink><a href=#6-%e5%88%a9%e7%94%a8-mysql-shell-%e6%9e%84%e5%bb%ba-mgr-%e9%9b%86%e7%be%a4 class=header-mark></a>6. 利用 MySQL Shell 构建 MGR 集群</h2><p>利用 MySQL Shell for GreatSQL 构建 MGR 集群比较简单，主要有几个步骤：</p><ol><li>检查实例是否满足条件。</li><li>创建并初始化一个集群。</li><li>逐个添加实例。</li></ol><p>首先，用管理员账号 root 连接到第一个节点：</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=c1># ./bin/mysqlsh -S /data/GreatSQL/mysql.sock root@localhost</span>
+</span></span><span class=line><span class=cl>Please provide the password <span class=k>for</span> <span class=s1>&#39;root@/data%2FGreatSQL%2Fmysql.sock&#39;</span>: ***********
+</span></span><span class=line><span class=cl>MySQL Shell 8.0.25
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Copyright <span class=o>(</span>c<span class=o>)</span> 2016, 2021, Oracle and/or its affiliates.
+</span></span><span class=line><span class=cl>Oracle is a registered trademark of Oracle Corporation and/or its affiliates.
+</span></span><span class=line><span class=cl>Other names may be trademarks of their respective owners.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Type <span class=s1>&#39;\help&#39;</span> or <span class=s1>&#39;\?&#39;</span> <span class=k>for</span> help<span class=p>;</span> <span class=s1>&#39;\quit&#39;</span> to exit.
+</span></span><span class=line><span class=cl>Creating a session to <span class=s1>&#39;root@/data%2FGreatSQL%2Fmysql.sock&#39;</span>
+</span></span><span class=line><span class=cl>Fetching schema names <span class=k>for</span> autocompletion... Press ^C to stop.
+</span></span><span class=line><span class=cl>Your MySQL connection id is <span class=m>13</span>
+</span></span><span class=line><span class=cl>Server version: 8.0.32-24 GreatSQL, Release 24, Revision 3714067bc8c
+</span></span><span class=line><span class=cl>No default schema selected<span class=p>;</span> <span class=nb>type</span> <span class=se>\u</span>se &lt;schema&gt; to <span class=nb>set</span> one.
+</span></span><span class=line><span class=cl>WARNING: Found errors loading plugins, <span class=k>for</span> more details look at the log at: /root/.mysqlsh/mysqlsh.log
+</span></span></code></pre></td></tr></table></div></div><p>执行命令 <code>\status</code> 查看当前节点的状态，确认连接正常可用。</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl> MySQL  localhost  Py &gt; <span class=se>\s</span>tatus  
+</span></span><span class=line><span class=cl>MySQL Shell version 8.0.25
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Connection Id:                <span class=m>13</span>
+</span></span><span class=line><span class=cl>Current schema:
+</span></span><span class=line><span class=cl>Current user:                 root@localhost
+</span></span><span class=line><span class=cl>SSL:                          Not in use.
+</span></span><span class=line><span class=cl>Using delimiter:              <span class=p>;</span>
+</span></span><span class=line><span class=cl>Server version:               8.0.32-24 GreatSQL, Release 24, Revision 3714067bc8c
+</span></span><span class=line><span class=cl>Protocol version:             Classic <span class=m>10</span>
+</span></span><span class=line><span class=cl>Client library:               8.0.25
+</span></span><span class=line><span class=cl>Connection:                   Localhost via UNIX socket
+</span></span><span class=line><span class=cl>Unix socket:                  /data/GreatSQL/mysql.sock
+</span></span><span class=line><span class=cl>Server characterset:          utf8mb4
+</span></span><span class=line><span class=cl>Schema characterset:          utf8mb4
+</span></span><span class=line><span class=cl>Client characterset:          utf8mb4
+</span></span><span class=line><span class=cl>Conn. characterset:           utf8mb4
+</span></span><span class=line><span class=cl>Result characterset:          utf8mb4
+</span></span><span class=line><span class=cl>Compression:                  Disabled
+</span></span><span class=line><span class=cl>Uptime:                       <span class=m>31</span> min 39.0000 sec
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Threads: <span class=m>4</span>  Questions: <span class=m>13</span>  Slow queries: <span class=m>0</span>  Opens: <span class=m>148</span>  Flush tables: <span class=m>3</span>  Open tables: <span class=m>64</span>  Queries per second avg: 0.006
+</span></span></code></pre></td></tr></table></div></div><p>执行 <code>dba.configure_instance()</code> 命令开始检查当前实例是否满足安装MGR集群的条件，如果满足可以直接配置成为MGR集群的一个节点， 创建 MGR 集群用户: <code>mgr</code> 密码: <code>Test@123456</code></p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span><span class=lnt>26
+</span><span class=lnt>27
+</span><span class=lnt>28
+</span><span class=lnt>29
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl> MySQL  localhost  Py &gt; dba.configure_instance<span class=o>()</span>
+</span></span><span class=line><span class=cl>Configuring <span class=nb>local</span> MySQL instance listening at port <span class=m>3306</span> <span class=k>for</span> use in an InnoDB cluster...
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>This instance reports its own address as 10.10.1.24:3306
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>ERROR: User <span class=s1>&#39;root&#39;</span> can only connect from <span class=s1>&#39;localhost&#39;</span>. New account<span class=o>(</span>s<span class=o>)</span> with proper <span class=nb>source</span> address specification to allow remote connection from all instances must be created to manage the cluster.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>1<span class=o>)</span> Create remotely usable account <span class=k>for</span> <span class=s1>&#39;root&#39;</span> with same grants and password
+</span></span><span class=line><span class=cl>2<span class=o>)</span> Create a new admin account <span class=k>for</span> InnoDB cluster with minimal required grants
+</span></span><span class=line><span class=cl>3<span class=o>)</span> Ignore and <span class=k>continue</span>
+</span></span><span class=line><span class=cl>4<span class=o>)</span> Cancel
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Please <span class=k>select</span> an option <span class=o>[</span>1<span class=o>]</span>: <span class=m>2</span>   <span class=c1># 选择第二项，创建一个新管理账号用于 mgr 集群配置</span>
+</span></span><span class=line><span class=cl>Please provide an account name <span class=o>(</span>e.g: icroot@%<span class=o>)</span> to have it created with the necessary
+</span></span><span class=line><span class=cl>privileges or leave empty and press Enter to cancel.
+</span></span><span class=line><span class=cl>Account Name: mgr
+</span></span><span class=line><span class=cl>Password <span class=k>for</span> new account: **********
+</span></span><span class=line><span class=cl>Confirm password: **********
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>applierWorkerThreads will be <span class=nb>set</span> to the default value of 4.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>The instance <span class=s1>&#39;10.10.1.24:3306&#39;</span> is valid to be used in an InnoDB cluster.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Cluster admin user <span class=s1>&#39;mgr&#39;</span>@<span class=s1>&#39;%&#39;</span> created.
+</span></span><span class=line><span class=cl>The instance <span class=s1>&#39;10.10.1.24:3306&#39;</span> is already ready to be used in an InnoDB cluster.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>WARNING: <span class=s1>&#39;@@slave_parallel_workers&#39;</span> is deprecated and will be removed in a future release. Please use replica_parallel_workers instead. <span class=o>(</span>Code 1287<span class=o>)</span>.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Successfully enabled parallel appliers.
+</span></span></code></pre></td></tr></table></div></div><p>完成检查并创建完新用户后，退出当前的管理员账户，并用新创建的MGR专用账户登入，准备初始化创建一个新集群：</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span><span class=lnt>26
+</span><span class=lnt>27
+</span><span class=lnt>28
+</span><span class=lnt>29
+</span><span class=lnt>30
+</span><span class=lnt>31
+</span><span class=lnt>32
+</span><span class=lnt>33
+</span><span class=lnt>34
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>$ ./bin/mysqlsh -S /data/GreatSQL/mysql.sock mgr@localhost
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Please provide the password <span class=k>for</span> <span class=s1>&#39;mgr@/data%2FGreatSQL%2Fmysql.sock&#39;</span>: **********
+</span></span><span class=line><span class=cl>MySQL Shell 8.0.25
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Copyright <span class=o>(</span>c<span class=o>)</span> 2016, 2021, Oracle and/or its affiliates.
+</span></span><span class=line><span class=cl>Oracle is a registered trademark of Oracle Corporation and/or its affiliates.
+</span></span><span class=line><span class=cl>Other names may be trademarks of their respective owners.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Type <span class=s1>&#39;\help&#39;</span> or <span class=s1>&#39;\?&#39;</span> <span class=k>for</span> help<span class=p>;</span> <span class=s1>&#39;\quit&#39;</span> to exit.
+</span></span><span class=line><span class=cl>Creating a session to <span class=s1>&#39;mgr@/data%2FGreatSQL%2Fmysql.sock&#39;</span>
+</span></span><span class=line><span class=cl>Fetching schema names <span class=k>for</span> autocompletion... Press ^C to stop.
+</span></span><span class=line><span class=cl>Your MySQL connection id is <span class=m>16</span>
+</span></span><span class=line><span class=cl>Server version: 8.0.32-24 GreatSQL, Release 24, Revision 3714067bc8c
+</span></span><span class=line><span class=cl>No default schema selected<span class=p>;</span> <span class=nb>type</span> <span class=se>\u</span>se &lt;schema&gt; to <span class=nb>set</span> one.
+</span></span><span class=line><span class=cl>WARNING: Found errors loading plugins, <span class=k>for</span> more details look at the log at: /root/.mysqlsh/mysqlsh.log
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># 定义一个变量名c，方便下面引用</span>
+</span></span><span class=line><span class=cl> MySQL  localhost  Py &gt; <span class=nv>c</span> <span class=o>=</span> dba.create_cluster<span class=o>(</span><span class=s1>&#39;MGR1&#39;</span><span class=o>)</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>A new InnoDB cluster will be created on instance <span class=s1>&#39;/data%2FGreatSQL%2Fmysql.sock&#39;</span>.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Validating instance configuration at /data%2FGreatSQL%2Fmysql.sock...
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>This instance reports its own address as 10.10.1.24:3306
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Instance configuration is suitable.
+</span></span><span class=line><span class=cl>NOTE: Group Replication will communicate with other members using <span class=s1>&#39;10.10.1.24:33061&#39;</span>. Use the localAddress option to override.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Creating InnoDB cluster <span class=s1>&#39;MGR1&#39;</span> on <span class=s1>&#39;10.10.1.24:3306&#39;</span>...
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Adding Seed Instance...
+</span></span><span class=line><span class=cl>Cluster successfully created. Use Cluster.add_instance<span class=o>()</span> to add MySQL instances.
+</span></span><span class=line><span class=cl>At least <span class=m>3</span> instances are needed <span class=k>for</span> the cluster to be able to withstand up to
+</span></span><span class=line><span class=cl>one server failure.
+</span></span></code></pre></td></tr></table></div></div><p>接下来，用同样方法先用 root 账号分别登入到另外两个节点，完成节点的检查并创建最小权限级别用户（此过程略过。。。注意各节点上创建的用户名、密码都要一致）</p><p>用户创建完成后再回到第一个节点，执行 <code>add_instance()</code> 添加另外两个节点</p><blockquote><p>提示： 如需要添加仲裁节点，需在实例配置中设置 <code>group_replication_arbitrator = 1</code> 配置项</p></blockquote><p>添加 <code>mgr@10.10.2.4:3306</code> 实例</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span><span class=lnt>26
+</span><span class=lnt>27
+</span><span class=lnt>28
+</span><span class=lnt>29
+</span><span class=lnt>30
+</span><span class=lnt>31
+</span><span class=lnt>32
+</span><span class=lnt>33
+</span><span class=lnt>34
+</span><span class=lnt>35
+</span><span class=lnt>36
+</span><span class=lnt>37
+</span><span class=lnt>38
+</span><span class=lnt>39
+</span><span class=lnt>40
+</span><span class=lnt>41
+</span><span class=lnt>42
+</span><span class=lnt>43
+</span><span class=lnt>44
+</span><span class=lnt>45
+</span><span class=lnt>46
+</span><span class=lnt>47
+</span><span class=lnt>48
+</span><span class=lnt>49
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl> MySQL  localhost  Py &gt; c.add_instance<span class=o>(</span><span class=s1>&#39;mgr@10.10.2.4:3306&#39;</span><span class=o>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>WARNING: A GTID <span class=nb>set</span> check of the MySQL instance at <span class=s1>&#39;10.10.2.4:3306&#39;</span> determined that it contains transactions that <span class=k>do</span> not originate from the cluster, which must be discarded before it can join thecluster.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>10.10.2.4:3306 has the following errant GTIDs that <span class=k>do</span> not exist in the cluster:
+</span></span><span class=line><span class=cl>0e65280a-7d37-11ee-9e36-00163e0aafd0:1
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>WARNING: Discarding these extra GTID events can either be <span class=k>done</span> manually or by completely overwriting the state of 10.10.2.4:3306 with a physical snapshot from an existing cluster member. To use this method by default, <span class=nb>set</span> the <span class=s1>&#39;recoveryMethod&#39;</span> option to <span class=s1>&#39;clone&#39;</span>.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Having extra GTID events is not expected, and it is recommended to investigate this further and ensure that the data can be removed prior to choosing the clone recovery method.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Please <span class=k>select</span> a recovery method <span class=o>[</span>C<span class=o>]</span>lone/<span class=o>[</span>A<span class=o>]</span>bort <span class=o>(</span>default Abort<span class=o>)</span>: c
+</span></span><span class=line><span class=cl>Validating instance configuration at 10.10.2.4:3306...
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>This instance reports its own address as 10.10.2.4:3306
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Instance configuration is suitable.
+</span></span><span class=line><span class=cl>NOTE: Group Replication will communicate with other members using <span class=s1>&#39;10.10.2.4:33061&#39;</span>. Use the localAddress option to override.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>A new instance will be added to the InnoDB cluster. Depending on the amount of
+</span></span><span class=line><span class=cl>data on the cluster this might take from a few seconds to several hours.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Adding instance to the cluster...
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Monitoring recovery process of the new cluster member. Press ^C to stop monitoring and <span class=nb>let</span> it <span class=k>continue</span> in background.
+</span></span><span class=line><span class=cl>Clone based state recovery is now in progress.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>NOTE: A server restart is expected to happen as part of the clone process. If the
+</span></span><span class=line><span class=cl>server does not support the RESTART <span class=nb>command</span> or does not come back after a
+</span></span><span class=line><span class=cl><span class=k>while</span>, you may need to manually start it back.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>* Waiting <span class=k>for</span> clone to finish...
+</span></span><span class=line><span class=cl>NOTE: 10.10.2.4:3306 is being cloned from 10.10.1.24:3306
+</span></span><span class=line><span class=cl>** Stage DROP DATA: Completed
+</span></span><span class=line><span class=cl>** Clone Transfer
+</span></span><span class=line><span class=cl>    FILE COPY  <span class=c1>############################################################  100%  Completed</span>
+</span></span><span class=line><span class=cl>    PAGE COPY  <span class=c1>############################################################  100%  Completed</span>
+</span></span><span class=line><span class=cl>    REDO COPY  <span class=c1>############################################################  100%  Completed</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>NOTE: 10.10.2.4:3306 is shutting down...
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>* Waiting <span class=k>for</span> server restart... ready
+</span></span><span class=line><span class=cl>* 10.10.2.4:3306 has restarted, waiting <span class=k>for</span> clone to finish...
+</span></span><span class=line><span class=cl>** Stage RESTART: Completed
+</span></span><span class=line><span class=cl>* Clone process has finished: 73.36 MB transferred in about <span class=m>1</span> second <span class=o>(</span>~73.36 MB/s<span class=o>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>State recovery already finished <span class=k>for</span> <span class=s1>&#39;10.10.2.4:3306&#39;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>The instance <span class=s1>&#39;10.10.2.4:3306&#39;</span> was successfully added to the cluster.
+</span></span></code></pre></td></tr></table></div></div><p>添加 <code>mgr@10.10.2.3:3306</code> 实例</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span><span class=lnt>26
+</span><span class=lnt>27
+</span><span class=lnt>28
+</span><span class=lnt>29
+</span><span class=lnt>30
+</span><span class=lnt>31
+</span><span class=lnt>32
+</span><span class=lnt>33
+</span><span class=lnt>34
+</span><span class=lnt>35
+</span><span class=lnt>36
+</span><span class=lnt>37
+</span><span class=lnt>38
+</span><span class=lnt>39
+</span><span class=lnt>40
+</span><span class=lnt>41
+</span><span class=lnt>42
+</span><span class=lnt>43
+</span><span class=lnt>44
+</span><span class=lnt>45
+</span><span class=lnt>46
+</span><span class=lnt>47
+</span><span class=lnt>48
+</span><span class=lnt>49
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl> MySQL  localhost  Py &gt; c.add_instance<span class=o>(</span><span class=s1>&#39;mgr@10.10.2.3:3306&#39;</span><span class=o>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>WARNING: A GTID <span class=nb>set</span> check of the MySQL instance at <span class=s1>&#39;10.10.2.3:3306&#39;</span> determined that it contains transactions that <span class=k>do</span> not originate from the cluster, which must be discarded before it can join thecluster.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>10.10.2.3:3306 has the following errant GTIDs that <span class=k>do</span> not exist in the cluster:
+</span></span><span class=line><span class=cl>0fa623f1-7d37-11ee-80c4-00163e0656c4:1
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>WARNING: Discarding these extra GTID events can either be <span class=k>done</span> manually or by completely overwriting the state of 10.10.2.3:3306 with a physical snapshot from an existing cluster member. To use this method by default, <span class=nb>set</span> the <span class=s1>&#39;recoveryMethod&#39;</span> option to <span class=s1>&#39;clone&#39;</span>.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Having extra GTID events is not expected, and it is recommended to investigate this further and ensure that the data can be removed prior to choosing the clone recovery method.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Please <span class=k>select</span> a recovery method <span class=o>[</span>C<span class=o>]</span>lone/<span class=o>[</span>A<span class=o>]</span>bort <span class=o>(</span>default Abort<span class=o>)</span>: c
+</span></span><span class=line><span class=cl>Validating instance configuration at 10.10.2.3:3306...
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>This instance reports its own address as 10.10.2.3:3306
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Instance configuration is suitable.
+</span></span><span class=line><span class=cl>NOTE: Group Replication will communicate with other members using <span class=s1>&#39;10.10.2.3:33061&#39;</span>. Use the localAddress option to override.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>A new instance will be added to the InnoDB cluster. Depending on the amount of
+</span></span><span class=line><span class=cl>data on the cluster this might take from a few seconds to several hours.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Adding instance to the cluster...
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Monitoring recovery process of the new cluster member. Press ^C to stop monitoring and <span class=nb>let</span> it <span class=k>continue</span> in background.
+</span></span><span class=line><span class=cl>Clone based state recovery is now in progress.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>NOTE: A server restart is expected to happen as part of the clone process. If the
+</span></span><span class=line><span class=cl>server does not support the RESTART <span class=nb>command</span> or does not come back after a
+</span></span><span class=line><span class=cl><span class=k>while</span>, you may need to manually start it back.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>* Waiting <span class=k>for</span> clone to finish...
+</span></span><span class=line><span class=cl>NOTE: 10.10.2.3:3306 is being cloned from 10.10.1.24:3306
+</span></span><span class=line><span class=cl>** Stage DROP DATA: Completed
+</span></span><span class=line><span class=cl>** Clone Transfer
+</span></span><span class=line><span class=cl>    FILE COPY  <span class=c1>############################################################  100%  Completed</span>
+</span></span><span class=line><span class=cl>    PAGE COPY  <span class=c1>############################################################  100%  Completed</span>
+</span></span><span class=line><span class=cl>    REDO COPY  <span class=c1>############################################################  100%  Completed</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>NOTE: 10.10.2.3:3306 is shutting down...
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>* Waiting <span class=k>for</span> server restart... ready
+</span></span><span class=line><span class=cl>* 10.10.2.3:3306 has restarted, waiting <span class=k>for</span> clone to finish...
+</span></span><span class=line><span class=cl>** Stage RESTART: Completed
+</span></span><span class=line><span class=cl>* Clone process has finished: 73.36 MB transferred in about <span class=m>1</span> second <span class=o>(</span>~73.36 MB/s<span class=o>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>State recovery already finished <span class=k>for</span> <span class=s1>&#39;10.10.2.3:3306&#39;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>The instance <span class=s1>&#39;10.10.2.3:3306&#39;</span> was successfully added to the cluster.
+</span></span></code></pre></td></tr></table></div></div><p>使用 <code>select * from performance_schema.replication_group_members</code> 语句，查看 MGR 集群实例状态</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>$ mysql -p
+</span></span><span class=line><span class=cl>mysql: <span class=o>[</span>Warning<span class=o>]</span> Using a password on the <span class=nb>command</span> line interface can be insecure.
+</span></span><span class=line><span class=cl>Welcome to the MySQL monitor.  Commands end with <span class=p>;</span> or <span class=se>\g</span>.
+</span></span><span class=line><span class=cl>Your MySQL connection id is <span class=m>48</span>
+</span></span><span class=line><span class=cl>Server version: 8.0.32-24 GreatSQL, Release 24, Revision 3714067bc8c
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Copyright <span class=o>(</span>c<span class=o>)</span> 2021-2023 GreatDB Software Co., Ltd
+</span></span><span class=line><span class=cl>Copyright <span class=o>(</span>c<span class=o>)</span> 2009-2023 Percona LLC and/or its affiliates
+</span></span><span class=line><span class=cl>Copyright <span class=o>(</span>c<span class=o>)</span> 2000, 2023, Oracle and/or its affiliates.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Oracle is a registered trademark of Oracle Corporation and/or its
+</span></span><span class=line><span class=cl>affiliates. Other names may be trademarks of their respective
+</span></span><span class=line><span class=cl>owners.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Type <span class=s1>&#39;help;&#39;</span> or <span class=s1>&#39;\h&#39;</span> <span class=k>for</span> help. Type <span class=s1>&#39;\c&#39;</span> to clear the current input statement.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>mysql&gt; <span class=k>select</span> * from performance_schema.replication_group_members<span class=p>;</span>
+</span></span><span class=line><span class=cl>+---------------------------+--------------------------------------+-------------+-------------+--------------+-------------+----------------+----------------------------+
+</span></span><span class=line><span class=cl><span class=p>|</span> CHANNEL_NAME              <span class=p>|</span> MEMBER_ID                            <span class=p>|</span> MEMBER_HOST <span class=p>|</span> MEMBER_PORT <span class=p>|</span> MEMBER_STATE <span class=p>|</span> MEMBER_ROLE <span class=p>|</span> MEMBER_VERSION <span class=p>|</span> MEMBER_COMMUNICATION_STACK <span class=p>|</span>
+</span></span><span class=line><span class=cl>+---------------------------+--------------------------------------+-------------+-------------+--------------+-------------+----------------+----------------------------+
+</span></span><span class=line><span class=cl><span class=p>|</span> group_replication_applier <span class=p>|</span> 0cfacce0-7d37-11ee-a432-00163e02e944 <span class=p>|</span> 10.10.1.24  <span class=p>|</span>        <span class=m>3306</span> <span class=p>|</span> ONLINE       <span class=p>|</span> PRIMARY     <span class=p>|</span> 8.0.32         <span class=p>|</span> XCom                       <span class=p>|</span>
+</span></span><span class=line><span class=cl><span class=p>|</span> group_replication_applier <span class=p>|</span> 0e65280a-7d37-11ee-9e36-00163e0aafd0 <span class=p>|</span> 10.10.2.4   <span class=p>|</span>        <span class=m>3306</span> <span class=p>|</span> ONLINE       <span class=p>|</span> SECONDARY   <span class=p>|</span> 8.0.32         <span class=p>|</span> XCom                       <span class=p>|</span>
+</span></span><span class=line><span class=cl><span class=p>|</span> group_replication_applier <span class=p>|</span> 0fa623f1-7d37-11ee-80c4-00163e0656c4 <span class=p>|</span> 10.10.2.3   <span class=p>|</span>        <span class=m>3306</span> <span class=p>|</span> ONLINE       <span class=p>|</span> SECONDARY   <span class=p>|</span> 8.0.32         <span class=p>|</span> XCom                       <span class=p>|</span>
+</span></span><span class=line><span class=cl>+---------------------------+--------------------------------------+-------------+-------------+--------------+-------------+----------------+----------------------------+
+</span></span><span class=line><span class=cl><span class=m>3</span> rows in <span class=nb>set</span> <span class=o>(</span>0.00 sec<span class=o>)</span>
+</span></span></code></pre></td></tr></table></div></div><blockquote><p>提示: 可以使用 <code>MySQL Router</code> 实现读写分离、读负载均衡，以及故障自动转移， 参考： <a href=https://greatsql.cn/docs/8032/user-manual/8-mgr/5-mgr-readwrite-split.html target=_blank rel="noopener noreferrer">https://greatsql.cn/docs/8032/user-manual/8-mgr/5-mgr-readwrite-split.html</a></p></blockquote><h2 id=7-部署-mgr-集群配置项 class=headerLink><a href=#7-%e9%83%a8%e7%bd%b2-mgr-%e9%9b%86%e7%be%a4%e9%85%8d%e7%bd%ae%e9%a1%b9 class=header-mark></a>7. 部署 MGR 集群配置项</h2><h3 id=group_replication_start_on_boot class=headerLink><a href=#group_replication_start_on_boot class=header-mark></a>group_replication_start_on_boot</h3><p>初始配置 MGR 集群时 <code>group_replication_start_on_boot</code> 值，需要配置为 <code>OFF</code></p><h3 id=group_replication_bootstrap_group class=headerLink><a href=#group_replication_bootstrap_group class=header-mark></a>group_replication_bootstrap_group</h3><p>MGR 集群启动时需要一个引导节点，第一个节点先配置 <code>group_replication_bootstrap_group = ON</code>，第一个节点启动完毕后，记得重置选项 <code>group_replication_bootstrap_group=OFF</code>，避免在后续的操作中导致MGR集群分裂。</p><h3 id=group_replication_recovery_get_public_key class=headerLink><a href=#group_replication_recovery_get_public_key class=header-mark></a>group_replication_recovery_get_public_key</h3><p>错误信息如下：</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-fallback data-lang=fallback><span class=line><span class=cl>Authentication plugin &#39;caching_sha2_password&#39; reported error: Authentication requires secure connection. Error_code: MY-002061
+</span></span></code></pre></td></tr></table></div></div><p>这是由于 <code>mysql8.0</code> 之后加密规则变成 <code>caching_sha2_password</code>，所以使用 MGR 方式复制时，需要打开公钥访问</p><p>添加 <code>group_replication_recovery_get_public_key = ON</code> 配置项即可解决</p><p>在从节点上执行下面命令，为了重启后还有效需要写入配置中文件中 (<code>my.cnf</code>)</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>mysql&gt; STOP GROUP_REPLICATION<span class=p>;</span>
+</span></span><span class=line><span class=cl>mysql&gt; SET GLOBAL <span class=nv>group_replication_recovery_get_public_key</span><span class=o>=</span>ON<span class=p>;</span>
+</span></span><span class=line><span class=cl>mysql&gt; START GROUP_REPLICATION<span class=p>;</span>
+</span></span></code></pre></td></tr></table></div></div><p>除了以上的方法，也可以将 MGR 集群用户密码加密插件改为: <code>mysql_native_password</code></p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-sql data-lang=sql><span class=line><span class=cl><span class=k>set</span><span class=w> </span><span class=k>session</span><span class=w> </span><span class=n>sql_log_bin</span><span class=o>=</span><span class=mi>0</span><span class=p>;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=k>alter</span><span class=w> </span><span class=k>user</span><span class=w> </span><span class=n>repl</span><span class=o>@</span><span class=s1>&#39;%&#39;</span><span class=w> </span><span class=n>IDENTIFIED</span><span class=w> </span><span class=k>WITH</span><span class=w> </span><span class=n>mysql_native_password</span><span class=w> </span><span class=k>by</span><span class=w> </span><span class=s1>&#39;repl&#39;</span><span class=p>;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=k>set</span><span class=w> </span><span class=k>session</span><span class=w> </span><span class=n>sql_log_bin</span><span class=o>=</span><span class=mi>1</span><span class=p>;</span><span class=w>
+</span></span></span></code></pre></td></tr></table></div></div><p>对于新创建的用户,执行以下命令</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-sql data-lang=sql><span class=line><span class=cl><span class=k>create</span><span class=w> </span><span class=k>user</span><span class=w> </span><span class=n>repl</span><span class=o>@</span><span class=s1>&#39;%&#39;</span><span class=w> </span><span class=n>IDENTIFIED</span><span class=w> </span><span class=k>WITH</span><span class=w> </span><span class=n>mysql_native_password</span><span class=w> </span><span class=k>by</span><span class=w> </span><span class=s1>&#39;repl&#39;</span><span class=p>;</span><span class=w>
+</span></span></span></code></pre></td></tr></table></div></div><h3 id=group_replication_ip_whitelist class=headerLink><a href=#group_replication_ip_whitelist class=header-mark></a>group_replication_ip_whitelist</h3><p>组复制的 IP 白名单，如果 MGR 节点不在同一个子网段下需要显式指定 MGR 组内成员地址，例如:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=nv>group_replication_ip_whitelist</span> <span class=o>=</span> <span class=s2>&#34;10.10.1.24,10.10.2.4,10.10.2.3&#34;</span> <span class=c1># or 10.10.0.0/16</span>
+</span></span></code></pre></td></tr></table></div></div><h3 id=重启-mgr-集群 class=headerLink><a href=#%e9%87%8d%e5%90%af-mgr-%e9%9b%86%e7%be%a4 class=header-mark></a>重启 MGR 集群</h3><p>正常情况下，MGR 集群中的 <code>Primary</code> 节点退出时，剩下的节点会自动选出新的 <code>Primary</code> 节点。
+当最后一个节点也退出时，相当于整个MGR集群都关闭了。
+这时候任何一个节点启动MGR服务后，都不会自动成为 <code>Primary</code> 节点，需要在启动MGR服务前，先设置 <code>group_replication_bootstrap_group=ON</code>，使其成为引导节点，再启动 MGR 服务，它才会成为 <code>Primary</code> 节点，后续启动的其他节点也才能正常加入集群。
+可自行测试，这里不再做演示。</p><blockquote><p>P.S，第一个节点启动完毕后，记得重置选项 <code>group_replication_bootstrap_group=OFF</code>，避免在后续的操作中导致 MGR 集群分裂。</p></blockquote><p>如果是用 <code>MySQL Shell for GreatSQL</code> 重启 MGR 集群，调用 json: <code>rebootClusterFromCompleteOutage()</code> , python <code>reboot_cluster_from_complete_outage()</code> 函数即可，它会自动判断各节点的状态，选择其中一个作为 <code>Primary</code> 节点，然后拉起各节点上的 MGR 服务，完成MGR集群重启。</p><p>可以参考这篇文章：<a href=https://mp.weixin.qq.com/s/07o1poO44zwQIvaJNKEoPA target=_blank rel="noopener noreferrer">万答#12，MGR 整个集群挂掉后，如何才能自动选主，不用手动干预</a></p><p><strong>使用 <code>MySQL Shell for GreatSQL</code> 重启(启动) MGR 集群</strong></p><p>当 MGR 集群挂掉后，先启动 greatsql 实例，然后再使用 <code>MySQL Shell for GreatSQL</code> 恢复 MGR 集群</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span><span class=lnt>26
+</span><span class=lnt>27
+</span><span class=lnt>28
+</span><span class=lnt>29
+</span><span class=lnt>30
+</span><span class=lnt>31
+</span><span class=lnt>32
+</span><span class=lnt>33
+</span><span class=lnt>34
+</span><span class=lnt>35
+</span><span class=lnt>36
+</span><span class=lnt>37
+</span><span class=lnt>38
+</span><span class=lnt>39
+</span><span class=lnt>40
+</span><span class=lnt>41
+</span><span class=lnt>42
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=c1># 连接其中一个节点</span>
+</span></span><span class=line><span class=cl>/usr/local/mysqlsh/bin/mysqlsh --uri mgr@10.10.1.24
+</span></span><span class=line><span class=cl><span class=c1># 执行：dba.reboot_cluster_from_complete_outage() 恢复 MGR 集群</span>
+</span></span><span class=line><span class=cl>MySQL localhost  Py &gt; dba.reboot_cluster_from_complete_outage<span class=o>()</span>
+</span></span><span class=line><span class=cl>Restoring the default cluster from <span class=nb>complete</span> outage...
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>The instance <span class=s1>&#39;10.10.2.4:3306&#39;</span> was part of the cluster configuration.
+</span></span><span class=line><span class=cl>Would you like to rejoin it to the cluster? <span class=o>[</span>y/N<span class=o>]</span>: y
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>The instance <span class=s1>&#39;10.10.2.3:3306&#39;</span> was part of the cluster configuration.
+</span></span><span class=line><span class=cl>Would you like to rejoin it to the cluster? <span class=o>[</span>y/N<span class=o>]</span>: y
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Traceback <span class=o>(</span>most recent call last<span class=o>)</span>:
+</span></span><span class=line><span class=cl>  File <span class=s2>&#34;&lt;string&gt;&#34;</span>, line 1, in &lt;module&gt;
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># 错误信息提示我们当前节点上没有最新的数据，不能直接启动 MGR，错误信息中还提供了该去哪个节点启动的建议，所以我们改成在 10.10.2.3:3306 节点上执行拉起 MGR：</span>
+</span></span><span class=line><span class=cl>RuntimeError: Dba.reboot_cluster_from_complete_outage: The active session instance <span class=o>(</span>10.10.1.24:3306<span class=o>)</span> isn<span class=s1>&#39;t the most updated in comparison with the ONLINE instances of the Cluster&#39;</span>s metadata. Please use the most up to date instance: <span class=s1>&#39;10.10.2.3:3306&#39;</span>.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># 连接 10.10.2.3:3306 节点</span>
+</span></span><span class=line><span class=cl>/usr/local/mysqlsh/bin/mysqlsh --uri mgr@10.10.2.3
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>MySQL localhost  Py &gt; dba.reboot_cluster_from_complete_outage<span class=o>()</span>
+</span></span><span class=line><span class=cl>Restoring the default cluster from <span class=nb>complete</span> outage...
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>The instance <span class=s1>&#39;10.10.1.24:3306&#39;</span> was part of the cluster configuration.
+</span></span><span class=line><span class=cl>Would you like to rejoin it to the cluster? <span class=o>[</span>y/N<span class=o>]</span>: y
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>The instance <span class=s1>&#39;10.10.2.4:3306&#39;</span> was part of the cluster configuration.
+</span></span><span class=line><span class=cl>Would you like to rejoin it to the cluster? <span class=o>[</span>y/N<span class=o>]</span>: y
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>10.10.2.3:3306 was restored.
+</span></span><span class=line><span class=cl>Rejoining <span class=s1>&#39;10.10.1.24:3306&#39;</span> to the cluster.
+</span></span><span class=line><span class=cl>Rejoining instance <span class=s1>&#39;10.10.1.24:3306&#39;</span> to cluster <span class=s1>&#39;MGR1&#39;</span>...
+</span></span><span class=line><span class=cl>The instance <span class=s1>&#39;10.10.1.24:3306&#39;</span> was successfully rejoined to the cluster.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Rejoining <span class=s1>&#39;10.10.2.4:3306&#39;</span> to the cluster.
+</span></span><span class=line><span class=cl>Rejoining instance <span class=s1>&#39;10.10.2.4:3306&#39;</span> to cluster <span class=s1>&#39;MGR1&#39;</span>...
+</span></span><span class=line><span class=cl>The instance <span class=s1>&#39;10.10.2.4:3306&#39;</span> was successfully rejoined to the cluster.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>The cluster was successfully rebooted.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>&lt;Cluster:MGR1&gt;
+</span></span></code></pre></td></tr></table></div></div><p>可以看到，MGR 集群已经被正常启动了</p></div><div class=post-footer id=post-footer><div class=post-info><div class=post-info-line><div class=post-info-mod><span>更新于 2023-11-07</span></div><div class=post-info-license></div></div><div class=post-info-line><div class=post-info-md><span><a class=link-to-mardown href=/posts/mysql-mgr/index.md target=_blank rel="noopener noreferrer">阅读原始文档</a></span></div><div class=post-info-share><span><a href=# title="分享到 Twitter" data-sharer=twitter data-url=https://liwanggui.com/posts/mysql-mgr/ data-title="构建 MySQL 8.x MGR 集群" data-hashtags=mysql,greatsql><i class="fab fa-twitter fa-fw"></i></a><a href=# title="分享到 Facebook" data-sharer=facebook data-url=https://liwanggui.com/posts/mysql-mgr/ data-hashtag=mysql><i class="fab fa-facebook-square fa-fw"></i></a><a href=# title="分享到 WhatsApp" data-sharer=whatsapp data-url=https://liwanggui.com/posts/mysql-mgr/ data-title="构建 MySQL 8.x MGR 集群" data-web><i class="fab fa-whatsapp fa-fw"></i></a><a href=# title="分享到 Line" data-sharer=line data-url=https://liwanggui.com/posts/mysql-mgr/ data-title="构建 MySQL 8.x MGR 集群"><i data-svg-src=/lib/simple-icons/icons/line.min.svg></i></a><a href=# title="分享到 微博" data-sharer=weibo data-url=https://liwanggui.com/posts/mysql-mgr/ data-title="构建 MySQL 8.x MGR 集群"><i class="fab fa-weibo fa-fw"></i></a><a href=# title="分享到 Myspace" data-sharer=myspace data-url=https://liwanggui.com/posts/mysql-mgr/ data-title="构建 MySQL 8.x MGR 集群" data-description><i data-svg-src=/lib/simple-icons/icons/myspace.min.svg></i></a><a href=# title="分享到 Blogger" data-sharer=blogger data-url=https://liwanggui.com/posts/mysql-mgr/ data-title="构建 MySQL 8.x MGR 集群" data-description><i class="fab fa-blogger fa-fw"></i></a><a href=# title="分享到 百度" data-sharer=baidu data-url=https://liwanggui.com/posts/mysql-mgr/ data-title="构建 MySQL 8.x MGR 集群"><i data-svg-src=/lib/simple-icons/icons/baidu.min.svg></i></a><a href=# title="分享到 Evernote" data-sharer=evernote data-url=https://liwanggui.com/posts/mysql-mgr/ data-title="构建 MySQL 8.x MGR 集群"><i class="fab fa-evernote fa-fw"></i></a></span></div></div></div><div class=post-info-more><section class=post-tags><i class="fas fa-tags fa-fw"></i>&nbsp;<a href=/tags/mysql/>mysql</a>,&nbsp;<a href=/tags/greatsql/>greatsql</a></section><section><span><a href=javascript:void(0); onclick=window.history.back()>返回</a></span>&nbsp;|&nbsp;<span><a href=/>主页</a></span></section></div><div class=post-nav><a href=/posts/coredns/ class=prev rel=prev title="部署 CoreDNS 为内部 DNS 服务器"><i class="fas fa-angle-left fa-fw"></i>部署 CoreDNS 为内部 DNS 服务器</a>
+<a href=/posts/ossfs/ class=next rel=next title="使用 ossfs 挂载阿里云 OSS 至本地文件系统">使用 ossfs 挂载阿里云 OSS 至本地文件系统<i class="fas fa-angle-right fa-fw"></i></a></div></div><div id=comments><div id=giscus></div><noscript>Please enable JavaScript to view the comments powered by <a href=https://giscus.app/>giscus</a>.</noscript></div></article></div></main><footer class=footer><div class=footer-container><div class=footer-line>由 <a href=https://gohugo.io/ target=_blank rel="noopener noreferrer" title="Hugo 0.101.0">Hugo</a> 强力驱动&nbsp;|&nbsp;主题 - <a href=https://github.com/HEIGE-PCloud/DoIt target=_blank rel="noopener noreferrer" title="DoIt 0.3.0"><i class="far fa-edit fa-fw"></i> DoIt</a></div><div class=footer-line><i class="far fa-copyright fa-fw"></i><span itemprop=copyrightYear>2017 - 2024</span><span class=author itemprop=copyrightHolder>&nbsp;<a href=/about/ target=_blank rel="noopener noreferrer">李王贵</a></span><span class=icp-splitter>&nbsp;|&nbsp;</span><br class=icp-br><span class=icp><a href=https://beian.miit.gov.cn target=_blank>赣ICP备2023001395号</a></span></div><div class=footer-line></div><div class=footer-line></div></div></footer></div><div id=fixed-buttons><a href=#back-to-top id=back-to-top-button class=fixed-button title=回到顶部><i class="fas fa-arrow-up fa-fw"></i>
+</a><a href=# id=view-comments class=fixed-button title=查看评论><i class="fas fa-comment fa-fw"></i></a></div><div id=cookieconsent-container></div><div class=assets><link rel=stylesheet href=/lib/lightgallery/lightgallery.min.css><link rel=stylesheet href=/lib/katex/katex.min.css><link rel=preload as=style onload='this.onload=null,this.rel="stylesheet"' href=/lib/katex/copy-tex.min.css><noscript><link rel=stylesheet href=/lib/katex/copy-tex.min.css></noscript><link rel=stylesheet href=/lib/cookieconsent/cookieconsent.min.css><script type=text/javascript>window.config={code:{copyTitle:"复制到剪贴板",maxShownLines:10},comment:{giscus:{darkTheme:"dark",dataCategory:"Announcements",dataCategoryId:"DIC_kwDOE7mEQ84CY9pq",dataEmitMetadata:"1",dataInputPosition:"top",dataLang:"zh-CN",dataMapping:"pathname",dataReactionsEnabled:"1",dataRepo:"liwanggui/liwanggui.github.io",dataRepoId:"MDEwOlJlcG9zaXRvcnkzMzA5MjUxMjM=",dataStrict:"0",lightTheme:"light"}},cookieconsent:{content:{dismiss:"同意",link:"了解更多",message:"本网站使用 Cookies 来改善您的浏览体验."},enable:!0,palette:{button:{background:"#f0f0f0"},popup:{background:"#1aa3ff"}},theme:"edgeless"},lightGallery:{actualSize:!1,exThumbImage:"data-thumbnail",hideBarsDelay:2e3,selector:".lightgallery",speed:400,thumbContHeight:80,thumbWidth:80,thumbnail:!0},math:{delimiters:[{display:!0,left:"$$",right:"$$"},{display:!0,left:"\\[",right:"\\]"},{display:!1,left:"$",right:"$"},{display:!1,left:"\\(",right:"\\)"}],strict:!1},search:{distance:100,findAllMatches:!1,fuseIndexURL:"/index.json",highlightTag:"em",ignoreFieldNorm:!1,ignoreLocation:!1,isCaseSensitive:!1,location:0,maxResultLength:10,minMatchCharLength:2,noResultsFound:"没有找到结果",snippetLength:50,threshold:.3,type:"fuse",useExtendedSearch:!1},sharerjs:!0,twemoji:!0}</script><script type=text/javascript src=/js/giscus.min.js defer></script><script type=text/javascript src=/lib/twemoji/twemoji.min.js defer></script><script type=text/javascript src=/js/twemoji.min.js defer></script><script type=text/javascript src=/lib/lightgallery/lightgallery.min.js></script><script type=text/javascript src=/lib/lightgallery/lg-thumbnail.min.js></script><script type=text/javascript src=/lib/lightgallery/lg-zoom.min.js></script><script type=text/javascript src=/lib/clipboard/clipboard.min.js></script><script type=text/javascript src=/lib/sharer/sharer.min.js></script><script type=text/javascript src=/lib/katex/katex.min.js defer></script><script type=text/javascript src=/lib/katex/auto-render.min.js defer></script><script type=text/javascript src=/lib/katex/copy-tex.min.js defer></script><script type=text/javascript src=/lib/katex/mhchem.min.js defer></script><script type=text/javascript src=/js/katex.min.js defer></script><script type=text/javascript src=/lib/cookieconsent/cookieconsent.min.js defer></script><script type=text/javascript src=/js/cookieconsent.min.js defer></script><script type=text/javascript src=/js/theme.min.js defer></script></div></body></html>

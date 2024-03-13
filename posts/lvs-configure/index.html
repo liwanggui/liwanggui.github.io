@@ -1,0 +1,265 @@
+<!doctype html><html lang=zh-cn><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><meta name=robots content="noodp"><title>配置 LVS DR 负载均衡 - _浅行</title><meta name=Description content="_浅行"><meta property="og:title" content="配置 LVS DR 负载均衡"><meta property="og:description" content="环境准备 Director Server: 192.168.31.33/24 Real Server 1: 192.168.31.31/24 Real Server 2: 192.168.31.32/24 VIP: 192.168.31.30/32 安装配置 ipvs 安装 ipvs 管理软件在 Director Server 上安装 ipvsadm 1 root@lb-01:~# apt install ipvsadm 配置 ipvs配置 vip 1 2 3 4 5 6 7 8 9 10 root@lb-01:~# ip addr add 192.168.31.30/32 brd 192.168.31.30 dev ens32 root@lb-01:~#"><meta property="og:type" content="article"><meta property="og:url" content="https://liwanggui.com/posts/lvs-configure/"><meta property="og:image" content="https://liwanggui.com/logo.png"><meta property="article:section" content="posts"><meta property="article:published_time" content="2021-02-20T21:52:14+08:00"><meta property="article:modified_time" content="2021-02-20T21:52:14+08:00"><meta name=twitter:card content="summary_large_image"><meta name=twitter:image content="https://liwanggui.com/logo.png"><meta name=twitter:title content="配置 LVS DR 负载均衡"><meta name=twitter:description content="环境准备 Director Server: 192.168.31.33/24 Real Server 1: 192.168.31.31/24 Real Server 2: 192.168.31.32/24 VIP: 192.168.31.30/32 安装配置 ipvs 安装 ipvs 管理软件在 Director Server 上安装 ipvsadm 1 root@lb-01:~# apt install ipvsadm 配置 ipvs配置 vip 1 2 3 4 5 6 7 8 9 10 root@lb-01:~# ip addr add 192.168.31.30/32 brd 192.168.31.30 dev ens32 root@lb-01:~#"><meta name=application-name content="LoveIt"><meta name=apple-mobile-web-app-title content="LoveIt"><meta name=theme-color content="#f8f8f8"><meta name=msapplication-TileColor content="#da532c"><link rel=canonical href=https://liwanggui.com/posts/lvs-configure/><link rel=prev href=https://liwanggui.com/posts/lvs-introduction/><link rel=next href=https://liwanggui.com/posts/keepalived/><link rel=stylesheet href=/lib/normalize/normalize.min.css><link rel=stylesheet href=/css/color.css><link rel=stylesheet href=/css/style.min.css><link rel=preload as=style onload='this.onload=null,this.rel="stylesheet"' href=/lib/fontawesome-free/all.min.css><noscript><link rel=stylesheet href=/lib/fontawesome-free/all.min.css></noscript><link rel=preload as=style onload='this.onload=null,this.rel="stylesheet"' href=/lib/animate/animate.min.css><noscript><link rel=stylesheet href=/lib/animate/animate.min.css></noscript><script type=application/ld+json>{"@context":"http://schema.org","@type":"BlogPosting","headline":"配置 LVS DR 负载均衡","inLanguage":"zh-CN","mainEntityOfPage":{"@type":"WebPage","@id":"https:\/\/liwanggui.com\/posts\/lvs-configure\/"},"genre":"posts","keywords":"lvs, ipvsadm","wordcount":1001,"url":"https:\/\/liwanggui.com\/posts\/lvs-configure\/","datePublished":"2021-02-20T21:52:14+08:00","dateModified":"2021-02-20T21:52:14+08:00","publisher":{"@type":"Organization","name":""},"author":{"@type":"Person","name":"李王贵"},"description":""}</script><script src=//instant.page/5.1.1 defer type=module integrity=sha384-MWfCL6g1OTGsbSwfuMHc8+8J2u71/LA8dzlIN3ycajckxuZZmF+DNjdm7O6H3PSq></script></head><body header-desktop=fixed header-mobile=auto><script type=text/javascript>function setTheme(e){document.body.setAttribute("theme",e),document.documentElement.style.setProperty("color-scheme",e==="light"?"light":"dark")}function saveTheme(e){window.localStorage&&localStorage.setItem("theme",e)}function getMeta(e){const t=document.getElementsByTagName("meta");for(let n=0;n<t.length;n++)if(t[n].getAttribute("name")===e)return t[n];return""}if(window.localStorage&&localStorage.getItem("theme")){let e=localStorage.getItem("theme");e==="light"||e==="dark"||e==="black"?setTheme(e):setTheme(window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light")}else"auto"==="light"||"auto"==="dark"||"auto"==="black"?(setTheme("auto"),saveTheme("auto")):(saveTheme("auto"),setTheme(window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"));let metaColors={light:"#f8f8f8",dark:"#252627",black:"#000000"};getMeta("theme-color").content=metaColors[document.body.getAttribute("theme")]</script><div id=back-to-top></div><div id=mask></div><div class=wrapper><header class=desktop id=header-desktop><div class=header-wrapper><div class=header-title><a href=/ title=_浅行><span class=header-title-pre><i class='far fa-kiss-wink-heart fa-fw'></i></span>_浅行</a></div><div class=menu><div class=menu-inner><a class=menu-item href=/posts/ title=文章列表>文章 </a><a class=menu-item href=/tags/ title=标签云>标签 </a><a class=menu-item href=/categories/ title=分类>分类 </a><a class=menu-item href=https://cook.liwanggui.com/ title=程序员做饭指南 rel="noopener noreferrer" target=_blank>烹饪 </a><a class=menu-item href=/about/index.html title=关于>关于 </a><span class="menu-item delimiter"></span><span class="menu-item search" id=search-desktop>
+<input type=text placeholder=搜索文章标题或内容... id=search-input-desktop>
+<a href=# class="search-button search-toggle" id=search-toggle-desktop title=搜索><i class="fas fa-search fa-fw"></i></a>
+<a href=# class="search-button search-clear" id=search-clear-desktop title=清空><i class="fas fa-times-circle fa-fw"></i></a>
+<span class="search-button search-loading" id=search-loading-desktop><i class="fas fa-spinner fa-fw fa-spin"></i></span>
+</span><a href=# class="menu-item theme-switch" title=切换主题><i class="fas fa-adjust fa-fw"></i></a></div></div></div></header><header class=mobile id=header-mobile><div class=header-container><div class=header-wrapper><div class=header-title><a href=/ title=_浅行><span class=header-title-pre><i class='far fa-kiss-wink-heart fa-fw'></i></span>_浅行</a></div><div class=menu-toggle id=menu-toggle-mobile><span></span><span></span><span></span></div></div><div class=menu id=menu-mobile><div class=search-wrapper><div class="search mobile" id=search-mobile><input type=text placeholder=搜索文章标题或内容... id=search-input-mobile>
+<a href=# class="search-button search-toggle" id=search-toggle-mobile title=搜索><i class="fas fa-search fa-fw"></i></a>
+<a href=# class="search-button search-clear" id=search-clear-mobile title=清空><i class="fas fa-times-circle fa-fw"></i></a>
+<span class="search-button search-loading" id=search-loading-mobile><i class="fas fa-spinner fa-fw fa-spin"></i></span></div><a href=# class=search-cancel id=search-cancel-mobile>取消</a></div><a class=menu-item href=/posts/ title=文章列表>文章</a><a class=menu-item href=/tags/ title=标签云>标签</a><a class=menu-item href=/categories/ title=分类>分类</a><a class=menu-item href=https://cook.liwanggui.com/ title=程序员做饭指南 rel="noopener noreferrer" target=_blank>烹饪</a><a class=menu-item href=/about/index.html title=关于>关于</a><a href=# class="menu-item theme-switch" title=切换主题>
+<i class="fas fa-adjust fa-fw"></i></a></div></div></header><div class="search-dropdown desktop"><div id=search-dropdown-desktop></div></div><div class="search-dropdown mobile"><div id=search-dropdown-mobile></div></div><main class=main><div class=container><div class=toc id=toc-auto><h2 class=toc-title>目录</h2><div class=toc-content id=toc-content-auto><nav id=TableOfContents><ul><li><a href=#环境准备>环境准备</a></li><li><a href=#安装配置-ipvs>安装配置 ipvs</a><ul><li><a href=#安装-ipvs-管理软件>安装 ipvs 管理软件</a></li><li><a href=#配置-ipvs>配置 ipvs</a></li></ul></li><li><a href=#realserver-服务器配置>RealServer 服务器配置</a><ul><li><a href=#向回环接口lo添加-vip>向回环接口（lo）添加 vip</a></li><li><a href=#抑制-arp-广播>抑制 arp 广播</a></li></ul></li><li><a href=#在客户机测试-lvs-负载群集>在客户机测试 LVS 负载群集</a></li><li><a href=#服务脚本>服务脚本</a><ul><li><a href=#lvs-配置管理>lvs 配置管理</a></li><li><a href=#lvs-服务器配置脚本>lvs 服务器配置脚本</a></li><li><a href=#realserver-服务器配置脚本>RealServer 服务器配置脚本</a></li></ul></li></ul></nav></div></div><script>document.getElementsByTagName("main")[0].setAttribute("pageStyle","normal")</script><script>document.getElementsByTagName("main")[0].setAttribute("autoTOC","true")</script><article class="page single"><h1 class="single-title animate__animated animate__flipInX">配置 LVS DR 负载均衡</h1><div class=post-meta><div class=post-meta-line><span class=post-author><i class="author fas fa-user-circle fa-fw"></i><a href=/about/ title=Author rel=author class=author>李王贵</a>
+</span>&nbsp;<span class=post-category>收录于 </span>&nbsp;<span class=post-category>类别 <a href=/categories/devops/><i class="far fa-folder fa-fw"></i>devops</a>&nbsp;<a href=/categories/lvs/><i class="far fa-folder fa-fw"></i>lvs</a></span></div><div class=post-meta-line><i class="far fa-calendar-alt fa-fw"></i>&nbsp;<time datetime=2021-02-20>2021-02-20</time>&nbsp;<i class="far fa-edit fa-fw"></i>&nbsp;<time datetime=2021-02-20>2021-02-20</time>&nbsp;<i class="fas fa-pencil-alt fa-fw"></i>&nbsp;约 1001 字&nbsp;
+<i class="far fa-clock fa-fw"></i>&nbsp;预计阅读 2 分钟&nbsp;</div></div><div class="details toc" id=toc-static kept><div class="details-summary toc-title"><span>目录</span>
+<span><i class="details-icon fas fa-angle-right"></i></span></div><div class="details-content toc-content" id=toc-content-static><nav id=TableOfContents><ul><li><a href=#环境准备>环境准备</a></li><li><a href=#安装配置-ipvs>安装配置 ipvs</a><ul><li><a href=#安装-ipvs-管理软件>安装 ipvs 管理软件</a></li><li><a href=#配置-ipvs>配置 ipvs</a></li></ul></li><li><a href=#realserver-服务器配置>RealServer 服务器配置</a><ul><li><a href=#向回环接口lo添加-vip>向回环接口（lo）添加 vip</a></li><li><a href=#抑制-arp-广播>抑制 arp 广播</a></li></ul></li><li><a href=#在客户机测试-lvs-负载群集>在客户机测试 LVS 负载群集</a></li><li><a href=#服务脚本>服务脚本</a><ul><li><a href=#lvs-配置管理>lvs 配置管理</a></li><li><a href=#lvs-服务器配置脚本>lvs 服务器配置脚本</a></li><li><a href=#realserver-服务器配置脚本>RealServer 服务器配置脚本</a></li></ul></li></ul></nav></div></div><div class=content id=content><h2 id=环境准备 class=headerLink><a href=#%e7%8e%af%e5%a2%83%e5%87%86%e5%a4%87 class=header-mark></a>环境准备</h2><ol><li>Director Server: 192.168.31.33/24</li><li>Real Server 1: 192.168.31.31/24</li><li>Real Server 2: 192.168.31.32/24</li><li>VIP: 192.168.31.30/32</li></ol><h2 id=安装配置-ipvs class=headerLink><a href=#%e5%ae%89%e8%a3%85%e9%85%8d%e7%bd%ae-ipvs class=header-mark></a>安装配置 ipvs</h2><h3 id=安装-ipvs-管理软件 class=headerLink><a href=#%e5%ae%89%e8%a3%85-ipvs-%e7%ae%a1%e7%90%86%e8%bd%af%e4%bb%b6 class=header-mark></a>安装 ipvs 管理软件</h3><p>在 <code>Director Server</code> 上安装 <code>ipvsadm</code></p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>root@lb-01:~# apt install ipvsadm
+</span></span></code></pre></td></tr></table></div></div><h3 id=配置-ipvs class=headerLink><a href=#%e9%85%8d%e7%bd%ae-ipvs class=header-mark></a>配置 ipvs</h3><p><strong>配置 vip</strong></p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>root@lb-01:~# ip addr add 192.168.31.30/32 brd 192.168.31.30 dev ens32
+</span></span><span class=line><span class=cl>root@lb-01:~# ip addr show ens32
+</span></span><span class=line><span class=cl>2: ens32: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu <span class=m>1500</span> qdisc fq_codel state UP group default qlen <span class=m>1000</span>
+</span></span><span class=line><span class=cl>    link/ether 00:0c:29:af:9c:1f brd ff:ff:ff:ff:ff:ff
+</span></span><span class=line><span class=cl>    inet 192.168.31.33/24 brd 192.168.31.255 scope global ens32
+</span></span><span class=line><span class=cl>       valid_lft forever preferred_lft forever
+</span></span><span class=line><span class=cl>    inet 192.168.31.30/32 brd 192.168.31.30 scope global ens32
+</span></span><span class=line><span class=cl>       valid_lft forever preferred_lft forever
+</span></span><span class=line><span class=cl>    inet6 fe80::20c:29ff:feaf:9c1f/64 scope link
+</span></span><span class=line><span class=cl>       valid_lft forever preferred_lft forever
+</span></span></code></pre></td></tr></table></div></div><p><strong>配置 ipvs 规则</strong></p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=c1># 清空 ipvsadm 配置表</span>
+</span></span><span class=line><span class=cl>root@lb-01:~# ipvsadm -C
+</span></span><span class=line><span class=cl><span class=c1># 设置连接超时值</span>
+</span></span><span class=line><span class=cl>root@lb-01:~# ipvsadm --set <span class=m>30</span> <span class=m>5</span> <span class=m>60</span>
+</span></span><span class=line><span class=cl><span class=c1># 添加虚拟服务器</span>
+</span></span><span class=line><span class=cl>root@lb-01:~# ipvsadm -A -t 192.168.31.30:80 -s rr -p <span class=m>20</span>
+</span></span><span class=line><span class=cl><span class=c1># 向虚拟服务器添加 RealServer</span>
+</span></span><span class=line><span class=cl>root@lb-01:~# ipvsadm -a -t 192.168.31.30:80 -r 192.168.31.31:80 -g -w <span class=m>1</span>
+</span></span><span class=line><span class=cl>root@lb-01:~# ipvsadm -a -t 192.168.31.30:80 -r 192.168.31.32:80 -g -w <span class=m>1</span>
+</span></span><span class=line><span class=cl><span class=c1># 查看 lvs 状态</span>
+</span></span><span class=line><span class=cl>root@lb-01:~# ipvsadm -L -n --stats
+</span></span><span class=line><span class=cl>IP Virtual Server version 1.2.1 <span class=o>(</span><span class=nv>size</span><span class=o>=</span>4096<span class=o>)</span>
+</span></span><span class=line><span class=cl>Prot LocalAddress:Port               Conns   InPkts  OutPkts  InBytes OutBytes
+</span></span><span class=line><span class=cl>  -&gt; RemoteAddress:Port
+</span></span><span class=line><span class=cl>TCP  192.168.31.30:80                    <span class=m>0</span>        <span class=m>0</span>        <span class=m>0</span>        <span class=m>0</span>        <span class=m>0</span>
+</span></span><span class=line><span class=cl>  -&gt; 192.168.31.31:80                    <span class=m>0</span>        <span class=m>0</span>        <span class=m>0</span>        <span class=m>0</span>        <span class=m>0</span>
+</span></span><span class=line><span class=cl>  -&gt; 192.168.31.32:80                    <span class=m>0</span>        <span class=m>0</span>        <span class=m>0</span>        <span class=m>0</span>        <span class=m>0</span>
+</span></span></code></pre></td></tr></table></div></div><p><strong>参数说明</strong></p><ul><li><code>-C:</code> 清空 ipvs 所有规则</li><li><code>-A:</code> 添加虚拟服务器</li><li><code>-t:</code> 使用 tcp 协议, 后接虚拟服务器的 ip 地址和端口</li><li><code>-s:</code> 使用的调度算法</li><li><code>-p</code>: 定义持久时间，能够实现将来自同一个地址的请求始终发往同一个 RealServer</li><li><code>-a:</code> 添加 RealServer</li><li><code>-r:</code> 指定 RealServer 地址和端口</li><li><code>-g:</code> 使用的 DR 实现方式</li><li><code>-w:</code> RealServer 服务器的权重</li></ul><h2 id=realserver-服务器配置 class=headerLink><a href=#realserver-%e6%9c%8d%e5%8a%a1%e5%99%a8%e9%85%8d%e7%bd%ae class=header-mark></a>RealServer 服务器配置</h2><h3 id=向回环接口lo添加-vip class=headerLink><a href=#%e5%90%91%e5%9b%9e%e7%8e%af%e6%8e%a5%e5%8f%a3lo%e6%b7%bb%e5%8a%a0-vip class=header-mark></a>向回环接口（lo）添加 vip</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>root@web-01:~# ip addr add 192.168.31.30/32 brd 192.168.31.30 dev lo
+</span></span></code></pre></td></tr></table></div></div><h3 id=抑制-arp-广播 class=headerLink><a href=#%e6%8a%91%e5%88%b6-arp-%e5%b9%bf%e6%92%ad class=header-mark></a>抑制 arp 广播</h3><p>禁止发送 arp 广播，由于 vip 在多台机器上配置了，如果不抑制广播会造成 ip 地址冲突。</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>root@web-01:~# <span class=nb>echo</span> <span class=m>1</span> &gt; /proc/sys/net/ipv4/conf/all/arp_ignore
+</span></span><span class=line><span class=cl>root@web-01:~# <span class=nb>echo</span> <span class=m>1</span> &gt; /proc/sys/net/ipv4/conf/lo/arp_ignore
+</span></span><span class=line><span class=cl>root@web-01:~# <span class=nb>echo</span> <span class=m>2</span> &gt; /proc/sys/net/ipv4/conf/all/arp_announce
+</span></span><span class=line><span class=cl>root@web-01:~# <span class=nb>echo</span> <span class=m>2</span> &gt; /proc/sys/net/ipv4/conf/lo/arp_announce
+</span></span></code></pre></td></tr></table></div></div><h2 id=在客户机测试-lvs-负载群集 class=headerLink><a href=#%e5%9c%a8%e5%ae%a2%e6%88%b7%e6%9c%ba%e6%b5%8b%e8%af%95-lvs-%e8%b4%9f%e8%bd%bd%e7%be%a4%e9%9b%86 class=header-mark></a>在客户机测试 LVS 负载群集</h2><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>curl 192.168.31.30
+</span></span></code></pre></td></tr></table></div></div><blockquote><p>注意: 至此 lvs 负载均衡集群配置完成，由于 lvs 服务器本身不支持高可用，存在单点故障， 可以配合 <code>keepalived</code> 一起使用</p></blockquote><h2 id=服务脚本 class=headerLink><a href=#%e6%9c%8d%e5%8a%a1%e8%84%9a%e6%9c%ac class=header-mark></a>服务脚本</h2><p>lvs 的配置是终端上配置的，机器重启后会丢失，那么该如何管理配置呢？ 有两种方法:</p><ol><li>ipvsadm 包自带配置信息管理工具，<code>ipvsadm-save</code>, <code>ipvsadm-restore</code></li><li>开发脚本管理</li></ol><ul><li>ipvsadm-save: 用于导出 lvs 配置</li><li>ipvsadm-restore: 用于从文件中恢复 lvs 配置</li></ul><blockquote><p>也可以使用 ipvsadm 包中的脚本管理 <code>/etc/init.d/ipvsadm</code></p></blockquote><h3 id=lvs-配置管理 class=headerLink><a href=#lvs-%e9%85%8d%e7%bd%ae%e7%ae%a1%e7%90%86 class=header-mark></a>lvs 配置管理</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span><span class=lnt>7
+</span><span class=lnt>8
+</span><span class=lnt>9
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>root@lb-01:~# ipvsadm-save &gt; /etc/ipvsadm.rules   <span class=c1># 等价于 /etc/init.d/ipvsadm save</span>
+</span></span><span class=line><span class=cl>root@lb-01:~# ipvsadm-restore &lt; /etc/ipvsadm.rules  <span class=c1># 等价于 /etc/init.d/ipvsadm load</span>
+</span></span><span class=line><span class=cl>root@lb-01:~# ipvsadm -Ln
+</span></span><span class=line><span class=cl>IP Virtual Server version 1.2.1 <span class=o>(</span><span class=nv>size</span><span class=o>=</span>4096<span class=o>)</span>
+</span></span><span class=line><span class=cl>Prot LocalAddress:Port Scheduler Flags
+</span></span><span class=line><span class=cl>  -&gt; RemoteAddress:Port           Forward Weight ActiveConn InActConn
+</span></span><span class=line><span class=cl>TCP  192.168.31.30:80 rr persistent <span class=m>20</span>
+</span></span><span class=line><span class=cl>  -&gt; 192.168.31.31:80             Route   <span class=m>1</span>      <span class=m>0</span>          <span class=m>0</span>
+</span></span><span class=line><span class=cl>  -&gt; 192.168.31.32:80             Route   <span class=m>1</span>      <span class=m>0</span>          <span class=m>0</span>
+</span></span></code></pre></td></tr></table></div></div><h3 id=lvs-服务器配置脚本 class=headerLink><a href=#lvs-%e6%9c%8d%e5%8a%a1%e5%99%a8%e9%85%8d%e7%bd%ae%e8%84%9a%e6%9c%ac class=header-mark></a>lvs 服务器配置脚本</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span><span class=lnt>26
+</span><span class=lnt>27
+</span><span class=lnt>28
+</span><span class=lnt>29
+</span><span class=lnt>30
+</span><span class=lnt>31
+</span><span class=lnt>32
+</span><span class=lnt>33
+</span><span class=lnt>34
+</span><span class=lnt>35
+</span><span class=lnt>36
+</span><span class=lnt>37
+</span><span class=lnt>38
+</span><span class=lnt>39
+</span><span class=lnt>40
+</span><span class=lnt>41
+</span><span class=lnt>42
+</span><span class=lnt>43
+</span><span class=lnt>44
+</span><span class=lnt>45
+</span><span class=lnt>46
+</span><span class=lnt>47
+</span><span class=lnt>48
+</span><span class=lnt>49
+</span><span class=lnt>50
+</span><span class=lnt>51
+</span><span class=lnt>52
+</span><span class=lnt>53
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=cp>#!/bin/bash
+</span></span></span><span class=line><span class=cl><span class=cp></span>
+</span></span><span class=line><span class=cl><span class=nv>INTERFACE</span><span class=o>=</span>ens32
+</span></span><span class=line><span class=cl><span class=nv>PORT</span><span class=o>=</span><span class=m>80</span>
+</span></span><span class=line><span class=cl><span class=nv>VIP</span><span class=o>=</span>192.168.31.30
+</span></span><span class=line><span class=cl><span class=nv>RIP</span><span class=o>=(</span>
+</span></span><span class=line><span class=cl>192.168.31.31
+</span></span><span class=line><span class=cl>192.168.31.32
+</span></span><span class=line><span class=cl><span class=o>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=nv>IPVSADM</span><span class=o>=</span>/usr/sbin/ipvsadm
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>start<span class=o>()</span> <span class=o>{</span>
+</span></span><span class=line><span class=cl>    ip addr add <span class=si>${</span><span class=nv>VIP</span><span class=si>}</span>/32 brd <span class=si>${</span><span class=nv>VIP</span><span class=si>}</span> dev <span class=nv>$INTERFACE</span>
+</span></span><span class=line><span class=cl>    <span class=nv>$IPVSADM</span> -C
+</span></span><span class=line><span class=cl>    <span class=nv>$IPVSADM</span> --set <span class=m>30</span> <span class=m>5</span> <span class=m>60</span>
+</span></span><span class=line><span class=cl>    <span class=nv>$IPVSADM</span> -A -t <span class=si>${</span><span class=nv>VIP</span><span class=si>}</span>:<span class=si>${</span><span class=nv>PORT</span><span class=si>}</span> -s rr -p <span class=m>20</span>
+</span></span><span class=line><span class=cl>    <span class=k>for</span> <span class=o>((</span> <span class=nv>i</span> <span class=o>=</span> 0<span class=p>;</span> i &lt; <span class=nb>echo</span> <span class=si>${#</span><span class=nv>RIP</span><span class=p>[*]</span><span class=si>}</span><span class=p>;</span> i++ <span class=o>))</span><span class=p>;</span> <span class=k>do</span>
+</span></span><span class=line><span class=cl>        <span class=nv>$IPVSADM</span> -a -t <span class=si>${</span><span class=nv>VIP</span><span class=si>}</span>:<span class=si>${</span><span class=nv>PORT</span><span class=si>}</span> -r <span class=si>${</span><span class=nv>RIP</span><span class=p>[</span><span class=nv>$i</span><span class=p>]</span><span class=si>}</span>:<span class=si>${</span><span class=nv>PORT</span><span class=si>}</span> -g -w <span class=m>1</span>
+</span></span><span class=line><span class=cl>    <span class=k>done</span>
+</span></span><span class=line><span class=cl>    <span class=nb>echo</span> <span class=s2>&#34;The lvs Server is start!&#34;</span>
+</span></span><span class=line><span class=cl><span class=o>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>stop<span class=o>()</span> <span class=o>{</span>
+</span></span><span class=line><span class=cl>    <span class=nv>$IPVSADM</span> -C
+</span></span><span class=line><span class=cl>    ip addr del <span class=si>${</span><span class=nv>VIP</span><span class=si>}</span>/32 brd <span class=si>${</span><span class=nv>VIP</span><span class=si>}</span> dev <span class=nv>$INTERFACE</span>
+</span></span><span class=line><span class=cl>    <span class=nb>echo</span> <span class=s2>&#34;The lvs Server is stop!&#34;</span>
+</span></span><span class=line><span class=cl><span class=o>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>status<span class=o>()</span> <span class=o>{</span>
+</span></span><span class=line><span class=cl>    <span class=nv>$IPVSADM</span> -L -n --stats
+</span></span><span class=line><span class=cl><span class=o>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=k>case</span> <span class=nv>$1</span> in
+</span></span><span class=line><span class=cl>    start<span class=o>)</span>
+</span></span><span class=line><span class=cl>        start
+</span></span><span class=line><span class=cl>        <span class=p>;;</span>
+</span></span><span class=line><span class=cl>    stop<span class=o>)</span>
+</span></span><span class=line><span class=cl>        stop
+</span></span><span class=line><span class=cl>        <span class=p>;;</span>
+</span></span><span class=line><span class=cl>    restart<span class=o>)</span>
+</span></span><span class=line><span class=cl>        stop 
+</span></span><span class=line><span class=cl>        sleep <span class=m>1</span>
+</span></span><span class=line><span class=cl>        start
+</span></span><span class=line><span class=cl>        <span class=p>;;</span>
+</span></span><span class=line><span class=cl>    status<span class=o>)</span>
+</span></span><span class=line><span class=cl>        status
+</span></span><span class=line><span class=cl>        <span class=p>;;</span>
+</span></span><span class=line><span class=cl>    *<span class=o>)</span>
+</span></span><span class=line><span class=cl>        <span class=nb>echo</span> $<span class=s2>&#34;Usage: </span><span class=nv>$0</span><span class=s2> {start|stop|status|restart}&#34;</span>
+</span></span><span class=line><span class=cl>        <span class=nb>exit</span> <span class=m>2</span>
+</span></span><span class=line><span class=cl>        <span class=p>;;</span>
+</span></span><span class=line><span class=cl><span class=k>esac</span>
+</span></span></code></pre></td></tr></table></div></div><h3 id=realserver-服务器配置脚本 class=headerLink><a href=#realserver-%e6%9c%8d%e5%8a%a1%e5%99%a8%e9%85%8d%e7%bd%ae%e8%84%9a%e6%9c%ac class=header-mark></a>RealServer 服务器配置脚本</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span><span class=lnt>26
+</span><span class=lnt>27
+</span><span class=lnt>28
+</span><span class=lnt>29
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=cp>#!/bin/bash
+</span></span></span><span class=line><span class=cl><span class=cp></span>
+</span></span><span class=line><span class=cl><span class=nv>VIP</span><span class=o>=</span>192.168.31.30
+</span></span><span class=line><span class=cl><span class=nv>INTERFACE</span><span class=o>=</span>lo
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=k>case</span> <span class=nv>$1</span> in
+</span></span><span class=line><span class=cl>  start<span class=o>)</span>
+</span></span><span class=line><span class=cl>      <span class=nb>echo</span> <span class=m>1</span> &gt; /proc/sys/net/ipv4/conf/all/arp_ignore
+</span></span><span class=line><span class=cl>      <span class=nb>echo</span> <span class=m>1</span> &gt; /proc/sys/net/ipv4/conf/lo/arp_ignore
+</span></span><span class=line><span class=cl>      <span class=nb>echo</span> <span class=m>2</span> &gt; /proc/sys/net/ipv4/conf/all/arp_announce
+</span></span><span class=line><span class=cl>      <span class=nb>echo</span> <span class=m>2</span> &gt; /proc/sys/net/ipv4/conf/lo/arp_announce
+</span></span><span class=line><span class=cl>      ip addr add <span class=si>${</span><span class=nv>VIP</span><span class=si>}</span>/32 brd <span class=si>${</span><span class=nv>VIP</span><span class=si>}</span> dev <span class=nv>$INTERFACE</span>
+</span></span><span class=line><span class=cl>      <span class=nb>echo</span> <span class=s2>&#34;The RS Server is Ready!&#34;</span>
+</span></span><span class=line><span class=cl>      <span class=p>;;</span>
+</span></span><span class=line><span class=cl>      
+</span></span><span class=line><span class=cl>  stop<span class=o>)</span>
+</span></span><span class=line><span class=cl>      ip addr del <span class=si>${</span><span class=nv>VIP</span><span class=si>}</span>/32 brd <span class=si>${</span><span class=nv>VIP</span><span class=si>}</span> dev <span class=nv>$INTERFACE</span>
+</span></span><span class=line><span class=cl>      <span class=nb>echo</span> <span class=m>0</span> &gt; /proc/sys/net/ipv4/conf/all/arp_ignore
+</span></span><span class=line><span class=cl>      <span class=nb>echo</span> <span class=m>0</span> &gt; /proc/sys/net/ipv4/conf/lo/arp_ignore
+</span></span><span class=line><span class=cl>      <span class=nb>echo</span> <span class=m>0</span> &gt; /proc/sys/net/ipv4/conf/all/arp_announce
+</span></span><span class=line><span class=cl>      <span class=nb>echo</span> <span class=m>0</span> &gt; /proc/sys/net/ipv4/conf/lo/arp_announce
+</span></span><span class=line><span class=cl>      <span class=nb>echo</span> <span class=s2>&#34;The RS Server is Canceled!&#34;</span>
+</span></span><span class=line><span class=cl>      <span class=p>;;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>  *<span class=o>)</span>
+</span></span><span class=line><span class=cl>      <span class=nb>echo</span> $<span class=s2>&#34;Usage: </span><span class=nv>$0</span><span class=s2> {start|stop|restart}&#34;</span>
+</span></span><span class=line><span class=cl>      <span class=nb>exit</span> <span class=m>1</span>
+</span></span><span class=line><span class=cl>      <span class=p>;;</span>
+</span></span><span class=line><span class=cl><span class=k>esac</span>
+</span></span></code></pre></td></tr></table></div></div></div><div class=post-footer id=post-footer><div class=post-info><div class=post-info-line><div class=post-info-mod><span>更新于 2021-02-20</span></div><div class=post-info-license></div></div><div class=post-info-line><div class=post-info-md><span><a class=link-to-mardown href=/posts/lvs-configure/index.md target=_blank rel="noopener noreferrer">阅读原始文档</a></span></div><div class=post-info-share><span><a href=# title="分享到 Twitter" data-sharer=twitter data-url=https://liwanggui.com/posts/lvs-configure/ data-title="配置 LVS DR 负载均衡" data-hashtags=lvs,ipvsadm><i class="fab fa-twitter fa-fw"></i></a><a href=# title="分享到 Facebook" data-sharer=facebook data-url=https://liwanggui.com/posts/lvs-configure/ data-hashtag=lvs><i class="fab fa-facebook-square fa-fw"></i></a><a href=# title="分享到 WhatsApp" data-sharer=whatsapp data-url=https://liwanggui.com/posts/lvs-configure/ data-title="配置 LVS DR 负载均衡" data-web><i class="fab fa-whatsapp fa-fw"></i></a><a href=# title="分享到 Line" data-sharer=line data-url=https://liwanggui.com/posts/lvs-configure/ data-title="配置 LVS DR 负载均衡"><i data-svg-src=/lib/simple-icons/icons/line.min.svg></i></a><a href=# title="分享到 微博" data-sharer=weibo data-url=https://liwanggui.com/posts/lvs-configure/ data-title="配置 LVS DR 负载均衡"><i class="fab fa-weibo fa-fw"></i></a><a href=# title="分享到 Myspace" data-sharer=myspace data-url=https://liwanggui.com/posts/lvs-configure/ data-title="配置 LVS DR 负载均衡" data-description><i data-svg-src=/lib/simple-icons/icons/myspace.min.svg></i></a><a href=# title="分享到 Blogger" data-sharer=blogger data-url=https://liwanggui.com/posts/lvs-configure/ data-title="配置 LVS DR 负载均衡" data-description><i class="fab fa-blogger fa-fw"></i></a><a href=# title="分享到 百度" data-sharer=baidu data-url=https://liwanggui.com/posts/lvs-configure/ data-title="配置 LVS DR 负载均衡"><i data-svg-src=/lib/simple-icons/icons/baidu.min.svg></i></a><a href=# title="分享到 Evernote" data-sharer=evernote data-url=https://liwanggui.com/posts/lvs-configure/ data-title="配置 LVS DR 负载均衡"><i class="fab fa-evernote fa-fw"></i></a></span></div></div></div><div class=post-info-more><section class=post-tags><i class="fas fa-tags fa-fw"></i>&nbsp;<a href=/tags/lvs/>lvs</a>,&nbsp;<a href=/tags/ipvsadm/>ipvsadm</a></section><section><span><a href=javascript:void(0); onclick=window.history.back()>返回</a></span>&nbsp;|&nbsp;<span><a href=/>主页</a></span></section></div><div class=post-nav><a href=/posts/lvs-introduction/ class=prev rel=prev title="LVS 负载均衡，介绍"><i class="fas fa-angle-left fa-fw"></i>LVS 负载均衡，介绍</a>
+<a href=/posts/keepalived/ class=next rel=next title="Keepalived 高可用简单入门">Keepalived 高可用简单入门<i class="fas fa-angle-right fa-fw"></i></a></div></div><div id=comments><div id=giscus></div><noscript>Please enable JavaScript to view the comments powered by <a href=https://giscus.app/>giscus</a>.</noscript></div></article></div></main><footer class=footer><div class=footer-container><div class=footer-line>由 <a href=https://gohugo.io/ target=_blank rel="noopener noreferrer" title="Hugo 0.101.0">Hugo</a> 强力驱动&nbsp;|&nbsp;主题 - <a href=https://github.com/HEIGE-PCloud/DoIt target=_blank rel="noopener noreferrer" title="DoIt 0.3.0"><i class="far fa-edit fa-fw"></i> DoIt</a></div><div class=footer-line><i class="far fa-copyright fa-fw"></i><span itemprop=copyrightYear>2017 - 2024</span><span class=author itemprop=copyrightHolder>&nbsp;<a href=/about/ target=_blank rel="noopener noreferrer">李王贵</a></span><span class=icp-splitter>&nbsp;|&nbsp;</span><br class=icp-br><span class=icp><a href=https://beian.miit.gov.cn target=_blank>赣ICP备2023001395号</a></span></div><div class=footer-line></div><div class=footer-line></div></div></footer></div><div id=fixed-buttons><a href=#back-to-top id=back-to-top-button class=fixed-button title=回到顶部><i class="fas fa-arrow-up fa-fw"></i>
+</a><a href=# id=view-comments class=fixed-button title=查看评论><i class="fas fa-comment fa-fw"></i></a></div><div id=cookieconsent-container></div><div class=assets><link rel=stylesheet href=/lib/lightgallery/lightgallery.min.css><link rel=stylesheet href=/lib/katex/katex.min.css><link rel=preload as=style onload='this.onload=null,this.rel="stylesheet"' href=/lib/katex/copy-tex.min.css><noscript><link rel=stylesheet href=/lib/katex/copy-tex.min.css></noscript><link rel=stylesheet href=/lib/cookieconsent/cookieconsent.min.css><script type=text/javascript>window.config={code:{copyTitle:"复制到剪贴板",maxShownLines:10},comment:{giscus:{darkTheme:"dark",dataCategory:"Announcements",dataCategoryId:"DIC_kwDOE7mEQ84CY9pq",dataEmitMetadata:"1",dataInputPosition:"top",dataLang:"zh-CN",dataMapping:"pathname",dataReactionsEnabled:"1",dataRepo:"liwanggui/liwanggui.github.io",dataRepoId:"MDEwOlJlcG9zaXRvcnkzMzA5MjUxMjM=",dataStrict:"0",lightTheme:"light"}},cookieconsent:{content:{dismiss:"同意",link:"了解更多",message:"本网站使用 Cookies 来改善您的浏览体验."},enable:!0,palette:{button:{background:"#f0f0f0"},popup:{background:"#1aa3ff"}},theme:"edgeless"},lightGallery:{actualSize:!1,exThumbImage:"data-thumbnail",hideBarsDelay:2e3,selector:".lightgallery",speed:400,thumbContHeight:80,thumbWidth:80,thumbnail:!0},math:{delimiters:[{display:!0,left:"$$",right:"$$"},{display:!0,left:"\\[",right:"\\]"},{display:!1,left:"$",right:"$"},{display:!1,left:"\\(",right:"\\)"}],strict:!1},search:{distance:100,findAllMatches:!1,fuseIndexURL:"/index.json",highlightTag:"em",ignoreFieldNorm:!1,ignoreLocation:!1,isCaseSensitive:!1,location:0,maxResultLength:10,minMatchCharLength:2,noResultsFound:"没有找到结果",snippetLength:50,threshold:.3,type:"fuse",useExtendedSearch:!1},sharerjs:!0,twemoji:!0}</script><script type=text/javascript src=/js/giscus.min.js defer></script><script type=text/javascript src=/lib/twemoji/twemoji.min.js defer></script><script type=text/javascript src=/js/twemoji.min.js defer></script><script type=text/javascript src=/lib/lightgallery/lightgallery.min.js></script><script type=text/javascript src=/lib/lightgallery/lg-thumbnail.min.js></script><script type=text/javascript src=/lib/lightgallery/lg-zoom.min.js></script><script type=text/javascript src=/lib/clipboard/clipboard.min.js></script><script type=text/javascript src=/lib/sharer/sharer.min.js></script><script type=text/javascript src=/lib/katex/katex.min.js defer></script><script type=text/javascript src=/lib/katex/auto-render.min.js defer></script><script type=text/javascript src=/lib/katex/copy-tex.min.js defer></script><script type=text/javascript src=/lib/katex/mhchem.min.js defer></script><script type=text/javascript src=/js/katex.min.js defer></script><script type=text/javascript src=/lib/cookieconsent/cookieconsent.min.js defer></script><script type=text/javascript src=/js/cookieconsent.min.js defer></script><script type=text/javascript src=/js/theme.min.js defer></script></div></body></html>

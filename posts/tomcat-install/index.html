@@ -1,0 +1,247 @@
+<!doctype html><html lang=zh-cn><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><meta name=robots content="noodp"><title>Tomcat 的简单使用 - _浅行</title><meta name=Description content="_浅行"><meta property="og:title" content="Tomcat 的简单使用"><meta property="og:description" content="Tomcat 介绍Tomcat 是 Apache 软件基金会（Apache Software Foundation）项目中的一个核心项目，由 Apache、Sun 和其他一些公司及个人共同开"><meta property="og:type" content="article"><meta property="og:url" content="https://liwanggui.com/posts/tomcat-install/"><meta property="og:image" content="https://liwanggui.com/logo.png"><meta property="article:section" content="posts"><meta property="article:published_time" content="2021-02-22T09:58:19+08:00"><meta property="article:modified_time" content="2021-02-22T09:58:19+08:00"><meta name=twitter:card content="summary_large_image"><meta name=twitter:image content="https://liwanggui.com/logo.png"><meta name=twitter:title content="Tomcat 的简单使用"><meta name=twitter:description content="Tomcat 介绍Tomcat 是 Apache 软件基金会（Apache Software Foundation）项目中的一个核心项目，由 Apache、Sun 和其他一些公司及个人共同开"><meta name=application-name content="LoveIt"><meta name=apple-mobile-web-app-title content="LoveIt"><meta name=theme-color content="#f8f8f8"><meta name=msapplication-TileColor content="#da532c"><link rel=canonical href=https://liwanggui.com/posts/tomcat-install/><link rel=prev href=https://liwanggui.com/posts/keepalived-lvs-dr/><link rel=next href=https://liwanggui.com/posts/tomcat-optimization/><link rel=stylesheet href=/lib/normalize/normalize.min.css><link rel=stylesheet href=/css/color.css><link rel=stylesheet href=/css/style.min.css><link rel=preload as=style onload='this.onload=null,this.rel="stylesheet"' href=/lib/fontawesome-free/all.min.css><noscript><link rel=stylesheet href=/lib/fontawesome-free/all.min.css></noscript><link rel=preload as=style onload='this.onload=null,this.rel="stylesheet"' href=/lib/animate/animate.min.css><noscript><link rel=stylesheet href=/lib/animate/animate.min.css></noscript><script type=application/ld+json>{"@context":"http://schema.org","@type":"BlogPosting","headline":"Tomcat 的简单使用","inLanguage":"zh-CN","mainEntityOfPage":{"@type":"WebPage","@id":"https:\/\/liwanggui.com\/posts\/tomcat-install\/"},"genre":"posts","keywords":"tomcat","wordcount":1593,"url":"https:\/\/liwanggui.com\/posts\/tomcat-install\/","datePublished":"2021-02-22T09:58:19+08:00","dateModified":"2021-02-22T09:58:19+08:00","publisher":{"@type":"Organization","name":""},"author":{"@type":"Person","name":"李王贵"},"description":""}</script><script src=//instant.page/5.1.1 defer type=module integrity=sha384-MWfCL6g1OTGsbSwfuMHc8+8J2u71/LA8dzlIN3ycajckxuZZmF+DNjdm7O6H3PSq></script></head><body header-desktop=fixed header-mobile=auto><script type=text/javascript>function setTheme(e){document.body.setAttribute("theme",e),document.documentElement.style.setProperty("color-scheme",e==="light"?"light":"dark")}function saveTheme(e){window.localStorage&&localStorage.setItem("theme",e)}function getMeta(e){const t=document.getElementsByTagName("meta");for(let n=0;n<t.length;n++)if(t[n].getAttribute("name")===e)return t[n];return""}if(window.localStorage&&localStorage.getItem("theme")){let e=localStorage.getItem("theme");e==="light"||e==="dark"||e==="black"?setTheme(e):setTheme(window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light")}else"auto"==="light"||"auto"==="dark"||"auto"==="black"?(setTheme("auto"),saveTheme("auto")):(saveTheme("auto"),setTheme(window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"));let metaColors={light:"#f8f8f8",dark:"#252627",black:"#000000"};getMeta("theme-color").content=metaColors[document.body.getAttribute("theme")]</script><div id=back-to-top></div><div id=mask></div><div class=wrapper><header class=desktop id=header-desktop><div class=header-wrapper><div class=header-title><a href=/ title=_浅行><span class=header-title-pre><i class='far fa-kiss-wink-heart fa-fw'></i></span>_浅行</a></div><div class=menu><div class=menu-inner><a class=menu-item href=/posts/ title=文章列表>文章 </a><a class=menu-item href=/tags/ title=标签云>标签 </a><a class=menu-item href=/categories/ title=分类>分类 </a><a class=menu-item href=https://cook.liwanggui.com/ title=程序员做饭指南 rel="noopener noreferrer" target=_blank>烹饪 </a><a class=menu-item href=/about/index.html title=关于>关于 </a><span class="menu-item delimiter"></span><span class="menu-item search" id=search-desktop>
+<input type=text placeholder=搜索文章标题或内容... id=search-input-desktop>
+<a href=# class="search-button search-toggle" id=search-toggle-desktop title=搜索><i class="fas fa-search fa-fw"></i></a>
+<a href=# class="search-button search-clear" id=search-clear-desktop title=清空><i class="fas fa-times-circle fa-fw"></i></a>
+<span class="search-button search-loading" id=search-loading-desktop><i class="fas fa-spinner fa-fw fa-spin"></i></span>
+</span><a href=# class="menu-item theme-switch" title=切换主题><i class="fas fa-adjust fa-fw"></i></a></div></div></div></header><header class=mobile id=header-mobile><div class=header-container><div class=header-wrapper><div class=header-title><a href=/ title=_浅行><span class=header-title-pre><i class='far fa-kiss-wink-heart fa-fw'></i></span>_浅行</a></div><div class=menu-toggle id=menu-toggle-mobile><span></span><span></span><span></span></div></div><div class=menu id=menu-mobile><div class=search-wrapper><div class="search mobile" id=search-mobile><input type=text placeholder=搜索文章标题或内容... id=search-input-mobile>
+<a href=# class="search-button search-toggle" id=search-toggle-mobile title=搜索><i class="fas fa-search fa-fw"></i></a>
+<a href=# class="search-button search-clear" id=search-clear-mobile title=清空><i class="fas fa-times-circle fa-fw"></i></a>
+<span class="search-button search-loading" id=search-loading-mobile><i class="fas fa-spinner fa-fw fa-spin"></i></span></div><a href=# class=search-cancel id=search-cancel-mobile>取消</a></div><a class=menu-item href=/posts/ title=文章列表>文章</a><a class=menu-item href=/tags/ title=标签云>标签</a><a class=menu-item href=/categories/ title=分类>分类</a><a class=menu-item href=https://cook.liwanggui.com/ title=程序员做饭指南 rel="noopener noreferrer" target=_blank>烹饪</a><a class=menu-item href=/about/index.html title=关于>关于</a><a href=# class="menu-item theme-switch" title=切换主题>
+<i class="fas fa-adjust fa-fw"></i></a></div></div></header><div class="search-dropdown desktop"><div id=search-dropdown-desktop></div></div><div class="search-dropdown mobile"><div id=search-dropdown-mobile></div></div><main class=main><div class=container><div class=toc id=toc-auto><h2 class=toc-title>目录</h2><div class=toc-content id=toc-content-auto><nav id=TableOfContents><ul><li><a href=#tomcat-介绍>Tomcat 介绍</a></li><li><a href=#开始安装>开始安装</a><ul><li><a href=#安装-jdk>安装 JDK</a></li><li><a href=#安装-tomcat>安装 Tomcat</a></li><li><a href=#tomcat-服务启停介绍>Tomcat 服务启停介绍</a></li><li><a href=#启动-tomcat-服务>启动 Tomcat 服务</a></li></ul></li><li><a href=#tomcat-目录结构>Tomcat 目录结构</a><ul><li><a href=#webapps-目录>webapps 目录</a></li></ul></li><li><a href=#配置-tomcat>配置 Tomcat</a><ul><li><a href=#配置介绍>配置介绍</a></li><li><a href=#tomcat-url-路径配置>Tomcat url 路径配置</a></li></ul></li></ul></nav></div></div><script>document.getElementsByTagName("main")[0].setAttribute("pageStyle","normal")</script><script>document.getElementsByTagName("main")[0].setAttribute("autoTOC","true")</script><article class="page single"><h1 class="single-title animate__animated animate__flipInX">Tomcat 的简单使用</h1><div class=post-meta><div class=post-meta-line><span class=post-author><i class="author fas fa-user-circle fa-fw"></i><a href=/about/ title=Author rel=author class=author>李王贵</a>
+</span>&nbsp;<span class=post-category>收录于 </span>&nbsp;<span class=post-category>类别 <a href=/categories/devops/><i class="far fa-folder fa-fw"></i>devops</a>&nbsp;<a href=/categories/tomcat/><i class="far fa-folder fa-fw"></i>tomcat</a></span></div><div class=post-meta-line><i class="far fa-calendar-alt fa-fw"></i>&nbsp;<time datetime=2021-02-22>2021-02-22</time>&nbsp;<i class="far fa-edit fa-fw"></i>&nbsp;<time datetime=2021-02-22>2021-02-22</time>&nbsp;<i class="fas fa-pencil-alt fa-fw"></i>&nbsp;约 1593 字&nbsp;
+<i class="far fa-clock fa-fw"></i>&nbsp;预计阅读 4 分钟&nbsp;</div></div><div class="details toc" id=toc-static kept><div class="details-summary toc-title"><span>目录</span>
+<span><i class="details-icon fas fa-angle-right"></i></span></div><div class="details-content toc-content" id=toc-content-static><nav id=TableOfContents><ul><li><a href=#tomcat-介绍>Tomcat 介绍</a></li><li><a href=#开始安装>开始安装</a><ul><li><a href=#安装-jdk>安装 JDK</a></li><li><a href=#安装-tomcat>安装 Tomcat</a></li><li><a href=#tomcat-服务启停介绍>Tomcat 服务启停介绍</a></li><li><a href=#启动-tomcat-服务>启动 Tomcat 服务</a></li></ul></li><li><a href=#tomcat-目录结构>Tomcat 目录结构</a><ul><li><a href=#webapps-目录>webapps 目录</a></li></ul></li><li><a href=#配置-tomcat>配置 Tomcat</a><ul><li><a href=#配置介绍>配置介绍</a></li><li><a href=#tomcat-url-路径配置>Tomcat url 路径配置</a></li></ul></li></ul></nav></div></div><div class=content id=content><h2 id=tomcat-介绍 class=headerLink><a href=#tomcat-%e4%bb%8b%e7%bb%8d class=header-mark></a>Tomcat 介绍</h2><p>Tomcat 是 Apache 软件基金会（Apache Software Foundation）项目中的一个核心项目，由 Apache、Sun 和其他一些公司及个人共同开发而成。</p><p>Tomcat 服务器是一个免费的开放源代码的 Web 应用服务器，属于轻量级应用服务器，在中小型系统和并发访问用户不是很多的场合下被普遍使用，是开发和调试 JSP 程序的首选。</p><blockquote><p>实际生产环境中建议和 nginx 配合一起使用，nginx 处理静态，tomcat 处理动态程序</p></blockquote><h2 id=开始安装 class=headerLink><a href=#%e5%bc%80%e5%a7%8b%e5%ae%89%e8%a3%85 class=header-mark></a>开始安装</h2><p>安装 tomcat 前需先安装 JDK 工具包。 JDK 是 java 语言的软件开发工具包，它包含了 java 的运行环境（jvm + java 系统类库）和 java 工具。</p><h3 id=安装-jdk class=headerLink><a href=#%e5%ae%89%e8%a3%85-jdk class=header-mark></a>安装 JDK</h3><blockquote><p>JDK 下载地址: <a href=https://www.oracle.com/java/technologies/javase-downloads.html target=_blank rel="noopener noreferrer">https://www.oracle.com/java/technologies/javase-downloads.html</a></p></blockquote><blockquote><p>这里我们选择安装 JDK 8</p></blockquote><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=o>[</span>root@10-7-171-239 src<span class=o>]</span><span class=c1># wget https://download.oracle.com/otn/java/jdk/8u281-b09/89d678f2be164786b292527658ca1605/jdk-8u281-linux-x64.tar.gz?AuthParam=1614219040_36465185941d2c06fb1457b5fc724aee -O jdk-8u281-linux-x64.tar.gz</span>
+</span></span><span class=line><span class=cl><span class=o>[</span>root@10-7-171-239 src<span class=o>]</span><span class=c1># tar xzf jdk-8u281-linux-x64.tar.gz -C /usr/local</span>
+</span></span><span class=line><span class=cl><span class=o>[</span>root@10-7-171-239 src<span class=o>]</span><span class=c1># cd /usr/local/</span>
+</span></span><span class=line><span class=cl><span class=o>[</span>root@10-7-171-239 local<span class=o>]</span><span class=c1># ln -s jdk1.8.0_281/ jdk</span>
+</span></span></code></pre></td></tr></table></div></div><p>配置 JDK 环境变量</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span><span class=lnt>7
+</span><span class=lnt>8
+</span><span class=lnt>9
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=o>[</span>root@10-7-171-239 local<span class=o>]</span><span class=c1># cat &gt; /etc/profile.d/jdk.sh &lt;&lt; EOF</span>
+</span></span><span class=line><span class=cl>&gt; <span class=nb>export</span> <span class=nv>JAVA_HOME</span><span class=o>=</span>/usr/local/jdk
+</span></span><span class=line><span class=cl>&gt; <span class=nb>export</span> <span class=nv>PATH</span><span class=o>=</span><span class=se>\$</span>JAVA_HOME/bin:<span class=se>\$</span>PATH
+</span></span><span class=line><span class=cl>&gt; EOF
+</span></span><span class=line><span class=cl><span class=o>[</span>root@10-7-171-239 local<span class=o>]</span><span class=c1># source /etc/profile</span>
+</span></span><span class=line><span class=cl><span class=o>[</span>root@10-7-171-239 local<span class=o>]</span><span class=c1># java -version</span>
+</span></span><span class=line><span class=cl>java version <span class=s2>&#34;1.8.0_281&#34;</span>
+</span></span><span class=line><span class=cl>Java<span class=o>(</span>TM<span class=o>)</span> SE Runtime Environment <span class=o>(</span>build 1.8.0_281-b09<span class=o>)</span>
+</span></span><span class=line><span class=cl>Java HotSpot<span class=o>(</span>TM<span class=o>)</span> 64-Bit Server VM <span class=o>(</span>build 25.281-b09, mixed mode<span class=o>)</span>
+</span></span></code></pre></td></tr></table></div></div><h3 id=安装-tomcat class=headerLink><a href=#%e5%ae%89%e8%a3%85-tomcat class=header-mark></a>安装 Tomcat</h3><blockquote><p>Tomcat 下载地址: <a href=https://tomcat.apache.org/download-90.cgi target=_blank rel="noopener noreferrer">https://tomcat.apache.org/download-90.cgi</a></p></blockquote><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=o>[</span>root@10-7-171-239 src<span class=o>]</span><span class=c1># wget https://mirrors.tuna.tsinghua.edu.cn/apache/tomcat/tomcat-9/v9.0.43/bin/apache-tomcat-9.0.43.tar.gz</span>
+</span></span><span class=line><span class=cl><span class=o>[</span>root@10-7-171-239 src<span class=o>]</span><span class=c1># tar xzf apache-tomcat-9.0.43.tar.gz -C /usr/local/</span>
+</span></span></code></pre></td></tr></table></div></div><blockquote><p>Tomcat 的安装很简单，只要下载解压即可开始使用</p></blockquote><h3 id=tomcat-服务启停介绍 class=headerLink><a href=#tomcat-%e6%9c%8d%e5%8a%a1%e5%90%af%e5%81%9c%e4%bb%8b%e7%bb%8d class=header-mark></a>Tomcat 服务启停介绍</h3><p>默认 Tomcat 启动可以直接执行 <code>bin</code> 目录的 <code>startup.sh</code> 脚本，停止使用 <code>shutdown.sh</code> 脚本，如果你查看这两个脚本文件中的内容会发现它们都是通过调用 <code>catalina.sh</code> 脚本并传递相应的参数进行启动的。 所以我们可以直接使用 .<code>catalina.sh</code> 脚本进行 Tomcat 服务的启动与停止.</p><p><strong>catalina.sh 脚本帮助信息</strong></p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=o>[</span>root@10-7-171-239 bin<span class=o>]</span><span class=c1># ./catalina.sh</span>
+</span></span><span class=line><span class=cl>Using CATALINA_BASE:   /usr/local/apache-tomcat-9.0.43
+</span></span><span class=line><span class=cl>Using CATALINA_HOME:   /usr/local/apache-tomcat-9.0.43
+</span></span><span class=line><span class=cl>Using CATALINA_TMPDIR: /usr/local/apache-tomcat-9.0.43/temp
+</span></span><span class=line><span class=cl>Using JRE_HOME:        /usr/local/jdk
+</span></span><span class=line><span class=cl>Using CLASSPATH:       /usr/local/apache-tomcat-9.0.43/bin/bootstrap.jar:/usr/local/apache-tomcat-9.0.43/bin/tomcat-juli.jar
+</span></span><span class=line><span class=cl>Using CATALINA_OPTS:
+</span></span><span class=line><span class=cl>Usage: catalina.sh <span class=o>(</span> commands ... <span class=o>)</span>
+</span></span><span class=line><span class=cl>commands:
+</span></span><span class=line><span class=cl>  debug             Start Catalina in a debugger
+</span></span><span class=line><span class=cl>  debug -security   Debug Catalina with a security manager
+</span></span><span class=line><span class=cl>  jpda start        Start Catalina under JPDA debugger
+</span></span><span class=line><span class=cl>  run               Start Catalina in the current window
+</span></span><span class=line><span class=cl>  run -security     Start in the current window with security manager
+</span></span><span class=line><span class=cl>  start             Start Catalina in a separate window
+</span></span><span class=line><span class=cl>  start -security   Start in a separate window with security manager
+</span></span><span class=line><span class=cl>  stop              Stop Catalina, waiting up to <span class=m>5</span> seconds <span class=k>for</span> the process to end
+</span></span><span class=line><span class=cl>  stop n            Stop Catalina, waiting up to n seconds <span class=k>for</span> the process to end
+</span></span><span class=line><span class=cl>  stop -force       Stop Catalina, <span class=nb>wait</span> up to <span class=m>5</span> seconds and <span class=k>then</span> use <span class=nb>kill</span> -KILL <span class=k>if</span> still running
+</span></span><span class=line><span class=cl>  stop n -force     Stop Catalina, <span class=nb>wait</span> up to n seconds and <span class=k>then</span> use <span class=nb>kill</span> -KILL <span class=k>if</span> still running
+</span></span><span class=line><span class=cl>  configtest        Run a basic syntax check on server.xml - check <span class=nb>exit</span> code <span class=k>for</span> result
+</span></span><span class=line><span class=cl>  version           What version of tomcat are you running?
+</span></span><span class=line><span class=cl>Note: Waiting <span class=k>for</span> the process to end and use of the -force option require that <span class=nv>$CATALINA_PID</span> is defined
+</span></span></code></pre></td></tr></table></div></div><h3 id=启动-tomcat-服务 class=headerLink><a href=#%e5%90%af%e5%8a%a8-tomcat-%e6%9c%8d%e5%8a%a1 class=header-mark></a>启动 Tomcat 服务</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=o>[</span>root@10-7-171-239 apache-tomcat-9.0.43<span class=o>]</span><span class=c1># /usr/local/apache-tomcat-9.0.43/bin/startup.sh</span>
+</span></span><span class=line><span class=cl>Using CATALINA_BASE:   /usr/local/apache-tomcat-9.0.43
+</span></span><span class=line><span class=cl>Using CATALINA_HOME:   /usr/local/apache-tomcat-9.0.43
+</span></span><span class=line><span class=cl>Using CATALINA_TMPDIR: /usr/local/apache-tomcat-9.0.43/temp
+</span></span><span class=line><span class=cl>Using JRE_HOME:        /usr/local/jdk
+</span></span><span class=line><span class=cl>Using CLASSPATH:       /usr/local/apache-tomcat-9.0.43/bin/bootstrap.jar:/usr/local/apache-tomcat-9.0.43/bin/tomcat-juli.jar
+</span></span><span class=line><span class=cl>Using CATALINA_OPTS:
+</span></span><span class=line><span class=cl>Tomcat started.
+</span></span><span class=line><span class=cl><span class=o>[</span>root@10-7-171-239 apache-tomcat-9.0.43<span class=o>]</span><span class=c1># ss -anptl | grep java</span>
+</span></span><span class=line><span class=cl>LISTEN     <span class=m>0</span>      <span class=m>1</span>         ::ffff:127.0.0.1:8005                    :::*                   users:<span class=o>((</span><span class=s2>&#34;java&#34;</span>,pid<span class=o>=</span>30004,fd<span class=o>=</span>68<span class=o>))</span>
+</span></span><span class=line><span class=cl>LISTEN     <span class=m>0</span>      <span class=m>100</span>         :::8080                    :::*                   users:<span class=o>((</span><span class=s2>&#34;java&#34;</span>,pid<span class=o>=</span>30004,fd<span class=o>=</span>57<span class=o>))</span>
+</span></span></code></pre></td></tr></table></div></div><blockquote><p>Tomcat 默认监听于 8080 端口，直接在浏览器上访问 http://&lt;your_server_ipaddress>:8080</p></blockquote><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=o>[</span>root@10-7-171-239 apache-tomcat-9.0.43<span class=o>]</span><span class=c1># ps -ef | grep tomcat</span>
+</span></span><span class=line><span class=cl>root     <span class=m>30004</span>     <span class=m>1</span>  <span class=m>8</span> 10:23 pts/0    00:00:02 /usr/local/jdk/bin/java -Djava.util.logging.config.file<span class=o>=</span>/usr/local/apache-tomcat-9.0.43/conf/logging.properties -Djava.util.logging.manager<span class=o>=</span>org.apache.juli.ClassLoaderLogManager -Djdk.tls.ephemeralDHKeySize<span class=o>=</span><span class=m>2048</span> -Djava.protocol.handler.pkgs<span class=o>=</span>org.apache.catalina.webresources -Dorg.apache.catalina.security.SecurityListener.UMASK<span class=o>=</span><span class=m>0027</span> -Dignore.endorsed.dirs<span class=o>=</span> -classpath /usr/local/apache-tomcat-9.0.43/bin/bootstrap.jar:/usr/local/apache-tomcat-9.0.43/bin/tomcat-juli.jar -Dcatalina.base<span class=o>=</span>/usr/local/apache-tomcat-9.0.43 -Dcatalina.home<span class=o>=</span>/usr/local/apache-tomcat-9.0.43 -Djava.io.tmpdir<span class=o>=</span>/usr/local/apache-tomcat-9.0.43/temp org.apache.catalina.startup.Bootstrap start
+</span></span><span class=line><span class=cl>root     <span class=m>30038</span> <span class=m>29718</span>  <span class=m>0</span> 10:24 pts/0    00:00:00 grep --color<span class=o>=</span>auto tomcat
+</span></span></code></pre></td></tr></table></div></div><blockquote><p>通过查看 tomcat 进程可以看到 tomcat 默认使用 root 用户启动，这会存在安全风险，那该如何使用普通用户启动呢？</p></blockquote><h2 id=tomcat-目录结构 class=headerLink><a href=#tomcat-%e7%9b%ae%e5%bd%95%e7%bb%93%e6%9e%84 class=header-mark></a>Tomcat 目录结构</h2><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span><span class=lnt>7
+</span><span class=lnt>8
+</span><span class=lnt>9
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=o>[</span>root@10-7-171-239 apache-tomcat-9.0.43<span class=o>]</span><span class=c1># tree -L 1 -d</span>
+</span></span><span class=line><span class=cl>.
+</span></span><span class=line><span class=cl>├── bin     <span class=c1># 管理脚本存放路径</span>
+</span></span><span class=line><span class=cl>├── conf    <span class=c1># 配置文件目录</span>
+</span></span><span class=line><span class=cl>├── lib     <span class=c1># 公共程序库目录</span>
+</span></span><span class=line><span class=cl>├── logs    <span class=c1># 日志目录</span>
+</span></span><span class=line><span class=cl>├── temp    
+</span></span><span class=line><span class=cl>├── webapps  <span class=c1># 默认 web 应用程序目录</span>
+</span></span><span class=line><span class=cl>└── work
+</span></span></code></pre></td></tr></table></div></div><h3 id=webapps-目录 class=headerLink><a href=#webapps-%e7%9b%ae%e5%bd%95 class=header-mark></a>webapps 目录</h3><p><code>webapps</code> 目录存放都是 web 应用，每个目录都是单独的应用。其中 <code>ROOT</code> 比较特殊，<code>ROOT</code> 目录中的应用是打开网页可以直接访问到的，例如 <code>http://localhost:8080</code> 访问的是 <code>ROOT</code> 目录中的应用，如果需要访问 <code>docs</code> 应用需要在 url 上加上 <code>http://localhost:8080/docs/</code> 路径。</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span><span class=lnt>7
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=o>[</span>root@10-7-171-239 apache-tomcat-9.0.43<span class=o>]</span><span class=c1># tree webapps -L 1 -d</span>
+</span></span><span class=line><span class=cl>webapps
+</span></span><span class=line><span class=cl>├── docs
+</span></span><span class=line><span class=cl>├── examples
+</span></span><span class=line><span class=cl>├── host-manager
+</span></span><span class=line><span class=cl>├── manager
+</span></span><span class=line><span class=cl>└── ROOT
+</span></span></code></pre></td></tr></table></div></div><blockquote><p>默认 webapps 中有 Tomcat 自带管理应用，不用可以移除。</p></blockquote><h2 id=配置-tomcat class=headerLink><a href=#%e9%85%8d%e7%bd%ae-tomcat class=header-mark></a>配置 Tomcat</h2><h3 id=配置介绍 class=headerLink><a href=#%e9%85%8d%e7%bd%ae%e4%bb%8b%e7%bb%8d class=header-mark></a>配置介绍</h3><p>Tomcat 的配置文件存放在 <code>conf</code> 目录中，其中 <code>server.xml</code> 为主配置文件。默认配置信息如下</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span><span class=lnt>26
+</span><span class=lnt>27
+</span><span class=lnt>28
+</span><span class=lnt>29
+</span><span class=lnt>30
+</span><span class=lnt>31
+</span><span class=lnt>32
+</span><span class=lnt>33
+</span><span class=lnt>34
+</span><span class=lnt>35
+</span><span class=lnt>36
+</span><span class=lnt>37
+</span><span class=lnt>38
+</span><span class=lnt>39
+</span><span class=lnt>40
+</span><span class=lnt>41
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-xml data-lang=xml><span class=line><span class=cl><span class=cp>&lt;?xml version=&#34;1.0&#34; encoding=&#34;UTF-8&#34;?&gt;</span>
+</span></span><span class=line><span class=cl><span class=c>&lt;!-- port: tomcat 服务管理端口， 
+</span></span></span><span class=line><span class=cl><span class=c>shutdown: 服务停止字符，如果从服务管理端口接收到此字符 tomcat 服务将会停止，
+</span></span></span><span class=line><span class=cl><span class=c>有安全风险，建议更改为更复杂的字符串。 
+</span></span></span><span class=line><span class=cl><span class=c>可以使用 cat /dev/urandom | head -n 1 | md5sum 生成
+</span></span></span><span class=line><span class=cl><span class=c>--&gt;</span>
+</span></span><span class=line><span class=cl><span class=nt>&lt;Server</span> <span class=na>port=</span><span class=s>&#34;8005&#34;</span> <span class=na>shutdown=</span><span class=s>&#34;SHUTDOWN&#34;</span><span class=nt>&gt;</span>
+</span></span><span class=line><span class=cl>  <span class=nt>&lt;Listener</span> <span class=na>className=</span><span class=s>&#34;org.apache.catalina.startup.VersionLoggerListener&#34;</span> <span class=nt>/&gt;</span>
+</span></span><span class=line><span class=cl>  <span class=nt>&lt;Listener</span> <span class=na>className=</span><span class=s>&#34;org.apache.catalina.core.AprLifecycleListener&#34;</span> <span class=na>SSLEngine=</span><span class=s>&#34;on&#34;</span> <span class=nt>/&gt;</span>
+</span></span><span class=line><span class=cl>  <span class=nt>&lt;Listener</span> <span class=na>className=</span><span class=s>&#34;org.apache.catalina.core.JreMemoryLeakPreventionListener&#34;</span> <span class=nt>/&gt;</span>
+</span></span><span class=line><span class=cl>  <span class=nt>&lt;Listener</span> <span class=na>className=</span><span class=s>&#34;org.apache.catalina.mbeans.GlobalResourcesLifecycleListener&#34;</span> <span class=nt>/&gt;</span>
+</span></span><span class=line><span class=cl>  <span class=nt>&lt;Listener</span> <span class=na>className=</span><span class=s>&#34;org.apache.catalina.core.ThreadLocalLeakPreventionListener&#34;</span> <span class=nt>/&gt;</span>
+</span></span><span class=line><span class=cl>  <span class=nt>&lt;GlobalNamingResources&gt;</span>
+</span></span><span class=line><span class=cl>    <span class=nt>&lt;Resource</span> <span class=na>name=</span><span class=s>&#34;UserDatabase&#34;</span> <span class=na>auth=</span><span class=s>&#34;Container&#34;</span>
+</span></span><span class=line><span class=cl>              <span class=na>type=</span><span class=s>&#34;org.apache.catalina.UserDatabase&#34;</span>
+</span></span><span class=line><span class=cl>              <span class=na>description=</span><span class=s>&#34;User database that can be updated and saved&#34;</span>
+</span></span><span class=line><span class=cl>              <span class=na>factory=</span><span class=s>&#34;org.apache.catalina.users.MemoryUserDatabaseFactory&#34;</span>
+</span></span><span class=line><span class=cl>              <span class=na>pathname=</span><span class=s>&#34;conf/tomcat-users.xml&#34;</span> <span class=nt>/&gt;</span>
+</span></span><span class=line><span class=cl>  <span class=nt>&lt;/GlobalNamingResources&gt;</span>
+</span></span><span class=line><span class=cl>  <span class=nt>&lt;Service</span> <span class=na>name=</span><span class=s>&#34;Catalina&#34;</span><span class=nt>&gt;</span>
+</span></span><span class=line><span class=cl>  <span class=c>&lt;!-- HTTP 服务监听的端口 --&gt;</span>
+</span></span><span class=line><span class=cl>    <span class=nt>&lt;Connector</span> <span class=na>port=</span><span class=s>&#34;8080&#34;</span> <span class=na>protocol=</span><span class=s>&#34;HTTP/1.1&#34;</span>
+</span></span><span class=line><span class=cl>               <span class=na>connectionTimeout=</span><span class=s>&#34;20000&#34;</span>
+</span></span><span class=line><span class=cl>               <span class=na>redirectPort=</span><span class=s>&#34;8443&#34;</span> <span class=nt>/&gt;</span>
+</span></span><span class=line><span class=cl>     <span class=c>&lt;!-- defaultHost: 定义缺省处理请求的虚拟主机域名 --&gt;</span>
+</span></span><span class=line><span class=cl>    <span class=nt>&lt;Engine</span> <span class=na>name=</span><span class=s>&#34;Catalina&#34;</span> <span class=na>defaultHost=</span><span class=s>&#34;localhost&#34;</span><span class=nt>&gt;</span>
+</span></span><span class=line><span class=cl>      <span class=nt>&lt;Realm</span> <span class=na>className=</span><span class=s>&#34;org.apache.catalina.realm.LockOutRealm&#34;</span><span class=nt>&gt;</span>
+</span></span><span class=line><span class=cl>        <span class=nt>&lt;Realm</span> <span class=na>className=</span><span class=s>&#34;org.apache.catalina.realm.UserDatabaseRealm&#34;</span>
+</span></span><span class=line><span class=cl>               <span class=na>resourceName=</span><span class=s>&#34;UserDatabase&#34;</span><span class=nt>/&gt;</span>
+</span></span><span class=line><span class=cl>      <span class=nt>&lt;/Realm&gt;</span>
+</span></span><span class=line><span class=cl>      <span class=c>&lt;!-- 虚拟主机定义, name: 域名， appBase: WEB 应用程序路径  --&gt;</span>
+</span></span><span class=line><span class=cl>      <span class=nt>&lt;Host</span> <span class=na>name=</span><span class=s>&#34;localhost&#34;</span>  <span class=na>appBase=</span><span class=s>&#34;webapps&#34;</span>
+</span></span><span class=line><span class=cl>            <span class=na>unpackWARs=</span><span class=s>&#34;true&#34;</span> <span class=na>autoDeploy=</span><span class=s>&#34;true&#34;</span><span class=nt>&gt;</span>
+</span></span><span class=line><span class=cl>       
+</span></span><span class=line><span class=cl>        <span class=nt>&lt;Valve</span> <span class=na>className=</span><span class=s>&#34;org.apache.catalina.valves.AccessLogValve&#34;</span> <span class=na>directory=</span><span class=s>&#34;logs&#34;</span>
+</span></span><span class=line><span class=cl>               <span class=na>prefix=</span><span class=s>&#34;localhost_access_log&#34;</span> <span class=na>suffix=</span><span class=s>&#34;.txt&#34;</span>
+</span></span><span class=line><span class=cl>               <span class=na>pattern=</span><span class=s>&#34;%h %l %u %t &amp;quot;%r&amp;quot; %s %b&#34;</span> <span class=nt>/&gt;</span>
+</span></span><span class=line><span class=cl>      <span class=nt>&lt;/Host&gt;</span>
+</span></span><span class=line><span class=cl>    <span class=nt>&lt;/Engine&gt;</span>
+</span></span><span class=line><span class=cl>  <span class=nt>&lt;/Service&gt;</span>
+</span></span><span class=line><span class=cl><span class=nt>&lt;/Server&gt;</span>
+</span></span></code></pre></td></tr></table></div></div><h3 id=tomcat-url-路径配置 class=headerLink><a href=#tomcat-url-%e8%b7%af%e5%be%84%e9%85%8d%e7%bd%ae class=header-mark></a>Tomcat url 路径配置</h3><p>如果想让 Tomcat 的根指向为 <code>webapps</code> 中的 <code>test</code> 应用该如何配置？？</p><p><em>准备测试数据</em></p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=o>[</span>root@10-7-171-239 webapps<span class=o>]</span><span class=c1># mkdir test</span>
+</span></span><span class=line><span class=cl><span class=o>[</span>root@10-7-171-239 webapps<span class=o>]</span><span class=c1># echo &#39;hello test file&#39; &gt; test/index.html</span>
+</span></span></code></pre></td></tr></table></div></div><p><em>修改 server.xml 配置文件, 在 <code>Host</code> 节点加入 <code>Context</code> 配置项，具体内容如下</em></p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-xml data-lang=xml><span class=line><span class=cl><span class=nt>&lt;Context</span> <span class=na>path=</span><span class=s>&#34;/&#34;</span> <span class=na>docBase=</span><span class=s>&#34;test/&#34;</span> <span class=na>reloadable=</span><span class=s>&#34;false&#34;</span> <span class=na>debug=</span><span class=s>&#34;0&#34;</span> <span class=nt>/&gt;</span>
+</span></span></code></pre></td></tr></table></div></div><ul><li><code>path</code>: 指定 url 路径，如果是 / 可以忽略不写</li><li><code>docBase</code>: 用于指定 WEB 应用路径，可以是相当路径（相对于 Host 的 <code>appBase</code> 属性的值），也可以是绝对路径</li><li><code>reloadable</code>: 是否自动重载，建议值设置为 <code>false</code>，此属性会影响服务性能</li></ul><p><em>重启服务，测试</em></p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=o>[</span>root@10-7-171-239 apache-tomcat-9.0.43<span class=o>]</span><span class=c1># ./bin/shutdown.sh</span>
+</span></span><span class=line><span class=cl><span class=o>[</span>root@10-7-171-239 apache-tomcat-9.0.43<span class=o>]</span><span class=c1># ./bin/startup.sh</span>
+</span></span><span class=line><span class=cl><span class=o>[</span>root@10-7-171-239 apache-tomcat-9.0.43<span class=o>]</span><span class=c1># curl localhost:8080</span>
+</span></span><span class=line><span class=cl>hello <span class=nb>test</span> file
+</span></span></code></pre></td></tr></table></div></div></div><div class=post-footer id=post-footer><div class=post-info><div class=post-info-line><div class=post-info-mod><span>更新于 2021-02-22</span></div><div class=post-info-license></div></div><div class=post-info-line><div class=post-info-md><span><a class=link-to-mardown href=/posts/tomcat-install/index.md target=_blank rel="noopener noreferrer">阅读原始文档</a></span></div><div class=post-info-share><span><a href=# title="分享到 Twitter" data-sharer=twitter data-url=https://liwanggui.com/posts/tomcat-install/ data-title="Tomcat 的简单使用" data-hashtags=tomcat><i class="fab fa-twitter fa-fw"></i></a><a href=# title="分享到 Facebook" data-sharer=facebook data-url=https://liwanggui.com/posts/tomcat-install/ data-hashtag=tomcat><i class="fab fa-facebook-square fa-fw"></i></a><a href=# title="分享到 WhatsApp" data-sharer=whatsapp data-url=https://liwanggui.com/posts/tomcat-install/ data-title="Tomcat 的简单使用" data-web><i class="fab fa-whatsapp fa-fw"></i></a><a href=# title="分享到 Line" data-sharer=line data-url=https://liwanggui.com/posts/tomcat-install/ data-title="Tomcat 的简单使用"><i data-svg-src=/lib/simple-icons/icons/line.min.svg></i></a><a href=# title="分享到 微博" data-sharer=weibo data-url=https://liwanggui.com/posts/tomcat-install/ data-title="Tomcat 的简单使用"><i class="fab fa-weibo fa-fw"></i></a><a href=# title="分享到 Myspace" data-sharer=myspace data-url=https://liwanggui.com/posts/tomcat-install/ data-title="Tomcat 的简单使用" data-description><i data-svg-src=/lib/simple-icons/icons/myspace.min.svg></i></a><a href=# title="分享到 Blogger" data-sharer=blogger data-url=https://liwanggui.com/posts/tomcat-install/ data-title="Tomcat 的简单使用" data-description><i class="fab fa-blogger fa-fw"></i></a><a href=# title="分享到 百度" data-sharer=baidu data-url=https://liwanggui.com/posts/tomcat-install/ data-title="Tomcat 的简单使用"><i data-svg-src=/lib/simple-icons/icons/baidu.min.svg></i></a><a href=# title="分享到 Evernote" data-sharer=evernote data-url=https://liwanggui.com/posts/tomcat-install/ data-title="Tomcat 的简单使用"><i class="fab fa-evernote fa-fw"></i></a></span></div></div></div><div class=post-info-more><section class=post-tags><i class="fas fa-tags fa-fw"></i>&nbsp;<a href=/tags/tomcat/>tomcat</a></section><section><span><a href=javascript:void(0); onclick=window.history.back()>返回</a></span>&nbsp;|&nbsp;<span><a href=/>主页</a></span></section></div><div class=post-nav><a href=/posts/keepalived-lvs-dr/ class=prev rel=prev title="Keepalived 实现 LVS 高可用负载均衡群集"><i class="fas fa-angle-left fa-fw"></i>Keepalived 实现 LVS 高可用负载均衡群集</a>
+<a href=/posts/tomcat-optimization/ class=next rel=next title="Tomcat 配置及运行权限优化">Tomcat 配置及运行权限优化<i class="fas fa-angle-right fa-fw"></i></a></div></div><div id=comments><div id=giscus></div><noscript>Please enable JavaScript to view the comments powered by <a href=https://giscus.app/>giscus</a>.</noscript></div></article></div></main><footer class=footer><div class=footer-container><div class=footer-line>由 <a href=https://gohugo.io/ target=_blank rel="noopener noreferrer" title="Hugo 0.101.0">Hugo</a> 强力驱动&nbsp;|&nbsp;主题 - <a href=https://github.com/HEIGE-PCloud/DoIt target=_blank rel="noopener noreferrer" title="DoIt 0.3.0"><i class="far fa-edit fa-fw"></i> DoIt</a></div><div class=footer-line><i class="far fa-copyright fa-fw"></i><span itemprop=copyrightYear>2017 - 2024</span><span class=author itemprop=copyrightHolder>&nbsp;<a href=/about/ target=_blank rel="noopener noreferrer">李王贵</a></span><span class=icp-splitter>&nbsp;|&nbsp;</span><br class=icp-br><span class=icp><a href=https://beian.miit.gov.cn target=_blank>赣ICP备2023001395号</a></span></div><div class=footer-line></div><div class=footer-line></div></div></footer></div><div id=fixed-buttons><a href=#back-to-top id=back-to-top-button class=fixed-button title=回到顶部><i class="fas fa-arrow-up fa-fw"></i>
+</a><a href=# id=view-comments class=fixed-button title=查看评论><i class="fas fa-comment fa-fw"></i></a></div><div id=cookieconsent-container></div><div class=assets><link rel=stylesheet href=/lib/lightgallery/lightgallery.min.css><link rel=stylesheet href=/lib/katex/katex.min.css><link rel=preload as=style onload='this.onload=null,this.rel="stylesheet"' href=/lib/katex/copy-tex.min.css><noscript><link rel=stylesheet href=/lib/katex/copy-tex.min.css></noscript><link rel=stylesheet href=/lib/cookieconsent/cookieconsent.min.css><script type=text/javascript>window.config={code:{copyTitle:"复制到剪贴板",maxShownLines:10},comment:{giscus:{darkTheme:"dark",dataCategory:"Announcements",dataCategoryId:"DIC_kwDOE7mEQ84CY9pq",dataEmitMetadata:"1",dataInputPosition:"top",dataLang:"zh-CN",dataMapping:"pathname",dataReactionsEnabled:"1",dataRepo:"liwanggui/liwanggui.github.io",dataRepoId:"MDEwOlJlcG9zaXRvcnkzMzA5MjUxMjM=",dataStrict:"0",lightTheme:"light"}},cookieconsent:{content:{dismiss:"同意",link:"了解更多",message:"本网站使用 Cookies 来改善您的浏览体验."},enable:!0,palette:{button:{background:"#f0f0f0"},popup:{background:"#1aa3ff"}},theme:"edgeless"},lightGallery:{actualSize:!1,exThumbImage:"data-thumbnail",hideBarsDelay:2e3,selector:".lightgallery",speed:400,thumbContHeight:80,thumbWidth:80,thumbnail:!0},math:{delimiters:[{display:!0,left:"$$",right:"$$"},{display:!0,left:"\\[",right:"\\]"},{display:!1,left:"$",right:"$"},{display:!1,left:"\\(",right:"\\)"}],strict:!1},search:{distance:100,findAllMatches:!1,fuseIndexURL:"/index.json",highlightTag:"em",ignoreFieldNorm:!1,ignoreLocation:!1,isCaseSensitive:!1,location:0,maxResultLength:10,minMatchCharLength:2,noResultsFound:"没有找到结果",snippetLength:50,threshold:.3,type:"fuse",useExtendedSearch:!1},sharerjs:!0,twemoji:!0}</script><script type=text/javascript src=/js/giscus.min.js defer></script><script type=text/javascript src=/lib/twemoji/twemoji.min.js defer></script><script type=text/javascript src=/js/twemoji.min.js defer></script><script type=text/javascript src=/lib/lightgallery/lightgallery.min.js></script><script type=text/javascript src=/lib/lightgallery/lg-thumbnail.min.js></script><script type=text/javascript src=/lib/lightgallery/lg-zoom.min.js></script><script type=text/javascript src=/lib/clipboard/clipboard.min.js></script><script type=text/javascript src=/lib/sharer/sharer.min.js></script><script type=text/javascript src=/lib/katex/katex.min.js defer></script><script type=text/javascript src=/lib/katex/auto-render.min.js defer></script><script type=text/javascript src=/lib/katex/copy-tex.min.js defer></script><script type=text/javascript src=/lib/katex/mhchem.min.js defer></script><script type=text/javascript src=/js/katex.min.js defer></script><script type=text/javascript src=/lib/cookieconsent/cookieconsent.min.js defer></script><script type=text/javascript src=/js/cookieconsent.min.js defer></script><script type=text/javascript src=/js/theme.min.js defer></script></div></body></html>
