@@ -22,11 +22,11 @@ install_dir=/usr/local/bin
 [ -f ${install_dir}/hugo ] || {
     echo "install hugo"
     if [[ -z "$download_url" ]]; then
-        echo "download url: http://dl.wglee.cn/linux/init/hugo"
-        sudo curl -so ${install_dir}/hugo  http://dl.wglee.cn/linux/init/hugo
+        echo "download url: http://qiniu.wglee.cn/linux/init/hugo"
+        sudo curl -q -fL -o ${install_dir}/hugo  http://qiniu.wglee.cn/linux/init/hugo
     else
         echo "download url: ${download_url}"
-        curl -sfL ${github_proxy}${download_url} | sudo tar xz -C ${install_dir} hugo
+        curl -q -fL ${github_proxy}${download_url} | sudo tar xz -C ${install_dir} hugo
     fi
 
     [ $? -eq 0 ] || {
