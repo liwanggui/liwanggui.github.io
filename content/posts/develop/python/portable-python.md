@@ -44,6 +44,14 @@ portable-python inspect /usr/bin/python3
 
 1. 安装依赖
 
+*安装 gcc 编译器*
+
+```bash
+yum install -y gcc gcc-c++
+```
+
+*python 编译依赖*
+
 ```bash
 yum install -y zlib-devel libffi-devel readline-devel bzip2-devel openssl-devel libuuid-devel gdbm-devel tk-devel
 ```
