@@ -247,16 +247,35 @@ EOF
 
 ### 连接测试 sentinel 
 
-#### sentinel 管理命令
+#### sentinel 命令
 
-```bash
-[root@localhost sentinel]# redis-cli -p 26379
-# 列出所有被监视的主服务器
-127.0.0.1:26379> SENTINEL masters
-# 列出所有被监视的从服务器
-127.0.0.1:26379> SENTINEL slaves <master name>
-# 强制开启 主从切换, 危险
-127.0.0.1:26379> SENTINEL failover <master name>
+sentinel 支持的合法命令如下：
+
+- `PING` sentinel 回复 PONG.
+- `SENTINEL masters` 显示被监控的所有master以及它们的状态.
+- `SENTINEL master` <master name> 显示指定master的信息和状态；
+- `SENTINEL slaves <master name>` 显示指定master的所有slave以及它们的状态；
+- `SENTINEL get-master-addr-by-name <master name>` 返回指定master的ip和端口，如果正在进行failover或者failover已经完成，将会显示被提升为master的slave的ip和端口。
+- `SENTINEL reset <pattern>` 重置名字匹配该正则表达式的所有的master的状态信息，清楚其之前的状态信息，以及slaves信息。
+- `SENTINEL failover <master name>` 强制sentinel执行failover，并且不需要得到其他sentinel的同意。但是failover后会将最新的配置发送给其他sentinel。
+
+#### 动态修改 Sentinel 配置
+
+从 `redis2.8.4` 开始，sentinel 提供了一组 API 用来添加，删除，修改 master 的配置。
+
+> 需要注意的是，如果你通过 API 修改了一个 sentinel 的配置， sentinel 不会把修改的配置告诉其他 sentinel 。你需要自己手动地对多个 sentinel 发送修改配置的命令。
+
+以下是一些修改 sentinel 配置的命令：
+
+- `SENTINEL MONITOR <name> <ip> <port> <quorum>` 这个命令告诉 sentinel 去监听一个新的 master
+- `SENTINEL REMOVE <name>` 命令sentinel放弃对某个master的监听
+- `SENTINEL SET <name> <option> <value>` 这个命令很像Redis的CONFIG SET命令，用来改变指定master的配置。支持多个 <option><value>。例如以下实例：
+- `SENTINEL SET objects-cache-master down-after-milliseconds 1000`
+
+只要是配置文件中存在的配置项，都可以用 `SENTINEL SET` 命令来设置。这个还可以用来设置 master 的属性，比如说 quorum(票数)，而不需要先删除 master，再重新添加 master。例如：
+
+```
+SENTINEL SET objects-cache-master quorum 5
 ```
 
 #### 测试主从切换
