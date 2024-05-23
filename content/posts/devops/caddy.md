@@ -28,21 +28,11 @@ sudo apt install caddy
 
 通过包安装 `Caddy` 的配置文件默认在 `/etc/caddy` 目录，配置文件为 `Caddyfile`
 
-```caddy
-# The Caddyfile is an easy way to configure your Caddy web server.
-#
-# Unless the file starts with a global options block, the first
-# uncommented line is always the address of your site.
-#
-# To use your own domain name (with automatic HTTPS), first make
-# sure your domain's A/AAAA DNS records are properly pointed to
-# this machine's public IP, then replace ":80" below with your
-# domain name.
-
+```caddyfile
 :80 {
 	# Set this path to your site's directory.
 	root * /usr/share/caddy
-
+	file_server
 	# Enable the static file server.
 	# file_server browse
 
@@ -58,7 +48,36 @@ sudo apt install caddy
 
 > 现在你可以在浏览器中输入 http://localhost 访问 caddy 默认页
 
-## 文件服务器
+
+*caddy.service*
+
+```
+[Unit]
+Description=Caddy
+Documentation=https://caddyserver.com/docs/
+After=network.target network-online.target
+Requires=network-online.target
+
+[Service]
+Type=notify
+User=caddy
+Group=caddy
+ExecStart=/usr/bin/caddy run --environ --config /etc/caddy/Caddyfile
+ExecReload=/usr/bin/caddy reload --config /etc/caddy/Caddyfile --force
+TimeoutStopSec=5s
+LimitNOFILE=1048576
+LimitNPROC=512
+PrivateTmp=true
+ProtectSystem=full
+AmbientCapabilities=CAP_NET_ADMIN CAP_NET_BIND_SERVICE
+
+[Install]
+WantedBy=multi-user.target
+```
+
+## 示例
+
+### 文件服务器
 
 修改 `Caddyfile` , 使用 `fileserver browse` 指令启用 `Caddy` 文件服务功能，配置如下：
 
@@ -69,9 +88,11 @@ dl.liwanggui.com {
 }
 ```
 
-## 反向代理 
+### 反向代理 
 
 `Caddy` 使用 `reverse_proxy` 指令启用反向代理功能
+
+> 语法参考: https://caddyserver.com/docs/caddyfile/directives/reverse_proxy#syntax
 
 ```
 liwanggui.com {
@@ -79,7 +100,7 @@ liwanggui.com {
 }
 ```
 
-## PHP 站点
+### PHP 站点
 
 使用 `php_fastcgi` 指令来配置 PHP 站点
 
@@ -90,10 +111,70 @@ liwanggui.com {
 }
 ```
 
-## 返回客户端地址
+### 返回客户端地址
 
 ```
 myip.liwanggui.com {
     respond {remote_host}
 }
+```
+
+### 子路径配置
+
+目录结构如下:
+
+```
+├── bar
+│   └── index.html
+└── root
+    └── index.html
+```
+
+实现
+
+```
+liwanggui.com ====> root/index.html
+liwanggui.com/abc ====> bar/index.html
+```
+
+Caddy 配置如下
+
+```
+liwanggui.com {
+
+	# 重定向 /abc -> /abc/
+    redir /abc /abc/  
+
+	# 匹配以 /abc/ 开头的请求
+	# handle_path 会去除 /abc 前缀，
+	# 如果不去除 /abc, 访问文件的路径是 /bar/abc/index.html (此路径是不存在的，返回 404)
+	# 去除 /abc 前缀，访问文件的路径是 /bar/index.html 
+    handle_path /abc/* {
+        root * /bar
+        file_server
+    }
+
+	# 匹配所有
+    handle {
+        root * /root
+        file_server
+    }
+}
+```
+
+等价于 nginx 的配置如下:
+
+```
+server {
+	listen 80;
+	server_name  liwanggui.com;
+
+	location / {
+		root /foo;
+	}
+
+	location /abc/ {
+		alias /foo/bar/;
+	}
+}   
 ```
