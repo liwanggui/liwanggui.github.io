@@ -230,8 +230,6 @@ hasCJKLanguage = true
     ruby = true
     #  是否使用 fraction 扩展语法
     fraction = true
-    #  是否使用 fontawesome 扩展语法
-    fontawesome = true
     # 是否在文章页面显示原始 Markdown 文档链接
     linkToMarkdown = true
     #  是否在 RSS 中显示全文内容
