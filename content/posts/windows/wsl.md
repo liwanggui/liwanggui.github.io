@@ -1,5 +1,5 @@
 ---
-title: "Windows linux 子系统 WSL 配置"
+title: "Windows linux 子系统 WSL"
 date: 2023-03-10T14:15:50+08:00
 draft: false
 categories: 
@@ -8,7 +8,26 @@ tags:
 - wsl
 ---
 
-## wsl 启用 systemd
+## WSL 全局配置
+
+使用 [.wslconfig](https://learn.microsoft.com/zh-cn/windows/wsl/wsl-config#wslconfig) 为 WSL 上运行的所有已安装的发行版配置全局设置
+
+文件路径位于：`C:\Users\<UserName>\.wslconfig`
+
+```ini
+[experimental]
+autoMemoryReclaim=gradual  # gradual  | dropcache | disabled
+networkingMode=mirrored    # 如果值为 mirrored，则会启用镜像网络模式。 默认或无法识别的字符串会生成 NAT 网络。
+#dnsTunneling=true
+firewall=true
+autoProxy=true
+```
+
+## WSL 发行版配置
+
+wsl.conf 文件会针对每个发行版配置设置
+
+### 启用 systemd
 
 许多 Linux 发行版（包括 Ubuntu）默认运行 “systemd”，WSL 最近添加了对此系统/服务管理器的支持，因此 WSL 更类似于在裸机上使用你最爱的 `Linux` 发行版。 需要 `WSL` 的 `0.67.6+` 版本才能启用 `systemd`。 使用命令 `wsl --version` 检查 WSL 版本
 
@@ -31,43 +50,220 @@ sudo apt install -y openssh-server
 /etc/init.d/ssh start
 ```
 
-> 注意: wsl 不支持 systemd 服务管理，并且每次开机网口 ip 会变
+> 提示: 如开启了 systemd ，可以使用 systemd 管理 ssh 服务，命令: systemctl enable --now ssh
 
-WSL 的 内网 ip 地址， 可以通过写 shell 脚本获取，获取后写入 Windows 的 hosts (`/mnt/c/Windows/System32/drivers/etc/hosts`) 文件中, 做本地解析。
+## 使用 cloud-init 初始化 WSL 实例
 
-为了在开机的时候启动 ssh 服务并获取内网 IP 地址可以写个启动初始化脚本 `init.wsl`
+[参考文档](https://cloudinit.readthedocs.io/en/latest/tutorial/wsl.html)
 
-在 WSL 中创建 `/etc/init.wsl` 开机启动脚本文件, 并添加执行权限 `chmod +x /etc/init.wsl`
+### 获取 Ubuntu WSL 镜像
+
+我们可以从 [Ubuntu 镜像服务器](https://cloud-images.ubuntu.com/wsl/) 下载 Ubuntu 24.04 WSL 镜像。
+
+在用户主目录下创建一个目录来存储 WSL 映像和安装数据。
+
+```powershell
+mkdir ~\wsl-images
+```
+
+下载 Ubuntu 24.04 WSL 映像
+
+```powershell
+Invoke-WebRequest -Uri https://cloud-images.ubuntu.com/wsl/noble/current/ubuntu-noble-wsl-amd64-wsl.rootfs.tar.gz -OutFile wsl-images\ubuntu-noble-wsl-amd64-wsl.rootfs.tar.gz
+```
+
+将 image 导入 WSL 并将其存储在 wsl-images 目录中。
+
+```powershell
+wsl --import Ubuntu-24.04 wsl-images .\wsl-images\ubuntu-noble-wsl-amd64-wsl.rootfs.tar.gz
+```
+
+### 创建 cloud-init 初始化配置
+
+用户数据是用户自定义 cloud-init 实例的主要方式。打开记事本并粘贴以下内容：
+
+```yaml
+#cloud-config
+
+apt:
+  sources_list: |
+    Types: deb
+    URIs: http://mirrors.ustc.edu.cn/ubuntu
+    Suites: noble noble-updates noble-backports
+    Components: main universe restricted multiverse
+    Signed-By: /usr/share/keyrings/ubuntu-archive-keyring.gpg
+    
+    ## Ubuntu security updates. Aside from URIs and Suites,
+    ## this should mirror your choices in the previous section.
+    Types: deb
+    URIs: http://security.ubuntu.com/ubuntu
+    Suites: noble-security
+    Components: main universe restricted multiverse
+    Signed-By: /usr/share/keyrings/ubuntu-archive-keyring.gpg
+
+package_update: true
+
+packages:
+  - openssh-client
+  - openssh-server
+  - git
+  - wget 
+  - lrzsz
+  - iotop
+
+timezone: Asia/Shanghai
+
+write_files:
+  - content: |
+      [network]
+      hostname = wsl2
+      #generateHosts = false
+      generateResolvConf = false
+
+      [boot]
+      systemd=true
+    path: /etc/wsl.conf
+    owner: root:root
+    permissions: '0644'
+  - content: |
+      nameserver 180.76.76.76
+      nameserver 223.5.5.5
+    path: /etc/resolv.conf
+    owner: root:root
+    permissions: '0644'
+
+# 默认用户
+user: liwanggui
+
+users:
+- name: liwanggui
+  ssh_authorized_keys:
+    - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCjvxWX2G+cRUn5dFQr4wZEDD7QAI3lWhHLM5e....
+
+ssh_authorized_keys:
+  - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCjvxWX2G+cRUn5dFQr4wZEDD7QAI3lWhHLM5e....
+```
+
+将文件保存至 `%USERPROFILE%\.cloud-init\Ubuntu-24.04.user-data`
+
+> 例如，如果您的用户名是 me，则路径为 `C:\Users\me\.cloud-init\Ubuntu-24.04.user-data`。确保文件以`.user-data`扩展名保存，而不是以`.txt`文件形式保存。
+
+
+### 启动 Ubuntu WSL 实例
+
+```powershell
+wsl --distribution Ubuntu-24.04
+```
+
+### 验证是否 cloud-init 成功
+
+在验证用户数据之前，让我们等待 cloud-init 成功完成：
 
 ```bash
-#!/bin/bash
-
-IPADDR=$(ip addr show eth0 | grep 'inet ' | awk '{print $2}')
-
-tempfile=$(tempfile)
-
-cat /mnt/c/Windows/System32/drivers/etc/hosts > $tempfile
-sed -i '/wslhost/d' $tempfile
-echo "${IPADDR%%/*}       wslhost" >> $tempfile
-cat $tempfile > /mnt/c/Windows/System32/drivers/etc/hosts
-
-/bin/rm -f $tempfile
-
-/etc/init.d/ssh start
+cloud-init status --wait
 ```
+
+其输出结果如下：
+
+```
+status: done
+```
+
+现在我们可以看到 cloud-init 已经检测到我们在 WSL 中运行：
+
+```bash
+cloud-id
+```
+
+其输出结果如下：
+
+```
+wsl
+```
+
+### 验证我们的用户数据
+
+现在我们知道 cloud-init 已经成功运行，我们可以验证它是否收到了我们之前提供的预期用户数据：
+
+```bash
+cloud-init query userdata
+```
+
+这将在终端窗口打印以下内容：
+
+```yaml
+#cloud-config
+
+apt:
+  sources_list: |
+    Types: deb
+    URIs: http://mirrors.ustc.edu.cn/ubuntu
+    Suites: noble noble-updates noble-backports
+    Components: main universe restricted multiverse
+    Signed-By: /usr/share/keyrings/ubuntu-archive-keyring.gpg
+    
+    ## Ubuntu security updates. Aside from URIs and Suites,
+    ## this should mirror your choices in the previous section.
+    Types: deb
+    URIs: http://security.ubuntu.com/ubuntu
+    Suites: noble-security
+    Components: main universe restricted multiverse
+    Signed-By: /usr/share/keyrings/ubuntu-archive-keyring.gpg
+
+package_update: true
+
+packages:
+  - openssh-client
+  - openssh-server
+  - git
+  - wget 
+  - lrzsz
+  - iotop
+
+timezone: Asia/Shanghai
+
+write_files:
+  - content: |
+      [network]
+      hostname = wsl2
+      #generateHosts = false
+      generateResolvConf = false
+
+      [boot]
+      systemd=true
+    path: /etc/wsl.conf
+    owner: root:root
+    permissions: '0644'
+  - content: |
+      nameserver 180.76.76.76
+      nameserver 223.5.5.5
+    path: /etc/resolv.conf
+    owner: root:root
+    permissions: '0644'
+
+# 默认用户
+user: liwanggui
+
+users:
+- name: liwanggui
+  ssh_authorized_keys:
+    - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCjvxWX2G+cRUn5dFQr4wZEDD7QAI3lWhHLM5e....
+
+ssh_authorized_keys:
+  - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCjvxWX2G+cRUn5dFQr4wZEDD7QAI3lWhHLM5e....
+```
+
+## WSL 开机启动
 
 配置开机启动, 按 Win + R 键输入 "`shell:startup`" 打开启动目录，创建 `wsl-start.vbs` 文件， 内容如下
 
 ```vbs
 Set ws = CreateObject("Wscript.Shell")
-ws.run "wsl -d Ubuntu-22.04 -u root /etc/init.wsl", vbhide
+ws.run "wsl -d Ubuntu-22.04 -u root", vbhide
 ```
 
 > 注意: `-d` 参数为你安装的 `linux` 发行版名称，使用 `wsl -l` 查看
 
-> 注意: 如何启用了 `systemd` , 就不用启动时执行 `init.wsl` 脚本 <br />
-> 1. 直接通过 `systemd` 配置自启 
-> 2. 也可以通过 `wsl.conf` 配置自启
 
 ## 故障问题
 
