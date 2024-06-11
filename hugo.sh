@@ -10,7 +10,7 @@
 #***************************************************************************
 #
 
-version="v0.101.0"
+version="v0.127.0"
 platform=$(uname -s)
 
 github_proxy="https://gh.wglee.org/"
@@ -21,13 +21,8 @@ install_dir=/usr/local/bin
 
 [ -f ${install_dir}/hugo ] || {
     echo "install hugo"
-    if [[ -z "$download_url" ]]; then
-        echo "download url: http://qiniu.wglee.cn/linux/init/hugo"
-        sudo curl -q -fL -o ${install_dir}/hugo  http://qiniu.wglee.cn/linux/init/hugo
-    else
-        echo "download url: ${download_url}"
-        curl -q -fL ${github_proxy}${download_url} | sudo tar xz -C ${install_dir} hugo
-    fi
+    echo "download url: ${download_url}"
+    curl -q -fL ${github_proxy}${download_url} | sudo tar xz -C ${install_dir} hugo
 
     [ $? -eq 0 ] || {
         echo "installation failure"
