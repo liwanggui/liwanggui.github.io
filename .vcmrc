@@ -9,9 +9,7 @@
     "perf",
     "test",
     "chore",
-    "revert",
-    "build",
-    "ci"
+    "revert"
   ],
   "warnOnFail": false,
   "autoFix": false
