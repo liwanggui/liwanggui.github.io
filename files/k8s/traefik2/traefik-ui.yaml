@@ -1,0 +1,41 @@
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: traefik-dashboard
+  namespace: kube-system
+spec:
+  entryPoints:
+  - web
+  routes:
+  - match: Host(`traefik.host.com`)
+    kind: Rule
+    services:
+    - name: api@internal
+      kind: TraefikService
+  - match: Host(`traefik.host.com`) && PathPrefix(`/metrics`)
+    kind: Rule
+    services:
+    - name: prometheus@internal
+      kind: TraefikService
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "8080"
+  labels:
+    app: traefik
+  name: traefik
+  namespace: kube-system
+spec:
+spec:
+  ports:
+  - name: "web"
+    port: 8080
+    protocol: TCP
+    targetPort: 8080
+  selector:
+    app: traefik
+  type: ClusterIP
