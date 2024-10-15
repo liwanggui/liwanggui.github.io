@@ -20,6 +20,8 @@ Barrier 是一款免费且开源的跨系统键盘鼠标共享软件，主要的
 - 跨系统。适用于 Windows、macOS 和 Linux 系统
 - 免费、开源
 
+> 注意: Barrier 已处于无人维护状态，[input-leap](https://github.com/input-leap/input-leap) 是 Barrier 的一个活跃的分支，为了更好的使用体验可以使用 [input-leap](https://github.com/input-leap/input-leap) 替代 Barrier
+
 ## 安装
 
 ### Windows 和 macOS
