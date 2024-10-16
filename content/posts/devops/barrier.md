@@ -8,9 +8,13 @@ tags:
 - Barrier
 ---
 
-## 简介
+## 说明
 
-键鼠共享软件其实不止 [barrier](https://github.com/debauchee/barrier) 这一款，其他的还有 Mouse Without Borders、[Synergy](https://symless.com/synergy) 等。但 Mouse Without Borders 只适用于 Windows 系统，而 [Synergy](https://symless.com/synergy)  是一款收费软件。
+键鼠共享软件其实不止 [Barrier](https://github.com/debauchee/barrier) 这一款，其他的还有:
+
+- [Mouse Without Borders](https://www.microsoft.com/en-us/download/details.aspx?id=35460) 只适用于 Windows 系统
+- [Synergy](https://symless.com/synergy)  是一款收费软件
+- [sharemouse](https://www.sharemouse.com/) 同样是款收费软件，可以免费使用，但功能有限制
 
 [Barrier](https://github.com/debauchee/barrier) 是和 Synergy 同源的一款软件。最初 Synergy 是基于 Chris Schoeneman 编写的 CosmoSynergy 开发的一个免费软件，Synergy 在迭代数个版本后开始收费，于是有团队开始基于 Synergy 的开源内核再次开发出了免费版的 barrier。
 
@@ -20,7 +24,7 @@ Barrier 是一款免费且开源的跨系统键盘鼠标共享软件，主要的
 - 跨系统。适用于 Windows、macOS 和 Linux 系统
 - 免费、开源
 
-> 注意: Barrier 已处于无人维护状态，[input-leap](https://github.com/input-leap/input-leap) 是 Barrier 的一个活跃的分支，为了更好的使用体验可以使用 [input-leap](https://github.com/input-leap/input-leap) 替代 Barrier
+> 注意: Barrier 已处于无人维护状态，[input-leap](https://github.com/input-leap/input-leap) 是 Barrier 的一个活跃的分支，如使用 barrier 有问题，可以尝试使用 [input-leap](https://github.com/input-leap/input-leap) 替代 Barrier
 
 ## 安装
 
