@@ -1,0 +1,36 @@
+kind: DaemonSet
+apiVersion: apps/v1
+metadata:
+  name: traefik
+  namespace: kube-system
+  labels:
+    app: traefik
+spec:
+  selector:
+    matchLabels:
+      app: traefik
+  template:
+    metadata:
+      labels:
+        app: traefik
+    spec:
+      serviceAccountName: traefik-ingress-controller
+      hostNetwork: true
+      containers:
+        - name: traefik
+          image: traefik:v2.4
+          args:
+            - --log.level=INFO
+            - --accesslog
+            - --api=true   # 开启 api/dashboard 会创建一个名为 api@internal 的特殊 service，在 dashboard 中可以直接使用这个 service 来访问
+            - --api.insecure
+            - --metrics.prometheus=true
+            - --metrics.prometheus.addentrypointslabels
+            - --metrics.prometheus.addserviceslabels
+            - --entrypoints.web.address=:80 # 定义名为 web 的入口
+            - --entryPoints.websecure.address=:443 # 定义名为 websecure 的入口
+            - --entrypoints.tcpep.address=:8000 # 定义名为 tcpep 的入口
+            - --entrypoints.web.forwardedheaders.insecure # 信任 web 入口 所有转发的 header 头信息，可以用于获取客户端真实 IP 地址
+            - --entrypoints.websecure.forwardedheaders.insecure # 信任 websecure 入口 所有转发的 header 头信息，可以用于获取客户端真实 IP 地址
+            - --providers.kubernetescrd
+            - --providers.kubernetesingress
