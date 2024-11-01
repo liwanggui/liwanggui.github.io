@@ -2,7 +2,7 @@
 title: "SSH 使用小技巧"
 date: 2021-06-13T17:40:15+08:00
 draft: false
-categories: 
+categories:
 - devops
 tags:
 - ssh
@@ -31,7 +31,7 @@ ssh username@ip_address -p 22 -o StrictHostKeyChecking=no
 **通过私钥计算公钥**
 
 ```bash
-ssh-keygen.exe -f ~/.ssh/id_rsa -y 
+ssh-keygen.exe -f ~/.ssh/id_rsa -y
 ```
 
 **查看公钥的指纹**
@@ -76,9 +76,9 @@ EOF
 - Gateway: 100.100.100.100
 - Client: 100.100.100.101
 
-> 说明：其中 `Server` 不可以访问外网; 
+> 说明：其中 `Server` 不可以访问外网;
 
-- `Gateway` 可以访问 `Server`， 同时与外网互通;  
+- `Gateway` 可以访问 `Server`， 同时与外网互通;
 - `Client` 不能直接访问 `Server` 需要先连接 `Gateway` 才可以访问 `Server`。
 
 ### ssh 端口转发
@@ -141,3 +141,8 @@ ssh -D 8080 -f -C -q -N fred@server.example.org
 nohup ssh -D 8080 -f -C -q -N fred@server.example.org &
 ```
 
+### 通过环境变量 `DISPLAY` 和 `SSH_ASKPASS` 获取 ssh key 密码
+
+```bash
+DISPLAY=":0.0" SSH_ASKPASS=~/.ssh/askpass.sh ssh-add ~/.ssh/id_rsa
+```
