@@ -13,7 +13,7 @@
 PLATFORM=$(uname -s)
 INSTALL_DIR="/usr/local/bin"
 # 如有指定版本，就安装指定版本的 hugo
-HUGO_VERSION=${HUGO_VERSION:-""}
+HUGO_VERSION=${HUGO_VERSION:-"v0.124.0"}
 HUGO_REPO_NAME="gohugoio/hugo"
 GITHUB_PROXY="${GITHUB_PROXY:-https://gh.wglee.org/}"
 LATEST_API_URL="https://api.github.com/repos/${HUGO_REPO_NAME}/releases/latest"
