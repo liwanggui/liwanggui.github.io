@@ -40,7 +40,7 @@ hasCJKLanguage = true
     pre = ""
     post = ""
     name = "烹饪"
-    url = "https://cook.liwanggui.com/"
+    url = "http://cook.liwanggui.com/"
     title = "程序员做饭指南"
     weight = 4
   [[menu.main]]
