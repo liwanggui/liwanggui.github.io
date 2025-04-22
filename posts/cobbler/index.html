@@ -1,0 +1,935 @@
+<!doctype html><html lang=zh-CN><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><meta name=robots content="noodp"><title>使用 cobbler 批量部署 bclinux7.2 - _浅行</title><meta name=Description content="_浅行"><meta property="og:url" content="https://liwanggui.com/posts/cobbler/">
+<meta property="og:site_name" content="_浅行"><meta property="og:title" content="使用 cobbler 批量部署 bclinux7.2"><meta property="og:description" content="1. Cobbler介绍Cobbler是一个Linux服务器安装的服务，可以通过网络启动(PXE)的方式来快速安装、重装物理服务器和虚拟机，同时"><meta property="og:locale" content="zh_CN"><meta property="og:type" content="article"><meta property="article:section" content="posts"><meta property="article:published_time" content="2021-06-12T17:40:50+08:00"><meta property="article:modified_time" content="2021-06-12T17:40:50+08:00"><meta property="article:tag" content="Cobbler"><meta property="og:image" content="https://liwanggui.com/logo.png"><meta name=twitter:card content="summary_large_image"><meta name=twitter:image content="https://liwanggui.com/logo.png"><meta name=twitter:title content="使用 cobbler 批量部署 bclinux7.2"><meta name=twitter:description content="1. Cobbler介绍Cobbler是一个Linux服务器安装的服务，可以通过网络启动(PXE)的方式来快速安装、重装物理服务器和虚拟机，同时"><meta name=application-name content="LoveIt"><meta name=apple-mobile-web-app-title content="LoveIt"><meta name=theme-color content="#f8f8f8"><meta name=msapplication-TileColor content="#da532c"><link rel=canonical href=https://liwanggui.com/posts/cobbler/><link rel=prev href=https://liwanggui.com/posts/ansible-playbook/><link rel=next href=https://liwanggui.com/posts/windows-cmd/><link rel=stylesheet href=/css/main.min.css><link rel=stylesheet href=/css/style.min.css><script type=application/ld+json>{"@context":"https://schema.org","@type":"BlogPosting","headline":"使用 cobbler 批量部署 bclinux7.2","inLanguage":"zh-CN","mainEntityOfPage":{"@type":"WebPage","@id":"https://liwanggui.com/posts/cobbler/"},"genre":"posts","keywords":["cobbler"],"wordcount":3826,"url":"https://liwanggui.com/posts/cobbler/","datePublished":"2021-06-12T17:40:50+08:00","dateModified":"2021-06-12T17:40:50+08:00","publisher":{"@type":"Organization","name":""},"author":{"@type":"Person","name":"李王贵","url":"/about/"},"description":""}</script></head><body data-instant-intensity=viewport><script type=text/javascript>function setTheme(e){document.body.setAttribute("theme",e),document.documentElement.className=e,document.documentElement.style.setProperty("color-scheme",e==="light"?"light":"dark"),e==="light"?document.documentElement.classList.remove("tw-dark"):document.documentElement.classList.add("tw-dark"),window.theme=e,window.isDark=window.theme!=="light"}function saveTheme(e){window.localStorage&&localStorage.setItem("theme",e)}function getMeta(e){const t=document.getElementsByTagName("meta");for(let n=0;n<t.length;n++)if(t[n].getAttribute("name")===e)return t[n];return""}if(window.localStorage&&localStorage.getItem("theme")){let e=localStorage.getItem("theme");e==="light"||e==="dark"?setTheme(e):setTheme(window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light")}else"auto"==="light"||"auto"==="dark"?(setTheme("auto"),saveTheme("auto")):(saveTheme("auto"),setTheme(window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"));let metaColors={light:"#f8f8f8",dark:"#161b22"};getMeta("theme-color").content=metaColors[document.body.getAttribute("theme")],window.switchThemeEventSet=new Set</script><div id=back-to-top></div><div id=mask></div><div class=wrapper><header class="desktop print:!tw-hidden" id=header-desktop><div class=header-wrapper><div class=header-title><a href=/ title=_浅行><span class=tw-mr-1><i class='far fa-kiss-wink-heart fa-fw'></i></span>_浅行</a></div><div class=menu><div class=menu-inner><a class=menu-item href=/posts/ title=文章列表>文章 </a><a class=menu-item href=/tags/ title=标签云>标签 </a><a class=menu-item href=/categories/ title=分类>分类 </a><a class=menu-item href=http://cook.liwanggui.com/ title=程序员做饭指南 rel="noopener noreferrer" target=_blank>烹饪 </a><a class=menu-item href=/about/index.html title=关于>关于 </a><span class="menu-item delimiter"></span><span class="menu-item search" id=search-desktop>
+<input type=text placeholder=搜索文章标题或内容... id=search-input-desktop>
+<button class="search-button search-toggle" id=search-toggle-desktop title=搜索>
+<svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M505 442.7 405.3 343c-4.5-4.5-10.6-7-17-7H372c27.6-35.3 44-79.7 44-128C416 93.1 322.9.0 208 0S0 93.1.0 208s93.1 208 208 208c48.3.0 92.7-16.4 128-44v16.3c0 6.4 2.5 12.5 7 17l99.7 99.7c9.4 9.4 24.6 9.4 33.9.0l28.3-28.3c9.4-9.4 9.4-24.6.1-34zM208 336c-70.7.0-128-57.2-128-128 0-70.7 57.2-128 128-128 70.7.0 128 57.2 128 128 0 70.7-57.2 128-128 128z"/></svg>
+</button>
+<button class="search-button search-clear" id=search-clear-desktop title=清空>
+<svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M256 8C119 8 8 119 8 256s111 248 248 248 248-111 248-248S393 8 256 8zm121.6 313.1c4.7 4.7 4.7 12.3.0 17L338 377.6c-4.7 4.7-12.3 4.7-17 0L256 312l-65.1 65.6c-4.7 4.7-12.3 4.7-17 0L134.4 338c-4.7-4.7-4.7-12.3.0-17l65.6-65-65.6-65.1c-4.7-4.7-4.7-12.3.0-17l39.6-39.6c4.7-4.7 12.3-4.7 17 0l65 65.7 65.1-65.6c4.7-4.7 12.3-4.7 17 0l39.6 39.6c4.7 4.7 4.7 12.3.0 17L312 256l65.6 65.1z"/></svg>
+</button>
+<span class="search-button search-loading tw-animate-spin" id=search-loading-desktop><svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M304 48c0 26.51-21.49 48-48 48s-48-21.49-48-48 21.49-48 48-48 48 21.49 48 48zm-48 368c-26.51.0-48 21.49-48 48s21.49 48 48 48 48-21.49 48-48-21.49-48-48-48zm208-208c-26.51.0-48 21.49-48 48s21.49 48 48 48 48-21.49 48-48-21.49-48-48-48zM96 256c0-26.51-21.49-48-48-48S0 229.49.0 256s21.49 48 48 48 48-21.49 48-48zm12.922 99.078c-26.51.0-48 21.49-48 48s21.49 48 48 48 48-21.49 48-48c0-26.509-21.491-48-48-48zm294.156.0c-26.51.0-48 21.49-48 48s21.49 48 48 48 48-21.49 48-48c0-26.509-21.49-48-48-48zM108.922 60.922c-26.51.0-48 21.49-48 48s21.49 48 48 48 48-21.49 48-48-21.491-48-48-48z"/></svg>
+</span></span><button class="menu-item theme-switch" aria-label=切换主题><svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M8 256c0 136.966 111.033 248 248 248s248-111.034 248-248S392.966 8 256 8 8 119.033 8 256zm248 184V72c101.705.0 184 82.311 184 184 0 101.705-82.311 184-184 184z"/></svg></button></div></div></div></header><header class="mobile print:!tw-hidden" id=header-mobile><div class=header-container><div class=header-wrapper><div class=header-title><a href=/ title=_浅行><span class=tw-mr-1><i class='far fa-kiss-wink-heart fa-fw'></i></span>_浅行</a></div><div class=menu-toggle id=menu-toggle-mobile><span></span><span></span><span></span></div></div><div class=menu id=menu-mobile><div class=search-wrapper><div class="search mobile" id=search-mobile><input type=text placeholder=搜索文章标题或内容... id=search-input-mobile>
+<button class="search-button search-toggle tw-h-10" id=search-toggle-mobile title=搜索>
+<svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M505 442.7 405.3 343c-4.5-4.5-10.6-7-17-7H372c27.6-35.3 44-79.7 44-128C416 93.1 322.9.0 208 0S0 93.1.0 208s93.1 208 208 208c48.3.0 92.7-16.4 128-44v16.3c0 6.4 2.5 12.5 7 17l99.7 99.7c9.4 9.4 24.6 9.4 33.9.0l28.3-28.3c9.4-9.4 9.4-24.6.1-34zM208 336c-70.7.0-128-57.2-128-128 0-70.7 57.2-128 128-128 70.7.0 128 57.2 128 128 0 70.7-57.2 128-128 128z"/></svg>
+</button>
+<button class="search-button search-clear" id=search-clear-mobile title=清空>
+<svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M256 8C119 8 8 119 8 256s111 248 248 248 248-111 248-248S393 8 256 8zm121.6 313.1c4.7 4.7 4.7 12.3.0 17L338 377.6c-4.7 4.7-12.3 4.7-17 0L256 312l-65.1 65.6c-4.7 4.7-12.3 4.7-17 0L134.4 338c-4.7-4.7-4.7-12.3.0-17l65.6-65-65.6-65.1c-4.7-4.7-4.7-12.3.0-17l39.6-39.6c4.7-4.7 12.3-4.7 17 0l65 65.7 65.1-65.6c4.7-4.7 12.3-4.7 17 0l39.6 39.6c4.7 4.7 4.7 12.3.0 17L312 256l65.6 65.1z"/></svg>
+</button>
+<span class="search-button search-loading tw-animate-spin" id=search-loading-mobile><svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M304 48c0 26.51-21.49 48-48 48s-48-21.49-48-48 21.49-48 48-48 48 21.49 48 48zm-48 368c-26.51.0-48 21.49-48 48s21.49 48 48 48 48-21.49 48-48-21.49-48-48-48zm208-208c-26.51.0-48 21.49-48 48s21.49 48 48 48 48-21.49 48-48-21.49-48-48-48zM96 256c0-26.51-21.49-48-48-48S0 229.49.0 256s21.49 48 48 48 48-21.49 48-48zm12.922 99.078c-26.51.0-48 21.49-48 48s21.49 48 48 48 48-21.49 48-48c0-26.509-21.491-48-48-48zm294.156.0c-26.51.0-48 21.49-48 48s21.49 48 48 48 48-21.49 48-48c0-26.509-21.49-48-48-48zM108.922 60.922c-26.51.0-48 21.49-48 48s21.49 48 48 48 48-21.49 48-48-21.491-48-48-48z"/></svg></span></div><button class=search-cancel id=search-cancel-mobile>
+取消</button></div><a class=menu-item href=/posts/ title=文章列表>文章</a><a class=menu-item href=/tags/ title=标签云>标签</a><a class=menu-item href=/categories/ title=分类>分类</a><a class=menu-item href=http://cook.liwanggui.com/ title=程序员做饭指南 rel="noopener noreferrer" target=_blank>烹饪</a><a class=menu-item href=/about/index.html title=关于>关于</a><button class="menu-item theme-switch tw-w-full" aria-label=切换主题><svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M8 256c0 136.966 111.033 248 248 248s248-111.034 248-248S392.966 8 256 8 8 119.033 8 256zm248 184V72c101.705.0 184 82.311 184 184 0 101.705-82.311 184-184 184z"/></svg></button></div></div></header><div class="search-dropdown desktop"><div id=search-dropdown-desktop></div></div><div class="search-dropdown mobile"><div id=search-dropdown-mobile></div></div><main class=main><div class=container><div class="toc print:!tw-hidden" id=toc-auto><h2 class=toc-title>目录</h2><div class=toc-content id=toc-content-auto><nav id=TableOfContents><ul><li><a href=#1-cobbler介绍>1. Cobbler介绍</a><ul><li><a href=#11-cobbler集成的服务>1.1 Cobbler集成的服务</a></li><li><a href=#12-系统环境准备>1.2 系统环境准备</a></li></ul></li><li><a href=#2-cobbler的安装>2. Cobbler的安装</a><ul><li><a href=#21-安装cobbler>2.1 安装Cobbler</a></li><li><a href=#22-配置cobbler>2.2 配置Cobbler</a></li><li><a href=#23-配置dhcp>2.3 配置DHCP</a></li><li><a href=#24-同步cobbler配置>2.4 同步cobbler配置</a></li><li><a href=#25-开机启动>2.5 开机启动</a></li></ul></li><li><a href=#3-cobbler-命令行管理>3. cobbler 命令行管理</a><ul><li><a href=#31-查看命令帮助>3.1 查看命令帮助</a></li><li><a href=#32-导入镜像>3.2 导入镜像</a></li><li><a href=#33-指定kscfg文件及调整内核参数>3.3 指定ks.cfg文件及调整内核参数</a></li><li><a href=#34-安装系统>3.4 安装系统</a></li><li><a href=#35-kscfg-文件>3.5 ks.cfg 文件</a></li></ul></li></ul></nav></div></div><script>document.getElementsByTagName("main")[0].setAttribute("autoTOC","true")</script><article class="page single print:!tw-w-full print:!tw-max-w-none print:!tw-m-0 print:!tw-p-0"><h1 class=single-title>使用 cobbler 批量部署 bclinux7.2</h1><div class=post-meta><div class=post-meta-line><span class=post-author><svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><path d="M248 8C111 8 0 119 0 256s111 248 248 248 248-111 248-248S385 8 248 8zm0 96c48.6.0 88 39.4 88 88s-39.4 88-88 88-88-39.4-88-88 39.4-88 88-88zm0 344c-58.7.0-111.3-26.6-146.5-68.2 18.8-35.4 55.6-59.8 98.5-59.8 2.4.0 4.8.4 7.1 1.1 13 4.2 26.6 6.9 40.9 6.9s28-2.7 40.9-6.9c2.3-.7 4.7-1.1 7.1-1.1 42.9.0 79.7 24.4 98.5 59.8C359.3 421.4 306.7 448 248 448z"/></svg><a href=/about/ title=Author rel=author class=author>李王贵</a>
+</span>&nbsp;<span class=post-category>收录于 </span>&nbsp;<span class=post-category>类别 <a href=/categories/devops/><svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M464 128H272l-54.63-54.63c-6-6-14.14-9.37-22.63-9.37H48C21.49 64 0 85.49.0 112v288c0 26.51 21.49 48 48 48h416c26.51.0 48-21.49 48-48V176c0-26.51-21.49-48-48-48zm0 272H48V112h140.12l54.63 54.63c6 6 14.14 9.37 22.63 9.37H464v224z"/></svg>Devops</a></span></div><div class=post-meta-line><svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M148 288h-40c-6.6.0-12-5.4-12-12v-40c0-6.6 5.4-12 12-12h40c6.6.0 12 5.4 12 12v40c0 6.6-5.4 12-12 12zm108-12v-40c0-6.6-5.4-12-12-12h-40c-6.6.0-12 5.4-12 12v40c0 6.6 5.4 12 12 12h40c6.6.0 12-5.4 12-12zm96 0v-40c0-6.6-5.4-12-12-12h-40c-6.6.0-12 5.4-12 12v40c0 6.6 5.4 12 12 12h40c6.6.0 12-5.4 12-12zm-96 96v-40c0-6.6-5.4-12-12-12h-40c-6.6.0-12 5.4-12 12v40c0 6.6 5.4 12 12 12h40c6.6.0 12-5.4 12-12zm-96 0v-40c0-6.6-5.4-12-12-12h-40c-6.6.0-12 5.4-12 12v40c0 6.6 5.4 12 12 12h40c6.6.0 12-5.4 12-12zm192 0v-40c0-6.6-5.4-12-12-12h-40c-6.6.0-12 5.4-12 12v40c0 6.6 5.4 12 12 12h40c6.6.0 12-5.4 12-12zm96-260v352c0 26.5-21.5 48-48 48H48c-26.5.0-48-21.5-48-48V112c0-26.5 21.5-48 48-48h48V12c0-6.6 5.4-12 12-12h40c6.6.0 12 5.4 12 12v52h128V12c0-6.6 5.4-12 12-12h40c6.6.0 12 5.4 12 12v52h48c26.5.0 48 21.5 48 48zm-48 346V160H48v298c0 3.3 2.7 6 6 6h340c3.3.0 6-2.7 6-6z"/></svg>&nbsp;<time datetime=2021-06-12>2021-06-12</time>&nbsp;<svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><path d="M402.3 344.9l32-32c5-5 13.7-1.5 13.7 5.7V464c0 26.5-21.5 48-48 48H48c-26.5.0-48-21.5-48-48V112c0-26.5 21.5-48 48-48h273.5c7.1.0 10.7 8.6 5.7 13.7l-32 32c-1.5 1.5-3.5 2.3-5.7 2.3H48v352h352V350.5c0-2.1.8-4.1 2.3-5.6zm156.6-201.8L296.3 405.7l-90.4 10c-26.2 2.9-48.5-19.2-45.6-45.6l10-90.4L432.9 17.1c22.9-22.9 59.9-22.9 82.7.0l43.2 43.2c22.9 22.9 22.9 60 .1 82.8zM460.1 174 402 115.9 216.2 301.8l-7.3 65.3 65.3-7.3L460.1 174zm64.8-79.7-43.2-43.2c-4.1-4.1-10.8-4.1-14.8.0L436 82l58.1 58.1 30.9-30.9c4-4.2 4-10.8-.1-14.9z"/></svg>&nbsp;<time datetime=2021-06-12>2021-06-12</time>&nbsp;<svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M497.9 142.1l-46.1 46.1c-4.7 4.7-12.3 4.7-17 0l-111-111c-4.7-4.7-4.7-12.3.0-17l46.1-46.1c18.7-18.7 49.1-18.7 67.9.0l60.1 60.1c18.8 18.7 18.8 49.1.0 67.9zM284.2 99.8 21.6 362.4.4 483.9c-2.9 16.4 11.4 30.6 27.8 27.8l121.5-21.3 262.6-262.6c4.7-4.7 4.7-12.3.0-17l-111-111c-4.8-4.7-12.4-4.7-17.1.0zM124.1 339.9c-5.5-5.5-5.5-14.3.0-19.8l154-154c5.5-5.5 14.3-5.5 19.8.0s5.5 14.3.0 19.8l-154 154c-5.5 5.5-14.3 5.5-19.8.0zM88 424h48v36.3l-64.5 11.3-31.1-31.1L51.7 376H88v48z"/></svg>&nbsp;约 3826 字&nbsp;<svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M256 8C119 8 8 119 8 256s111 248 248 248 248-111 248-248S393 8 256 8zm0 448c-110.5.0-2e2-89.5-2e2-2e2S145.5 56 256 56s2e2 89.5 2e2 2e2-89.5 2e2-2e2 2e2zm61.8-104.4-84.9-61.7c-3.1-2.3-4.9-5.9-4.9-9.7V116c0-6.6 5.4-12 12-12h32c6.6.0 12 5.4 12 12v141.7l66.8 48.6c5.4 3.9 6.5 11.4 2.6 16.8L334.6 349c-3.9 5.3-11.4 6.5-16.8 2.6z"/></svg>&nbsp;预计阅读 8 分钟&nbsp;</div></div><div class="details toc print:!tw-block" id=toc-static kept><div class="details-summary toc-title"><span>目录</span>
+<span class=details-icon><svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 512"><path d="M224.3 273l-136 136c-9.4 9.4-24.6 9.4-33.9.0l-22.6-22.6c-9.4-9.4-9.4-24.6.0-33.9l96.4-96.4-96.4-96.4c-9.4-9.4-9.4-24.6.0-33.9L54.3 103c9.4-9.4 24.6-9.4 33.9.0l136 136c9.5 9.4 9.5 24.6.1 34z"/></svg></span></div><div class="details-content toc-content" id=toc-content-static><nav id=TableOfContents><ul><li><a href=#1-cobbler介绍>1. Cobbler介绍</a><ul><li><a href=#11-cobbler集成的服务>1.1 Cobbler集成的服务</a></li><li><a href=#12-系统环境准备>1.2 系统环境准备</a></li></ul></li><li><a href=#2-cobbler的安装>2. Cobbler的安装</a><ul><li><a href=#21-安装cobbler>2.1 安装Cobbler</a></li><li><a href=#22-配置cobbler>2.2 配置Cobbler</a></li><li><a href=#23-配置dhcp>2.3 配置DHCP</a></li><li><a href=#24-同步cobbler配置>2.4 同步cobbler配置</a></li><li><a href=#25-开机启动>2.5 开机启动</a></li></ul></li><li><a href=#3-cobbler-命令行管理>3. cobbler 命令行管理</a><ul><li><a href=#31-查看命令帮助>3.1 查看命令帮助</a></li><li><a href=#32-导入镜像>3.2 导入镜像</a></li><li><a href=#33-指定kscfg文件及调整内核参数>3.3 指定ks.cfg文件及调整内核参数</a></li><li><a href=#34-安装系统>3.4 安装系统</a></li><li><a href=#35-kscfg-文件>3.5 ks.cfg 文件</a></li></ul></li></ul></nav></div></div><div class=content id=content><h2 id=1-cobbler介绍 class=headerLink><a href=#1-cobbler%e4%bb%8b%e7%bb%8d class=header-mark aria-label="Header mark for '1. Cobbler介绍'"></a>1. Cobbler介绍</h2><p><code>Cobbler</code>是一个<code>Linux</code>服务器安装的服务，可以通过网络启动(PXE)的方式来快速安装、重装物理服务器和虚拟机，同时还可以管理<code>DHCP</code>，<code>DNS</code>等。</p><p><code>Cobbler</code>可以使用命令行方式管理，也提供了基于Web的界面管理工具(cobbler-web)，还提供了API接口，可以方便二次开发使用。</p><p><code>Cobbler</code>是较早前的<code>kickstart</code>的升级版，优点是比较容易配置，还自带web界面比较易于管理。</p><p><code>Cobbler</code>内置了一个轻量级配置管理系统，但它也支持和其它配置管理系统集成，如<code>Puppet</code>，暂时不支持<code>SaltStack</code>。</p><h3 id=11-cobbler集成的服务 class=headerLink><a href=#11-cobbler%e9%9b%86%e6%88%90%e7%9a%84%e6%9c%8d%e5%8a%a1 class=header-mark aria-label="Header mark for '1.1 Cobbler集成的服务'"></a>1.1 Cobbler集成的服务</h3><ul><li>PXE服务支持</li><li>DHCP服务管理</li><li>DNS服务管理(可选bind,dnsmasq)</li><li>电源管理</li><li>Kickstart服务支持</li><li>YUM仓库管理</li><li>TFTP(PXE启动时需要)</li><li>Apache(提供kickstart的安装源，并提供定制化的kickstart配置)</li></ul><h3 id=12-系统环境准备 class=headerLink><a href=#12-%e7%b3%bb%e7%bb%9f%e7%8e%af%e5%a2%83%e5%87%86%e5%a4%87 class=header-mark aria-label="Header mark for '1.2 系统环境准备'"></a>1.2 系统环境准备</h3><div class="code-block highlight is-closed show-line-numbers tw-group tw-my-2"><div class="code-block-title
+tw-flex
+tw-flex-row
+tw-justify-between
+tw-w-full tw-bg-bgColor-secondary"><button class="tw-select-none
+tw-mx-2
+tw-block
+group-[.is-open]:tw-rotate-90
+tw-transition-[transform]
+tw-duration-500
+tw-ease-in-out
+print:!tw-hidden" disabled aria-hidden=true><svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><path d="M285.476 272.971 91.132 467.314c-9.373 9.373-24.569 9.373-33.941.0l-22.667-22.667c-9.357-9.357-9.375-24.522-.04-33.901L188.505 256 34.484 101.255c-9.335-9.379-9.317-24.544.04-33.901l22.667-22.667c9.373-9.373 24.569-9.373 33.941.0L285.475 239.03c9.373 9.372 9.373 24.568.001 33.941z"/></svg></button><div class="code-block-title-bar tw-w-full"><p class="tw-select-none !tw-my-1">bash</p></div><div class=tw-flex><button class="line-number-button
+tw-select-none
+tw-mx-2
+tw-hidden
+group-[.is-open]:tw-block
+group-[.show-line-numbers]:tw-text-fgColor-link
+print:!tw-hidden" title="Toggle line numbers"><svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M61.77 401l17.5-20.15a19.92 19.92.0 005.07-14.19v-3.31C84.34 356 80.5 352 73 352H16a8 8 0 00-8 8v16a8 8 0 008 8h22.83a157.41 157.41.0 00-11 12.31l-5.61 7c-4 5.07-5.25 10.13-2.8 14.88l1.05 1.93c3 5.76 6.29 7.88 12.25 7.88h4.73c10.33.0 15.94 2.44 15.94 9.09.0 4.72-4.2 8.22-14.36 8.22a41.54 41.54.0 01-15.47-3.12c-6.49-3.88-11.74-3.5-15.6 3.12l-5.59 9.31c-3.72 6.13-3.19 11.72 2.63 15.94 7.71 4.69 20.38 9.44 37 9.44 34.16.0 48.5-22.75 48.5-44.12-.03-14.38-9.12-29.76-28.73-34.88zM496 224H176a16 16 0 00-16 16v32a16 16 0 0016 16h320a16 16 0 0016-16v-32a16 16 0 00-16-16zm0-160H176a16 16 0 00-16 16v32a16 16 0 0016 16h320a16 16 0 0016-16V80a16 16 0 00-16-16zm0 320H176a16 16 0 00-16 16v32a16 16 0 0016 16h320a16 16 0 0016-16v-32a16 16 0 00-16-16zM16 160h64a8 8 0 008-8v-16a8 8 0 00-8-8H64V40a8 8 0 00-8-8H32a8 8 0 00-7.14 4.42l-8 16A8 8 0 0024 64h8v64H16a8 8 0 00-8 8v16a8 8 0 008 8zm-3.91 160H80a8 8 0 008-8v-16a8 8 0 00-8-8H41.32c3.29-10.29 48.34-18.68 48.34-56.44.0-29.06-25-39.56-44.47-39.56-21.36.0-33.8 10-40.46 18.75-4.37 5.59-3 10.84 2.8 15.37l8.58 6.88c5.61 4.56 11 2.47 16.12-2.44a13.44 13.44.0 019.46-3.84c3.33.0 9.28 1.56 9.28 8.75C51 248.19.0 257.31.0 304.59v4C0 316 5.08 320 12.09 320z"/></svg></button>
+<button class="wrap-code-button
+tw-select-none
+tw-mx-2
+tw-hidden
+group-[.is-open]:tw-block
+group-[.is-wrap]:tw-text-fgColor-link
+print:!tw-hidden" title="Toggle code wrap"><svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M16 132h416c8.837.0 16-7.163 16-16V76c0-8.837-7.163-16-16-16H16C7.163 60 0 67.163.0 76v40c0 8.837 7.163 16 16 16zm0 160h416c8.837.0 16-7.163 16-16v-40c0-8.837-7.163-16-16-16H16c-8.837.0-16 7.163-16 16v40c0 8.837 7.163 16 16 16zm0 160h416c8.837.0 16-7.163 16-16v-40c0-8.837-7.163-16-16-16H16c-8.837.0-16 7.163-16 16v40c0 8.837 7.163 16 16 16z"/></svg></button>
+<button class="copy-code-button
+tw-select-none
+tw-mx-2
+tw-hidden
+group-[.is-open]:tw-block
+hover:tw-text-fgColor-link
+print:!tw-hidden" title="Copy code">
+<span class="copy-icon tw-block"><svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M433.941 65.941l-51.882-51.882A48 48 0 00348.118.0H176c-26.51.0-48 21.49-48 48v48H48c-26.51.0-48 21.49-48 48v320c0 26.51 21.49 48 48 48h224c26.51.0 48-21.49 48-48v-48h80c26.51.0 48-21.49 48-48V99.882a48 48 0 00-14.059-33.941zM266 464H54a6 6 0 01-6-6V150a6 6 0 016-6h74v224c0 26.51 21.49 48 48 48h96v42a6 6 0 01-6 6zm128-96H182a6 6 0 01-6-6V54a6 6 0 016-6h106v88c0 13.255 10.745 24 24 24h88v202a6 6 0 01-6 6zm6-256h-64V48h9.632c1.591.0 3.117.632 4.243 1.757l48.368 48.368a6 6 0 011.757 4.243V112z"/></svg></span>
+<span class="check-icon tw-hidden"><svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M173.898 439.404l-166.4-166.4c-9.997-9.997-9.997-26.206.0-36.204l36.203-36.204c9.997-9.998 26.207-9.998 36.204.0L192 312.69 432.095 72.596c9.997-9.997 26.207-9.997 36.204.0l36.203 36.204c9.997 9.997 9.997 26.206.0 36.204l-294.4 294.401c-9.998 9.997-26.207 9.997-36.204-.001z"/></svg></span>
+</button>
+<button class="tw-select-none
+tw-mx-2
+tw-block
+group-[.is-open]:tw-hidden
+print:!tw-hidden" disabled aria-hidden=true><svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M328 256c0 39.8-32.2 72-72 72s-72-32.2-72-72 32.2-72 72-72 72 32.2 72 72zm104-72c-39.8.0-72 32.2-72 72s32.2 72 72 72 72-32.2 72-72-32.2-72-72-72zm-352 0c-39.8.0-72 32.2-72 72s32.2 72 72 72 72-32.2 72-72-32.2-72-72-72z"/></svg></button></div></div><pre style=counter-reset:codeblock class="tw-block tw-m-0 tw-p-0"><code id=codeblock-id-1 class="chroma
+!tw-block
+tw-p-0
+tw-m-0
+tw-transition-[max-height]
+tw-duration-500
+tw-ease-in-out
+group-[.is-closed]:!tw-max-h-0
+group-[.is-wrap]:tw-text-wrap
+tw-overflow-y-hidden
+tw-overflow-x-auto
+tw-scrollbar-thin"><span class=line><span class=cl><span class=o>[</span>root@localhost ~<span class=o>]</span><span class=c1># cat /etc/redhat-release # 查看发行版本</span>
+</span></span><span class=line><span class=cl>CentOS Linux release 7.2.1511 <span class=o>(</span>Core<span class=o>)</span>
+</span></span><span class=line><span class=cl><span class=o>[</span>root@localhost ~<span class=o>]</span><span class=c1># uname -r # 查看内核版本</span>
+</span></span><span class=line><span class=cl>3.10.0-327.el7.x86_64
+</span></span><span class=line><span class=cl><span class=o>[</span>root@localhost ~<span class=o>]</span><span class=c1># sed -i &#39;s/SELINUX=enforcing/SELINUX=disabled/&#39; /etc/selinux/config # 关闭selinux功能,配置文件修改只有重启系统方可生效(如果不想重启，请使用此命令临时关闭selinux功能：setenforce 0)</span>
+</span></span><span class=line><span class=cl><span class=o>[</span>root@localhost ~<span class=o>]</span><span class=c1># systemctl stop firewalld  # 停止防火墙</span>
+</span></span><span class=line><span class=cl><span class=o>[</span>root@localhost ~<span class=o>]</span><span class=c1># systemctl disable firewalld  # 禁用防火墙</span>
+</span></span><span class=line><span class=cl><span class=o>[</span>root@localhost ~<span class=o>]</span><span class=c1># ip addr show  # 查看ip地址</span>
+</span></span><span class=line><span class=cl>2: eth0: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu <span class=m>1500</span> qdisc pfifo_fast state UP qlen <span class=m>1000</span>
+</span></span><span class=line><span class=cl>    link/ether 00:0c:29:4d:04:21 brd ff:ff:ff:ff:ff:ff
+</span></span><span class=line><span class=cl>    inet 192.168.92.106/24 brd 192.168.92.255 scope global dynamic eth0
+</span></span><span class=line><span class=cl>       valid_lft 20823sec preferred_lft 20823sec
+</span></span><span class=line><span class=cl>    inet6 fe80::20c:29ff:fe4d:421/64 scope link
+</span></span><span class=line><span class=cl>       valid_lft forever preferred_lft forever
+</span></span><span class=line><span class=cl><span class=o>[</span>root@localhost ~<span class=o>]</span><span class=c1># wget -O /etc/yum.repos.d/epel.repo http://mirrors.aliyun.com/repo/epel-7.repo # 增加阿里云的 epel yum 源(没有此源将无法安装cobbler软件，软件安装完后不用可以删除)</span></span></span></code></pre></div><h2 id=2-cobbler的安装 class=headerLink><a href=#2-cobbler%e7%9a%84%e5%ae%89%e8%a3%85 class=header-mark aria-label="Header mark for '2. Cobbler的安装'"></a>2. Cobbler的安装</h2><h3 id=21-安装cobbler class=headerLink><a href=#21-%e5%ae%89%e8%a3%85cobbler class=header-mark aria-label="Header mark for '2.1 安装Cobbler'"></a>2.1 安装Cobbler</h3><div class="code-block highlight is-closed show-line-numbers tw-group tw-my-2"><div class="code-block-title
+tw-flex
+tw-flex-row
+tw-justify-between
+tw-w-full tw-bg-bgColor-secondary"><button class="tw-select-none
+tw-mx-2
+tw-block
+group-[.is-open]:tw-rotate-90
+tw-transition-[transform]
+tw-duration-500
+tw-ease-in-out
+print:!tw-hidden" disabled aria-hidden=true><svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><path d="M285.476 272.971 91.132 467.314c-9.373 9.373-24.569 9.373-33.941.0l-22.667-22.667c-9.357-9.357-9.375-24.522-.04-33.901L188.505 256 34.484 101.255c-9.335-9.379-9.317-24.544.04-33.901l22.667-22.667c9.373-9.373 24.569-9.373 33.941.0L285.475 239.03c9.373 9.372 9.373 24.568.001 33.941z"/></svg></button><div class="code-block-title-bar tw-w-full"><p class="tw-select-none !tw-my-1">bash</p></div><div class=tw-flex><button class="line-number-button
+tw-select-none
+tw-mx-2
+tw-hidden
+group-[.is-open]:tw-block
+group-[.show-line-numbers]:tw-text-fgColor-link
+print:!tw-hidden" title="Toggle line numbers"><svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M61.77 401l17.5-20.15a19.92 19.92.0 005.07-14.19v-3.31C84.34 356 80.5 352 73 352H16a8 8 0 00-8 8v16a8 8 0 008 8h22.83a157.41 157.41.0 00-11 12.31l-5.61 7c-4 5.07-5.25 10.13-2.8 14.88l1.05 1.93c3 5.76 6.29 7.88 12.25 7.88h4.73c10.33.0 15.94 2.44 15.94 9.09.0 4.72-4.2 8.22-14.36 8.22a41.54 41.54.0 01-15.47-3.12c-6.49-3.88-11.74-3.5-15.6 3.12l-5.59 9.31c-3.72 6.13-3.19 11.72 2.63 15.94 7.71 4.69 20.38 9.44 37 9.44 34.16.0 48.5-22.75 48.5-44.12-.03-14.38-9.12-29.76-28.73-34.88zM496 224H176a16 16 0 00-16 16v32a16 16 0 0016 16h320a16 16 0 0016-16v-32a16 16 0 00-16-16zm0-160H176a16 16 0 00-16 16v32a16 16 0 0016 16h320a16 16 0 0016-16V80a16 16 0 00-16-16zm0 320H176a16 16 0 00-16 16v32a16 16 0 0016 16h320a16 16 0 0016-16v-32a16 16 0 00-16-16zM16 160h64a8 8 0 008-8v-16a8 8 0 00-8-8H64V40a8 8 0 00-8-8H32a8 8 0 00-7.14 4.42l-8 16A8 8 0 0024 64h8v64H16a8 8 0 00-8 8v16a8 8 0 008 8zm-3.91 160H80a8 8 0 008-8v-16a8 8 0 00-8-8H41.32c3.29-10.29 48.34-18.68 48.34-56.44.0-29.06-25-39.56-44.47-39.56-21.36.0-33.8 10-40.46 18.75-4.37 5.59-3 10.84 2.8 15.37l8.58 6.88c5.61 4.56 11 2.47 16.12-2.44a13.44 13.44.0 019.46-3.84c3.33.0 9.28 1.56 9.28 8.75C51 248.19.0 257.31.0 304.59v4C0 316 5.08 320 12.09 320z"/></svg></button>
+<button class="wrap-code-button
+tw-select-none
+tw-mx-2
+tw-hidden
+group-[.is-open]:tw-block
+group-[.is-wrap]:tw-text-fgColor-link
+print:!tw-hidden" title="Toggle code wrap"><svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M16 132h416c8.837.0 16-7.163 16-16V76c0-8.837-7.163-16-16-16H16C7.163 60 0 67.163.0 76v40c0 8.837 7.163 16 16 16zm0 160h416c8.837.0 16-7.163 16-16v-40c0-8.837-7.163-16-16-16H16c-8.837.0-16 7.163-16 16v40c0 8.837 7.163 16 16 16zm0 160h416c8.837.0 16-7.163 16-16v-40c0-8.837-7.163-16-16-16H16c-8.837.0-16 7.163-16 16v40c0 8.837 7.163 16 16 16z"/></svg></button>
+<button class="copy-code-button
+tw-select-none
+tw-mx-2
+tw-hidden
+group-[.is-open]:tw-block
+hover:tw-text-fgColor-link
+print:!tw-hidden" title="Copy code">
+<span class="copy-icon tw-block"><svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M433.941 65.941l-51.882-51.882A48 48 0 00348.118.0H176c-26.51.0-48 21.49-48 48v48H48c-26.51.0-48 21.49-48 48v320c0 26.51 21.49 48 48 48h224c26.51.0 48-21.49 48-48v-48h80c26.51.0 48-21.49 48-48V99.882a48 48 0 00-14.059-33.941zM266 464H54a6 6 0 01-6-6V150a6 6 0 016-6h74v224c0 26.51 21.49 48 48 48h96v42a6 6 0 01-6 6zm128-96H182a6 6 0 01-6-6V54a6 6 0 016-6h106v88c0 13.255 10.745 24 24 24h88v202a6 6 0 01-6 6zm6-256h-64V48h9.632c1.591.0 3.117.632 4.243 1.757l48.368 48.368a6 6 0 011.757 4.243V112z"/></svg></span>
+<span class="check-icon tw-hidden"><svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M173.898 439.404l-166.4-166.4c-9.997-9.997-9.997-26.206.0-36.204l36.203-36.204c9.997-9.998 26.207-9.998 36.204.0L192 312.69 432.095 72.596c9.997-9.997 26.207-9.997 36.204.0l36.203 36.204c9.997 9.997 9.997 26.206.0 36.204l-294.4 294.401c-9.998 9.997-26.207 9.997-36.204-.001z"/></svg></span>
+</button>
+<button class="tw-select-none
+tw-mx-2
+tw-block
+group-[.is-open]:tw-hidden
+print:!tw-hidden" disabled aria-hidden=true><svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M328 256c0 39.8-32.2 72-72 72s-72-32.2-72-72 32.2-72 72-72 72 32.2 72 72zm104-72c-39.8.0-72 32.2-72 72s32.2 72 72 72 72-32.2 72-72-32.2-72-72-72zm-352 0c-39.8.0-72 32.2-72 72s32.2 72 72 72 72-32.2 72-72-32.2-72-72-72z"/></svg></button></div></div><pre style=counter-reset:codeblock class="tw-block tw-m-0 tw-p-0"><code id=codeblock-id-2 class="chroma
+!tw-block
+tw-p-0
+tw-m-0
+tw-transition-[max-height]
+tw-duration-500
+tw-ease-in-out
+group-[.is-closed]:!tw-max-h-0
+group-[.is-wrap]:tw-text-wrap
+tw-overflow-y-hidden
+tw-overflow-x-auto
+tw-scrollbar-thin"><span class=line><span class=cl><span class=c1># 安装所需软件</span>
+</span></span><span class=line><span class=cl><span class=o>[</span>root@localhost ~<span class=o>]</span><span class=c1># yum -y install cobbler cobbler-web dhcp tftp-server pykickstart httpd xinetd</span>
+</span></span><span class=line><span class=cl><span class=o>[</span>root@localhost ~<span class=o>]</span><span class=c1># rpm -ql cobbler  # 查看安装的文件，下面列出部分。</span>
+</span></span><span class=line><span class=cl>/etc/cobbler                  <span class=c1># 配置文件目录</span>
+</span></span><span class=line><span class=cl>/etc/cobbler/settings         <span class=c1># cobbler主配置文件，这个文件是YAML格式，Cobbler是python写的程序。</span>
+</span></span><span class=line><span class=cl>/etc/cobbler/dhcp.template    <span class=c1># DHCP服务的配置模板</span>
+</span></span><span class=line><span class=cl>/etc/cobbler/tftpd.template   <span class=c1># tftp服务的配置模板</span>
+</span></span><span class=line><span class=cl>/etc/cobbler/rsync.template   <span class=c1># rsync服务的配置模板</span>
+</span></span><span class=line><span class=cl>/etc/cobbler/iso              <span class=c1># iso模板配置文件目录</span>
+</span></span><span class=line><span class=cl>/etc/cobbler/pxe              <span class=c1># pxe模板文件目录</span>
+</span></span><span class=line><span class=cl>/etc/cobbler/power            <span class=c1># 电源的配置文件目录</span>
+</span></span><span class=line><span class=cl>/etc/cobbler/users.conf       <span class=c1># Web服务授权配置文件</span>
+</span></span><span class=line><span class=cl>/etc/cobbler/users.digest     <span class=c1># 用于web访问的用户名密码配置文件</span>
+</span></span><span class=line><span class=cl>/etc/cobbler/dnsmasq.template <span class=c1># DNS服务的配置模板</span>
+</span></span><span class=line><span class=cl>/etc/cobbler/modules.conf     <span class=c1># Cobbler模块配置文件</span>
+</span></span><span class=line><span class=cl>/var/lib/cobbler              <span class=c1># Cobbler数据目录</span>
+</span></span><span class=line><span class=cl>/var/lib/cobbler/config       <span class=c1># 配置文件</span>
+</span></span><span class=line><span class=cl>/var/lib/cobbler/kickstarts   <span class=c1># 默认存放kickstart文件</span>
+</span></span><span class=line><span class=cl>/var/lib/cobbler/loaders      <span class=c1># 存放的各种引导程序</span>
+</span></span><span class=line><span class=cl>/var/www/cobbler              <span class=c1># 系统安装镜像目录</span>
+</span></span><span class=line><span class=cl>/var/www/cobbler/ks_mirror    <span class=c1># 导入的系统镜像列表</span>
+</span></span><span class=line><span class=cl>/var/www/cobbler/images       <span class=c1># 导入的系统镜像启动文件</span>
+</span></span><span class=line><span class=cl>/var/www/cobbler/repo_mirror  <span class=c1># yum源存储目录</span>
+</span></span><span class=line><span class=cl>/var/log/cobbler              <span class=c1># 日志目录</span>
+</span></span><span class=line><span class=cl>/var/log/cobbler/install.log  <span class=c1># 客户端系统安装日志</span>
+</span></span><span class=line><span class=cl>/var/log/cobbler/cobbler.log  <span class=c1># cobbler日志</span></span></span></code></pre></div><h3 id=22-配置cobbler class=headerLink><a href=#22-%e9%85%8d%e7%bd%aecobbler class=header-mark aria-label="Header mark for '2.2 配置Cobbler'"></a>2.2 配置Cobbler</h3><div class="code-block highlight is-closed show-line-numbers tw-group tw-my-2"><div class="code-block-title
+tw-flex
+tw-flex-row
+tw-justify-between
+tw-w-full tw-bg-bgColor-secondary"><button class="tw-select-none
+tw-mx-2
+tw-block
+group-[.is-open]:tw-rotate-90
+tw-transition-[transform]
+tw-duration-500
+tw-ease-in-out
+print:!tw-hidden" disabled aria-hidden=true><svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><path d="M285.476 272.971 91.132 467.314c-9.373 9.373-24.569 9.373-33.941.0l-22.667-22.667c-9.357-9.357-9.375-24.522-.04-33.901L188.505 256 34.484 101.255c-9.335-9.379-9.317-24.544.04-33.901l22.667-22.667c9.373-9.373 24.569-9.373 33.941.0L285.475 239.03c9.373 9.372 9.373 24.568.001 33.941z"/></svg></button><div class="code-block-title-bar tw-w-full"><p class="tw-select-none !tw-my-1">bash</p></div><div class=tw-flex><button class="line-number-button
+tw-select-none
+tw-mx-2
+tw-hidden
+group-[.is-open]:tw-block
+group-[.show-line-numbers]:tw-text-fgColor-link
+print:!tw-hidden" title="Toggle line numbers"><svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M61.77 401l17.5-20.15a19.92 19.92.0 005.07-14.19v-3.31C84.34 356 80.5 352 73 352H16a8 8 0 00-8 8v16a8 8 0 008 8h22.83a157.41 157.41.0 00-11 12.31l-5.61 7c-4 5.07-5.25 10.13-2.8 14.88l1.05 1.93c3 5.76 6.29 7.88 12.25 7.88h4.73c10.33.0 15.94 2.44 15.94 9.09.0 4.72-4.2 8.22-14.36 8.22a41.54 41.54.0 01-15.47-3.12c-6.49-3.88-11.74-3.5-15.6 3.12l-5.59 9.31c-3.72 6.13-3.19 11.72 2.63 15.94 7.71 4.69 20.38 9.44 37 9.44 34.16.0 48.5-22.75 48.5-44.12-.03-14.38-9.12-29.76-28.73-34.88zM496 224H176a16 16 0 00-16 16v32a16 16 0 0016 16h320a16 16 0 0016-16v-32a16 16 0 00-16-16zm0-160H176a16 16 0 00-16 16v32a16 16 0 0016 16h320a16 16 0 0016-16V80a16 16 0 00-16-16zm0 320H176a16 16 0 00-16 16v32a16 16 0 0016 16h320a16 16 0 0016-16v-32a16 16 0 00-16-16zM16 160h64a8 8 0 008-8v-16a8 8 0 00-8-8H64V40a8 8 0 00-8-8H32a8 8 0 00-7.14 4.42l-8 16A8 8 0 0024 64h8v64H16a8 8 0 00-8 8v16a8 8 0 008 8zm-3.91 160H80a8 8 0 008-8v-16a8 8 0 00-8-8H41.32c3.29-10.29 48.34-18.68 48.34-56.44.0-29.06-25-39.56-44.47-39.56-21.36.0-33.8 10-40.46 18.75-4.37 5.59-3 10.84 2.8 15.37l8.58 6.88c5.61 4.56 11 2.47 16.12-2.44a13.44 13.44.0 019.46-3.84c3.33.0 9.28 1.56 9.28 8.75C51 248.19.0 257.31.0 304.59v4C0 316 5.08 320 12.09 320z"/></svg></button>
+<button class="wrap-code-button
+tw-select-none
+tw-mx-2
+tw-hidden
+group-[.is-open]:tw-block
+group-[.is-wrap]:tw-text-fgColor-link
+print:!tw-hidden" title="Toggle code wrap"><svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M16 132h416c8.837.0 16-7.163 16-16V76c0-8.837-7.163-16-16-16H16C7.163 60 0 67.163.0 76v40c0 8.837 7.163 16 16 16zm0 160h416c8.837.0 16-7.163 16-16v-40c0-8.837-7.163-16-16-16H16c-8.837.0-16 7.163-16 16v40c0 8.837 7.163 16 16 16zm0 160h416c8.837.0 16-7.163 16-16v-40c0-8.837-7.163-16-16-16H16c-8.837.0-16 7.163-16 16v40c0 8.837 7.163 16 16 16z"/></svg></button>
+<button class="copy-code-button
+tw-select-none
+tw-mx-2
+tw-hidden
+group-[.is-open]:tw-block
+hover:tw-text-fgColor-link
+print:!tw-hidden" title="Copy code">
+<span class="copy-icon tw-block"><svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M433.941 65.941l-51.882-51.882A48 48 0 00348.118.0H176c-26.51.0-48 21.49-48 48v48H48c-26.51.0-48 21.49-48 48v320c0 26.51 21.49 48 48 48h224c26.51.0 48-21.49 48-48v-48h80c26.51.0 48-21.49 48-48V99.882a48 48 0 00-14.059-33.941zM266 464H54a6 6 0 01-6-6V150a6 6 0 016-6h74v224c0 26.51 21.49 48 48 48h96v42a6 6 0 01-6 6zm128-96H182a6 6 0 01-6-6V54a6 6 0 016-6h106v88c0 13.255 10.745 24 24 24h88v202a6 6 0 01-6 6zm6-256h-64V48h9.632c1.591.0 3.117.632 4.243 1.757l48.368 48.368a6 6 0 011.757 4.243V112z"/></svg></span>
+<span class="check-icon tw-hidden"><svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M173.898 439.404l-166.4-166.4c-9.997-9.997-9.997-26.206.0-36.204l36.203-36.204c9.997-9.998 26.207-9.998 36.204.0L192 312.69 432.095 72.596c9.997-9.997 26.207-9.997 36.204.0l36.203 36.204c9.997 9.997 9.997 26.206.0 36.204l-294.4 294.401c-9.998 9.997-26.207 9.997-36.204-.001z"/></svg></span>
+</button>
+<button class="tw-select-none
+tw-mx-2
+tw-block
+group-[.is-open]:tw-hidden
+print:!tw-hidden" disabled aria-hidden=true><svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M328 256c0 39.8-32.2 72-72 72s-72-32.2-72-72 32.2-72 72-72 72 32.2 72 72zm104-72c-39.8.0-72 32.2-72 72s32.2 72 72 72 72-32.2 72-72-32.2-72-72-72zm-352 0c-39.8.0-72 32.2-72 72s32.2 72 72 72 72-32.2 72-72-32.2-72-72-72z"/></svg></button></div></div><pre style=counter-reset:codeblock class="tw-block tw-m-0 tw-p-0"><code id=codeblock-id-3 class="chroma
+!tw-block
+tw-p-0
+tw-m-0
+tw-transition-[max-height]
+tw-duration-500
+tw-ease-in-out
+group-[.is-closed]:!tw-max-h-0
+group-[.is-wrap]:tw-text-wrap
+tw-overflow-y-hidden
+tw-overflow-x-auto
+tw-scrollbar-thin"><span class=line><span class=cl><span class=o>[</span>root@localhost ~<span class=o>]</span><span class=c1># systemctl start httpd # 启动 httpd 服务</span>
+</span></span><span class=line><span class=cl><span class=o>[</span>root@localhost ~<span class=o>]</span><span class=c1># systemctl start cobblerd # 启动 cobbler 服务</span>
+</span></span><span class=line><span class=cl><span class=o>[</span>root@localhost ~<span class=o>]</span><span class=c1># systemctl restart cobblerd # 此次重启是为了在执行 cobbler check 时不报错[root@localhost ~]# cobbler check </span>
+</span></span><span class=line><span class=cl>The following are potential configuration items that you may want to fix:
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=m>1</span> : The <span class=s1>&#39;server&#39;</span> field in /etc/cobbler/settings must be <span class=nb>set</span> to something other than localhost, or kickstarting features will not work.  This should be a resolvable hostname or IP <span class=k>for</span> the boot server as reachable by all machines that will use it.
+</span></span><span class=line><span class=cl><span class=m>2</span> : For PXE to be functional, the <span class=s1>&#39;next_server&#39;</span> field in /etc/cobbler/settings must be <span class=nb>set</span> to something other than 127.0.0.1, and should match the IP of the boot server on the PXE network.
+</span></span><span class=line><span class=cl><span class=m>3</span> : change <span class=s1>&#39;disable&#39;</span> to <span class=s1>&#39;no&#39;</span> in /etc/xinetd.d/tftp
+</span></span><span class=line><span class=cl><span class=m>4</span> : some network boot-loaders are missing from /var/lib/cobbler/loaders, you may run <span class=s1>&#39;cobbler get-loaders&#39;</span> to download them, or, <span class=k>if</span> you only want to handle x86/x86_64netbooting, you may ensure that you have installed a *recent* version of the syslinux package installed and can ignore this message entirely.  Files in this directory, should you want to support all architectures, should include pxelinux.0, menu.c32, elilo.efi, and yaboot. The <span class=s1>&#39;cobbler get-loaders&#39;</span> <span class=nb>command</span> is the easiest way to resolve these requirements.
+</span></span><span class=line><span class=cl><span class=m>5</span> : <span class=nb>enable</span> and start rsyncd.service with systemctl
+</span></span><span class=line><span class=cl><span class=m>6</span> : debmirror package is not installed, it will be required to manage debian deployments and repositories
+</span></span><span class=line><span class=cl><span class=m>7</span> : The default password used by the sample templates <span class=k>for</span> newly installed machines <span class=o>(</span>default_password_crypted in /etc/cobbler/settings<span class=o>)</span> is still <span class=nb>set</span> to <span class=s1>&#39;cobbler&#39;</span> and should be changed, try: <span class=s2>&#34;openssl passwd -1 -salt &#39;random-phrase-here&#39; &#39;your-password-here&#39;&#34;</span> to generate new one
+</span></span><span class=line><span class=cl><span class=m>8</span> : fencing tools were not found, and are required to use the <span class=o>(</span>optional<span class=o>)</span> power management features. install cman or fence-agents to use them
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Restart cobblerd and <span class=k>then</span> run <span class=s1>&#39;cobbler sync&#39;</span> to apply changes.
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># 上面提示的问题，我们一个一个来解决</span>
+</span></span><span class=line><span class=cl><span class=o>[</span>root@localhost ~<span class=o>]</span><span class=c1># cp /etc/cobbler/settings{,.ori}  # 备份</span>
+</span></span><span class=line><span class=cl><span class=c1># 第1个问题，server，Cobbler服务器的IP。</span>
+</span></span><span class=line><span class=cl><span class=o>[</span>root@localhost ~<span class=o>]</span><span class=c1># sed -i &#39;s/server: 127.0.0.1/server: 192.168.92.106/&#39; /etc/cobbler/settings</span>
+</span></span><span class=line><span class=cl><span class=c1># 第2个问题，next_server，如果用Cobbler管理DHCP，修改本项，作用：告知客户端TFTP服务器的ip。</span>
+</span></span><span class=line><span class=cl><span class=o>[</span>root@localhost ~<span class=o>]</span><span class=c1># sed -i &#39;s/next_server: 127.0.0.1/next_server: 192.168.92.106/&#39; /etc/cobbler/settings</span>
+</span></span><span class=line><span class=cl><span class=c1># 用Cobbler管理DHCP</span>
+</span></span><span class=line><span class=cl><span class=o>[</span>root@localhost ~<span class=o>]</span><span class=c1># sed -i &#39;s/manage_dhcp: 0/manage_dhcp: 1/&#39; /etc/cobbler/settings</span>
+</span></span><span class=line><span class=cl><span class=c1># 防止循环装系统，适用于服务器第一启动项是PXE启动。</span>
+</span></span><span class=line><span class=cl><span class=o>[</span>root@localhost ~<span class=o>]</span><span class=c1># sed -i &#39;s/pxe_just_once: 0/pxe_just_once: 1/&#39; /etc/cobbler/settings</span>
+</span></span><span class=line><span class=cl><span class=c1># 第7个问题，设置新装系统的默认root密码123456。下面的命令来源于提示6。random-phrase-here为干扰码，可以自行设定。</span>
+</span></span><span class=line><span class=cl><span class=o>[</span>root@localhost ~<span class=o>]</span><span class=c1># openssl passwd -1 -salt &#39;root&#39; &#39;123456&#39;</span>
+</span></span><span class=line><span class=cl><span class=nv>$1$root$j0bp</span>.KLPyr.u9kgQ428D10
+</span></span><span class=line><span class=cl><span class=o>[</span>root@linux-node1 ~<span class=o>]</span><span class=c1># vim /etc/cobbler/settings </span>
+</span></span><span class=line><span class=cl>default_password_crypted: <span class=s2>&#34;</span><span class=nv>$1$root$j0bp</span><span class=s2>.KLPyr.u9kgQ428D10&#34;</span>
+</span></span><span class=line><span class=cl><span class=c1># 第4个问题，会自动从官网下载</span>
+</span></span><span class=line><span class=cl><span class=o>[</span>root@localhost ~<span class=o>]</span><span class=c1># cobbler get-loaders</span>
+</span></span><span class=line><span class=cl>task started: 2017-02-26_113724_get_loaders
+</span></span><span class=line><span class=cl>task started <span class=o>(</span><span class=nv>id</span><span class=o>=</span>Download Bootloader Content, <span class=nv>time</span><span class=o>=</span>Sun Feb <span class=m>26</span> 11:37:24 2017<span class=o>)</span>
+</span></span><span class=line><span class=cl>downloading https://cobbler.github.io/loaders/README to /var/lib/cobbler/loaders/README
+</span></span><span class=line><span class=cl>downloading https://cobbler.github.io/loaders/COPYING.elilo to /var/lib/cobbler/loaders/COPYING.elilo
+</span></span><span class=line><span class=cl>downloading https://cobbler.github.io/loaders/COPYING.yaboot to /var/lib/cobbler/loaders/COPYING.yaboot
+</span></span><span class=line><span class=cl>downloading https://cobbler.github.io/loaders/COPYING.syslinux to /var/lib/cobbler/loaders/COPYING.syslinux
+</span></span><span class=line><span class=cl>downloading https://cobbler.github.io/loaders/elilo-3.8-ia64.efi to /var/lib/cobbler/loaders/elilo-ia64.efi
+</span></span><span class=line><span class=cl>downloading https://cobbler.github.io/loaders/yaboot-1.3.17 to /var/lib/cobbler/loaders/yaboot
+</span></span><span class=line><span class=cl>downloading https://cobbler.github.io/loaders/pxelinux.0-3.86 to /var/lib/cobbler/loaders/pxelinux.0
+</span></span><span class=line><span class=cl>downloading https://cobbler.github.io/loaders/menu.c32-3.86 to /var/lib/cobbler/loaders/menu.c32
+</span></span><span class=line><span class=cl>downloading https://cobbler.github.io/loaders/grub-0.97-x86.efi to /var/lib/cobbler/loaders/grub-x86.efi
+</span></span><span class=line><span class=cl>downloading https://cobbler.github.io/loaders/grub-0.97-x86_64.efi to /var/lib/cobbler/loaders/grub-x86_64.efi
+</span></span><span class=line><span class=cl>*** TASK COMPLETE ***
+</span></span><span class=line><span class=cl><span class=o>[</span>root@localhost ~<span class=o>]</span><span class=c1># ls /var/lib/cobbler/loaders/ # 下载的内容</span>
+</span></span><span class=line><span class=cl>COPYING.elilo  COPYING.syslinux  COPYING.yaboot  elilo-ia64.efi  grub-x86_64.efi  grub-x86.efi  menu.c32  pxelinux.0  README  yaboot
+</span></span><span class=line><span class=cl><span class=c1># 第3个问题</span>
+</span></span><span class=line><span class=cl><span class=o>[</span>root@localhost ~<span class=o>]</span><span class=c1># vim /etc/xinetd.d/tftp</span>
+</span></span><span class=line><span class=cl>service tftp
+</span></span><span class=line><span class=cl><span class=o>{</span>
+</span></span><span class=line><span class=cl>        <span class=nv>socket_type</span>             <span class=o>=</span> dgram
+</span></span><span class=line><span class=cl>        <span class=nv>protocol</span>                <span class=o>=</span> udp
+</span></span><span class=line><span class=cl>        <span class=nb>wait</span>                    <span class=o>=</span> yes
+</span></span><span class=line><span class=cl>        <span class=nv>user</span>                    <span class=o>=</span> root
+</span></span><span class=line><span class=cl>        <span class=nv>server</span>                  <span class=o>=</span> /usr/sbin/in.tftpd
+</span></span><span class=line><span class=cl>        <span class=nv>server_args</span>             <span class=o>=</span> -s /var/lib/tftpboot
+</span></span><span class=line><span class=cl>        <span class=nv>disable</span>                 <span class=o>=</span> no <span class=c1># 改为no</span>
+</span></span><span class=line><span class=cl>        <span class=nv>per_source</span>              <span class=o>=</span> <span class=m>11</span>
+</span></span><span class=line><span class=cl>        <span class=nv>cps</span>                     <span class=o>=</span> <span class=m>100</span> <span class=m>2</span>
+</span></span><span class=line><span class=cl>        <span class=nv>flags</span>                   <span class=o>=</span> IPv4
+</span></span><span class=line><span class=cl><span class=o>}</span>
+</span></span><span class=line><span class=cl><span class=c1># 第5个问题</span>
+</span></span><span class=line><span class=cl><span class=o>[</span>root@localhost ~<span class=o>]</span><span class=c1># systemctl enable rsyncd.service</span>
+</span></span><span class=line><span class=cl>Created symlink from /etc/systemd/system/multi-user.target.wants/rsyncd.service to /usr/lib/systemd/system/rsyncd.service.
+</span></span><span class=line><span class=cl><span class=o>[</span>root@localhost ~<span class=o>]</span><span class=c1># systemctl start rsyncd.service</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># 启动xinetd服务，重启cobbler服务，重新检查cobbler</span>
+</span></span><span class=line><span class=cl><span class=o>[</span>root@localhost ~<span class=o>]</span><span class=c1># systemctl start xinetd</span>
+</span></span><span class=line><span class=cl><span class=o>[</span>root@localhost ~<span class=o>]</span><span class=c1># systemctl restart cobblerd</span>
+</span></span><span class=line><span class=cl><span class=o>[</span>root@localhost ~<span class=o>]</span><span class=c1># cobbler check</span>
+</span></span><span class=line><span class=cl>The following are potential configuration items that you may want to fix:
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=m>1</span> : debmirror package is not installed, it will be required to manage debian deployments and repositories <span class=c1># 和debian系统相关，不需要</span>
+</span></span><span class=line><span class=cl><span class=m>2</span> : fencing tools were not found, and are required to use the <span class=o>(</span>optional<span class=o>)</span> power management features. install cman or fence-agents to use them <span class=c1># fence设备相关，不需要</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>Restart cobblerd and <span class=k>then</span> run <span class=s1>&#39;cobbler sync&#39;</span> to apply changes.</span></span></code></pre></div><h3 id=23-配置dhcp class=headerLink><a href=#23-%e9%85%8d%e7%bd%aedhcp class=header-mark aria-label="Header mark for '2.3 配置DHCP'"></a>2.3 配置DHCP</h3><div class="code-block highlight is-open show-line-numbers tw-group tw-my-2"><div class="code-block-title
+tw-flex
+tw-flex-row
+tw-justify-between
+tw-w-full tw-bg-bgColor-secondary"><button class="tw-select-none
+tw-mx-2
+tw-block
+group-[.is-open]:tw-rotate-90
+tw-transition-[transform]
+tw-duration-500
+tw-ease-in-out
+print:!tw-hidden" disabled aria-hidden=true><svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><path d="M285.476 272.971 91.132 467.314c-9.373 9.373-24.569 9.373-33.941.0l-22.667-22.667c-9.357-9.357-9.375-24.522-.04-33.901L188.505 256 34.484 101.255c-9.335-9.379-9.317-24.544.04-33.901l22.667-22.667c9.373-9.373 24.569-9.373 33.941.0L285.475 239.03c9.373 9.372 9.373 24.568.001 33.941z"/></svg></button><div class="code-block-title-bar tw-w-full"><p class="tw-select-none !tw-my-1">bash</p></div><div class=tw-flex><button class="line-number-button
+tw-select-none
+tw-mx-2
+tw-hidden
+group-[.is-open]:tw-block
+group-[.show-line-numbers]:tw-text-fgColor-link
+print:!tw-hidden" title="Toggle line numbers"><svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M61.77 401l17.5-20.15a19.92 19.92.0 005.07-14.19v-3.31C84.34 356 80.5 352 73 352H16a8 8 0 00-8 8v16a8 8 0 008 8h22.83a157.41 157.41.0 00-11 12.31l-5.61 7c-4 5.07-5.25 10.13-2.8 14.88l1.05 1.93c3 5.76 6.29 7.88 12.25 7.88h4.73c10.33.0 15.94 2.44 15.94 9.09.0 4.72-4.2 8.22-14.36 8.22a41.54 41.54.0 01-15.47-3.12c-6.49-3.88-11.74-3.5-15.6 3.12l-5.59 9.31c-3.72 6.13-3.19 11.72 2.63 15.94 7.71 4.69 20.38 9.44 37 9.44 34.16.0 48.5-22.75 48.5-44.12-.03-14.38-9.12-29.76-28.73-34.88zM496 224H176a16 16 0 00-16 16v32a16 16 0 0016 16h320a16 16 0 0016-16v-32a16 16 0 00-16-16zm0-160H176a16 16 0 00-16 16v32a16 16 0 0016 16h320a16 16 0 0016-16V80a16 16 0 00-16-16zm0 320H176a16 16 0 00-16 16v32a16 16 0 0016 16h320a16 16 0 0016-16v-32a16 16 0 00-16-16zM16 160h64a8 8 0 008-8v-16a8 8 0 00-8-8H64V40a8 8 0 00-8-8H32a8 8 0 00-7.14 4.42l-8 16A8 8 0 0024 64h8v64H16a8 8 0 00-8 8v16a8 8 0 008 8zm-3.91 160H80a8 8 0 008-8v-16a8 8 0 00-8-8H41.32c3.29-10.29 48.34-18.68 48.34-56.44.0-29.06-25-39.56-44.47-39.56-21.36.0-33.8 10-40.46 18.75-4.37 5.59-3 10.84 2.8 15.37l8.58 6.88c5.61 4.56 11 2.47 16.12-2.44a13.44 13.44.0 019.46-3.84c3.33.0 9.28 1.56 9.28 8.75C51 248.19.0 257.31.0 304.59v4C0 316 5.08 320 12.09 320z"/></svg></button>
+<button class="wrap-code-button
+tw-select-none
+tw-mx-2
+tw-hidden
+group-[.is-open]:tw-block
+group-[.is-wrap]:tw-text-fgColor-link
+print:!tw-hidden" title="Toggle code wrap"><svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M16 132h416c8.837.0 16-7.163 16-16V76c0-8.837-7.163-16-16-16H16C7.163 60 0 67.163.0 76v40c0 8.837 7.163 16 16 16zm0 160h416c8.837.0 16-7.163 16-16v-40c0-8.837-7.163-16-16-16H16c-8.837.0-16 7.163-16 16v40c0 8.837 7.163 16 16 16zm0 160h416c8.837.0 16-7.163 16-16v-40c0-8.837-7.163-16-16-16H16c-8.837.0-16 7.163-16 16v40c0 8.837 7.163 16 16 16z"/></svg></button>
+<button class="copy-code-button
+tw-select-none
+tw-mx-2
+tw-hidden
+group-[.is-open]:tw-block
+hover:tw-text-fgColor-link
+print:!tw-hidden" title="Copy code">
+<span class="copy-icon tw-block"><svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M433.941 65.941l-51.882-51.882A48 48 0 00348.118.0H176c-26.51.0-48 21.49-48 48v48H48c-26.51.0-48 21.49-48 48v320c0 26.51 21.49 48 48 48h224c26.51.0 48-21.49 48-48v-48h80c26.51.0 48-21.49 48-48V99.882a48 48 0 00-14.059-33.941zM266 464H54a6 6 0 01-6-6V150a6 6 0 016-6h74v224c0 26.51 21.49 48 48 48h96v42a6 6 0 01-6 6zm128-96H182a6 6 0 01-6-6V54a6 6 0 016-6h106v88c0 13.255 10.745 24 24 24h88v202a6 6 0 01-6 6zm6-256h-64V48h9.632c1.591.0 3.117.632 4.243 1.757l48.368 48.368a6 6 0 011.757 4.243V112z"/></svg></span>
+<span class="check-icon tw-hidden"><svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M173.898 439.404l-166.4-166.4c-9.997-9.997-9.997-26.206.0-36.204l36.203-36.204c9.997-9.998 26.207-9.998 36.204.0L192 312.69 432.095 72.596c9.997-9.997 26.207-9.997 36.204.0l36.203 36.204c9.997 9.997 9.997 26.206.0 36.204l-294.4 294.401c-9.998 9.997-26.207 9.997-36.204-.001z"/></svg></span>
+</button>
+<button class="tw-select-none
+tw-mx-2
+tw-block
+group-[.is-open]:tw-hidden
+print:!tw-hidden" disabled aria-hidden=true><svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M328 256c0 39.8-32.2 72-72 72s-72-32.2-72-72 32.2-72 72-72 72 32.2 72 72zm104-72c-39.8.0-72 32.2-72 72s32.2 72 72 72 72-32.2 72-72-32.2-72-72-72zm-352 0c-39.8.0-72 32.2-72 72s32.2 72 72 72 72-32.2 72-72-32.2-72-72-72z"/></svg></button></div></div><pre style=counter-reset:codeblock class="tw-block tw-m-0 tw-p-0"><code id=codeblock-id-4 class="chroma
+!tw-block
+tw-p-0
+tw-m-0
+tw-transition-[max-height]
+tw-duration-500
+tw-ease-in-out
+group-[.is-closed]:!tw-max-h-0
+group-[.is-wrap]:tw-text-wrap
+tw-overflow-y-hidden
+tw-overflow-x-auto
+tw-scrollbar-thin"><span class=line><span class=cl><span class=c1># 修改cobbler的dhcp模版，不要直接修改dhcp本身的配置文件，因为cobbler会覆盖。</span>
+</span></span><span class=line><span class=cl><span class=o>[</span>root@localhost ~<span class=o>]</span><span class=c1># vim /etc/cobbler/dhcp.template</span>
+</span></span><span class=line><span class=cl>......
+</span></span><span class=line><span class=cl><span class=c1># 仅列出修改过的字段</span>
+</span></span><span class=line><span class=cl>subnet 192.168.92.0 netmask 255.255.255.0 <span class=o>{</span>
+</span></span><span class=line><span class=cl>     option routers             192.168.92.2<span class=p>;</span> <span class=c1># 指定网关</span>
+</span></span><span class=line><span class=cl>     option domain-name-servers 192.168.92.2<span class=p>;</span> <span class=c1># 指定DNS</span>
+</span></span><span class=line><span class=cl>     option subnet-mask         255.255.255.0<span class=p>;</span> 
+</span></span><span class=line><span class=cl>     range dynamic-bootp        192.168.92.200 192.168.92.254<span class=p>;</span> <span class=c1># 分配的地址段（部署的服务器多可以给大点）</span>
+</span></span><span class=line><span class=cl>......</span></span></code></pre></div><h3 id=24-同步cobbler配置 class=headerLink><a href=#24-%e5%90%8c%e6%ad%a5cobbler%e9%85%8d%e7%bd%ae class=header-mark aria-label="Header mark for '2.4 同步cobbler配置'"></a>2.4 同步cobbler配置</h3><div class="code-block highlight is-closed show-line-numbers tw-group tw-my-2"><div class="code-block-title
+tw-flex
+tw-flex-row
+tw-justify-between
+tw-w-full tw-bg-bgColor-secondary"><button class="tw-select-none
+tw-mx-2
+tw-block
+group-[.is-open]:tw-rotate-90
+tw-transition-[transform]
+tw-duration-500
+tw-ease-in-out
+print:!tw-hidden" disabled aria-hidden=true><svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><path d="M285.476 272.971 91.132 467.314c-9.373 9.373-24.569 9.373-33.941.0l-22.667-22.667c-9.357-9.357-9.375-24.522-.04-33.901L188.505 256 34.484 101.255c-9.335-9.379-9.317-24.544.04-33.901l22.667-22.667c9.373-9.373 24.569-9.373 33.941.0L285.475 239.03c9.373 9.372 9.373 24.568.001 33.941z"/></svg></button><div class="code-block-title-bar tw-w-full"><p class="tw-select-none !tw-my-1">bash</p></div><div class=tw-flex><button class="line-number-button
+tw-select-none
+tw-mx-2
+tw-hidden
+group-[.is-open]:tw-block
+group-[.show-line-numbers]:tw-text-fgColor-link
+print:!tw-hidden" title="Toggle line numbers"><svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M61.77 401l17.5-20.15a19.92 19.92.0 005.07-14.19v-3.31C84.34 356 80.5 352 73 352H16a8 8 0 00-8 8v16a8 8 0 008 8h22.83a157.41 157.41.0 00-11 12.31l-5.61 7c-4 5.07-5.25 10.13-2.8 14.88l1.05 1.93c3 5.76 6.29 7.88 12.25 7.88h4.73c10.33.0 15.94 2.44 15.94 9.09.0 4.72-4.2 8.22-14.36 8.22a41.54 41.54.0 01-15.47-3.12c-6.49-3.88-11.74-3.5-15.6 3.12l-5.59 9.31c-3.72 6.13-3.19 11.72 2.63 15.94 7.71 4.69 20.38 9.44 37 9.44 34.16.0 48.5-22.75 48.5-44.12-.03-14.38-9.12-29.76-28.73-34.88zM496 224H176a16 16 0 00-16 16v32a16 16 0 0016 16h320a16 16 0 0016-16v-32a16 16 0 00-16-16zm0-160H176a16 16 0 00-16 16v32a16 16 0 0016 16h320a16 16 0 0016-16V80a16 16 0 00-16-16zm0 320H176a16 16 0 00-16 16v32a16 16 0 0016 16h320a16 16 0 0016-16v-32a16 16 0 00-16-16zM16 160h64a8 8 0 008-8v-16a8 8 0 00-8-8H64V40a8 8 0 00-8-8H32a8 8 0 00-7.14 4.42l-8 16A8 8 0 0024 64h8v64H16a8 8 0 00-8 8v16a8 8 0 008 8zm-3.91 160H80a8 8 0 008-8v-16a8 8 0 00-8-8H41.32c3.29-10.29 48.34-18.68 48.34-56.44.0-29.06-25-39.56-44.47-39.56-21.36.0-33.8 10-40.46 18.75-4.37 5.59-3 10.84 2.8 15.37l8.58 6.88c5.61 4.56 11 2.47 16.12-2.44a13.44 13.44.0 019.46-3.84c3.33.0 9.28 1.56 9.28 8.75C51 248.19.0 257.31.0 304.59v4C0 316 5.08 320 12.09 320z"/></svg></button>
+<button class="wrap-code-button
+tw-select-none
+tw-mx-2
+tw-hidden
+group-[.is-open]:tw-block
+group-[.is-wrap]:tw-text-fgColor-link
+print:!tw-hidden" title="Toggle code wrap"><svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M16 132h416c8.837.0 16-7.163 16-16V76c0-8.837-7.163-16-16-16H16C7.163 60 0 67.163.0 76v40c0 8.837 7.163 16 16 16zm0 160h416c8.837.0 16-7.163 16-16v-40c0-8.837-7.163-16-16-16H16c-8.837.0-16 7.163-16 16v40c0 8.837 7.163 16 16 16zm0 160h416c8.837.0 16-7.163 16-16v-40c0-8.837-7.163-16-16-16H16c-8.837.0-16 7.163-16 16v40c0 8.837 7.163 16 16 16z"/></svg></button>
+<button class="copy-code-button
+tw-select-none
+tw-mx-2
+tw-hidden
+group-[.is-open]:tw-block
+hover:tw-text-fgColor-link
+print:!tw-hidden" title="Copy code">
+<span class="copy-icon tw-block"><svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M433.941 65.941l-51.882-51.882A48 48 0 00348.118.0H176c-26.51.0-48 21.49-48 48v48H48c-26.51.0-48 21.49-48 48v320c0 26.51 21.49 48 48 48h224c26.51.0 48-21.49 48-48v-48h80c26.51.0 48-21.49 48-48V99.882a48 48 0 00-14.059-33.941zM266 464H54a6 6 0 01-6-6V150a6 6 0 016-6h74v224c0 26.51 21.49 48 48 48h96v42a6 6 0 01-6 6zm128-96H182a6 6 0 01-6-6V54a6 6 0 016-6h106v88c0 13.255 10.745 24 24 24h88v202a6 6 0 01-6 6zm6-256h-64V48h9.632c1.591.0 3.117.632 4.243 1.757l48.368 48.368a6 6 0 011.757 4.243V112z"/></svg></span>
+<span class="check-icon tw-hidden"><svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M173.898 439.404l-166.4-166.4c-9.997-9.997-9.997-26.206.0-36.204l36.203-36.204c9.997-9.998 26.207-9.998 36.204.0L192 312.69 432.095 72.596c9.997-9.997 26.207-9.997 36.204.0l36.203 36.204c9.997 9.997 9.997 26.206.0 36.204l-294.4 294.401c-9.998 9.997-26.207 9.997-36.204-.001z"/></svg></span>
+</button>
+<button class="tw-select-none
+tw-mx-2
+tw-block
+group-[.is-open]:tw-hidden
+print:!tw-hidden" disabled aria-hidden=true><svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M328 256c0 39.8-32.2 72-72 72s-72-32.2-72-72 32.2-72 72-72 72 32.2 72 72zm104-72c-39.8.0-72 32.2-72 72s32.2 72 72 72 72-32.2 72-72-32.2-72-72-72zm-352 0c-39.8.0-72 32.2-72 72s32.2 72 72 72 72-32.2 72-72-32.2-72-72-72z"/></svg></button></div></div><pre style=counter-reset:codeblock class="tw-block tw-m-0 tw-p-0"><code id=codeblock-id-5 class="chroma
+!tw-block
+tw-p-0
+tw-m-0
+tw-transition-[max-height]
+tw-duration-500
+tw-ease-in-out
+group-[.is-closed]:!tw-max-h-0
+group-[.is-wrap]:tw-text-wrap
+tw-overflow-y-hidden
+tw-overflow-x-auto
+tw-scrollbar-thin"><span class=line><span class=cl><span class=c1># 同步最新cobbler配置，它会根据配置自动修改dhcp等服务。</span>
+</span></span><span class=line><span class=cl><span class=o>[</span>root@localhost ~<span class=o>]</span><span class=c1># cobbler sync</span>
+</span></span><span class=line><span class=cl>task started: 2017-02-26_115318_sync
+</span></span><span class=line><span class=cl>task started <span class=o>(</span><span class=nv>id</span><span class=o>=</span>Sync, <span class=nv>time</span><span class=o>=</span>Sun Feb <span class=m>26</span> 11:53:18 2017<span class=o>)</span>
+</span></span><span class=line><span class=cl>running pre-sync triggers
+</span></span><span class=line><span class=cl>cleaning trees
+</span></span><span class=line><span class=cl>removing: /var/lib/tftpboot/grub/images
+</span></span><span class=line><span class=cl>copying bootloaders
+</span></span><span class=line><span class=cl>trying hardlink /var/lib/cobbler/loaders/pxelinux.0 -&gt; /var/lib/tftpboot/pxelinux.0
+</span></span><span class=line><span class=cl>trying hardlink /var/lib/cobbler/loaders/menu.c32 -&gt; /var/lib/tftpboot/menu.c32
+</span></span><span class=line><span class=cl>trying hardlink /var/lib/cobbler/loaders/yaboot -&gt; /var/lib/tftpboot/yaboot
+</span></span><span class=line><span class=cl>trying hardlink /usr/share/syslinux/memdisk -&gt; /var/lib/tftpboot/memdisk
+</span></span><span class=line><span class=cl>trying hardlink /var/lib/cobbler/loaders/grub-x86.efi -&gt; /var/lib/tftpboot/grub/grub-x86.efi
+</span></span><span class=line><span class=cl>trying hardlink /var/lib/cobbler/loaders/grub-x86_64.efi -&gt; /var/lib/tftpboot/grub/grub-x86_64.efi
+</span></span><span class=line><span class=cl>copying distros to tftpboot
+</span></span><span class=line><span class=cl>copying images
+</span></span><span class=line><span class=cl>generating PXE configuration files
+</span></span><span class=line><span class=cl>generating PXE menu structure
+</span></span><span class=line><span class=cl>rendering DHCP files
+</span></span><span class=line><span class=cl>generating /etc/dhcp/dhcpd.conf
+</span></span><span class=line><span class=cl>rendering TFTPD files
+</span></span><span class=line><span class=cl>generating /etc/xinetd.d/tftp
+</span></span><span class=line><span class=cl>cleaning link caches
+</span></span><span class=line><span class=cl>running post-sync triggers
+</span></span><span class=line><span class=cl>running python triggers from /var/lib/cobbler/triggers/sync/post/*
+</span></span><span class=line><span class=cl>running python trigger cobbler.modules.sync_post_restart_services
+</span></span><span class=line><span class=cl>running: dhcpd -t -q
+</span></span><span class=line><span class=cl>received on stdout:
+</span></span><span class=line><span class=cl>received on stderr:
+</span></span><span class=line><span class=cl>running: service dhcpd restart
+</span></span><span class=line><span class=cl>received on stdout:
+</span></span><span class=line><span class=cl>received on stderr: Redirecting to /bin/systemctl restart  dhcpd.service
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>running shell triggers from /var/lib/cobbler/triggers/sync/post/*
+</span></span><span class=line><span class=cl>running python triggers from /var/lib/cobbler/triggers/change/*
+</span></span><span class=line><span class=cl>running python trigger cobbler.modules.scm_track
+</span></span><span class=line><span class=cl>running shell triggers from /var/lib/cobbler/triggers/change/*
+</span></span><span class=line><span class=cl>*** TASK COMPLETE ***</span></span></code></pre></div><h3 id=25-开机启动 class=headerLink><a href=#25-%e5%bc%80%e6%9c%ba%e5%90%af%e5%8a%a8 class=header-mark aria-label="Header mark for '2.5 开机启动'"></a>2.5 开机启动</h3><div class="code-block highlight is-closed show-line-numbers tw-group tw-my-2"><div class="code-block-title
+tw-flex
+tw-flex-row
+tw-justify-between
+tw-w-full tw-bg-bgColor-secondary"><button class="tw-select-none
+tw-mx-2
+tw-block
+group-[.is-open]:tw-rotate-90
+tw-transition-[transform]
+tw-duration-500
+tw-ease-in-out
+print:!tw-hidden" disabled aria-hidden=true><svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><path d="M285.476 272.971 91.132 467.314c-9.373 9.373-24.569 9.373-33.941.0l-22.667-22.667c-9.357-9.357-9.375-24.522-.04-33.901L188.505 256 34.484 101.255c-9.335-9.379-9.317-24.544.04-33.901l22.667-22.667c9.373-9.373 24.569-9.373 33.941.0L285.475 239.03c9.373 9.372 9.373 24.568.001 33.941z"/></svg></button><div class="code-block-title-bar tw-w-full"><p class="tw-select-none !tw-my-1">bash</p></div><div class=tw-flex><button class="line-number-button
+tw-select-none
+tw-mx-2
+tw-hidden
+group-[.is-open]:tw-block
+group-[.show-line-numbers]:tw-text-fgColor-link
+print:!tw-hidden" title="Toggle line numbers"><svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M61.77 401l17.5-20.15a19.92 19.92.0 005.07-14.19v-3.31C84.34 356 80.5 352 73 352H16a8 8 0 00-8 8v16a8 8 0 008 8h22.83a157.41 157.41.0 00-11 12.31l-5.61 7c-4 5.07-5.25 10.13-2.8 14.88l1.05 1.93c3 5.76 6.29 7.88 12.25 7.88h4.73c10.33.0 15.94 2.44 15.94 9.09.0 4.72-4.2 8.22-14.36 8.22a41.54 41.54.0 01-15.47-3.12c-6.49-3.88-11.74-3.5-15.6 3.12l-5.59 9.31c-3.72 6.13-3.19 11.72 2.63 15.94 7.71 4.69 20.38 9.44 37 9.44 34.16.0 48.5-22.75 48.5-44.12-.03-14.38-9.12-29.76-28.73-34.88zM496 224H176a16 16 0 00-16 16v32a16 16 0 0016 16h320a16 16 0 0016-16v-32a16 16 0 00-16-16zm0-160H176a16 16 0 00-16 16v32a16 16 0 0016 16h320a16 16 0 0016-16V80a16 16 0 00-16-16zm0 320H176a16 16 0 00-16 16v32a16 16 0 0016 16h320a16 16 0 0016-16v-32a16 16 0 00-16-16zM16 160h64a8 8 0 008-8v-16a8 8 0 00-8-8H64V40a8 8 0 00-8-8H32a8 8 0 00-7.14 4.42l-8 16A8 8 0 0024 64h8v64H16a8 8 0 00-8 8v16a8 8 0 008 8zm-3.91 160H80a8 8 0 008-8v-16a8 8 0 00-8-8H41.32c3.29-10.29 48.34-18.68 48.34-56.44.0-29.06-25-39.56-44.47-39.56-21.36.0-33.8 10-40.46 18.75-4.37 5.59-3 10.84 2.8 15.37l8.58 6.88c5.61 4.56 11 2.47 16.12-2.44a13.44 13.44.0 019.46-3.84c3.33.0 9.28 1.56 9.28 8.75C51 248.19.0 257.31.0 304.59v4C0 316 5.08 320 12.09 320z"/></svg></button>
+<button class="wrap-code-button
+tw-select-none
+tw-mx-2
+tw-hidden
+group-[.is-open]:tw-block
+group-[.is-wrap]:tw-text-fgColor-link
+print:!tw-hidden" title="Toggle code wrap"><svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M16 132h416c8.837.0 16-7.163 16-16V76c0-8.837-7.163-16-16-16H16C7.163 60 0 67.163.0 76v40c0 8.837 7.163 16 16 16zm0 160h416c8.837.0 16-7.163 16-16v-40c0-8.837-7.163-16-16-16H16c-8.837.0-16 7.163-16 16v40c0 8.837 7.163 16 16 16zm0 160h416c8.837.0 16-7.163 16-16v-40c0-8.837-7.163-16-16-16H16c-8.837.0-16 7.163-16 16v40c0 8.837 7.163 16 16 16z"/></svg></button>
+<button class="copy-code-button
+tw-select-none
+tw-mx-2
+tw-hidden
+group-[.is-open]:tw-block
+hover:tw-text-fgColor-link
+print:!tw-hidden" title="Copy code">
+<span class="copy-icon tw-block"><svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M433.941 65.941l-51.882-51.882A48 48 0 00348.118.0H176c-26.51.0-48 21.49-48 48v48H48c-26.51.0-48 21.49-48 48v320c0 26.51 21.49 48 48 48h224c26.51.0 48-21.49 48-48v-48h80c26.51.0 48-21.49 48-48V99.882a48 48 0 00-14.059-33.941zM266 464H54a6 6 0 01-6-6V150a6 6 0 016-6h74v224c0 26.51 21.49 48 48 48h96v42a6 6 0 01-6 6zm128-96H182a6 6 0 01-6-6V54a6 6 0 016-6h106v88c0 13.255 10.745 24 24 24h88v202a6 6 0 01-6 6zm6-256h-64V48h9.632c1.591.0 3.117.632 4.243 1.757l48.368 48.368a6 6 0 011.757 4.243V112z"/></svg></span>
+<span class="check-icon tw-hidden"><svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M173.898 439.404l-166.4-166.4c-9.997-9.997-9.997-26.206.0-36.204l36.203-36.204c9.997-9.998 26.207-9.998 36.204.0L192 312.69 432.095 72.596c9.997-9.997 26.207-9.997 36.204.0l36.203 36.204c9.997 9.997 9.997 26.206.0 36.204l-294.4 294.401c-9.998 9.997-26.207 9.997-36.204-.001z"/></svg></span>
+</button>
+<button class="tw-select-none
+tw-mx-2
+tw-block
+group-[.is-open]:tw-hidden
+print:!tw-hidden" disabled aria-hidden=true><svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M328 256c0 39.8-32.2 72-72 72s-72-32.2-72-72 32.2-72 72-72 72 32.2 72 72zm104-72c-39.8.0-72 32.2-72 72s32.2 72 72 72 72-32.2 72-72-32.2-72-72-72zm-352 0c-39.8.0-72 32.2-72 72s32.2 72 72 72 72-32.2 72-72-32.2-72-72-72z"/></svg></button></div></div><pre style=counter-reset:codeblock class="tw-block tw-m-0 tw-p-0"><code id=codeblock-id-6 class="chroma
+!tw-block
+tw-p-0
+tw-m-0
+tw-transition-[max-height]
+tw-duration-500
+tw-ease-in-out
+group-[.is-closed]:!tw-max-h-0
+group-[.is-wrap]:tw-text-wrap
+tw-overflow-y-hidden
+tw-overflow-x-auto
+tw-scrollbar-thin"><span class=line><span class=cl><span class=c1># 设置为开机启动</span>
+</span></span><span class=line><span class=cl><span class=o>[</span>root@localhost ~<span class=o>]</span><span class=c1># systemctl enable httpd</span>
+</span></span><span class=line><span class=cl><span class=o>[</span>root@localhost ~<span class=o>]</span><span class=c1># systemctl enable rsyncd</span>
+</span></span><span class=line><span class=cl><span class=o>[</span>root@localhost ~<span class=o>]</span><span class=c1># systemctl enable xinetd</span>
+</span></span><span class=line><span class=cl><span class=o>[</span>root@localhost ~<span class=o>]</span><span class=c1># systemctl enable cobblerd</span>
+</span></span><span class=line><span class=cl><span class=o>[</span>root@localhost ~<span class=o>]</span><span class=c1># systemctl enable dhcpd</span>
+</span></span><span class=line><span class=cl><span class=c1># 重启所有服务</span>
+</span></span><span class=line><span class=cl><span class=o>[</span>root@localhost ~<span class=o>]</span><span class=c1># systemctl restart httpd</span>
+</span></span><span class=line><span class=cl><span class=o>[</span>root@localhost ~<span class=o>]</span><span class=c1># systemctl restart rsyncd</span>
+</span></span><span class=line><span class=cl><span class=o>[</span>root@localhost ~<span class=o>]</span><span class=c1># systemctl restart xinetd</span>
+</span></span><span class=line><span class=cl><span class=o>[</span>root@localhost ~<span class=o>]</span><span class=c1># systemctl restart cobblerd</span>
+</span></span><span class=line><span class=cl><span class=o>[</span>root@localhost ~<span class=o>]</span><span class=c1># systemctl restart dhcpd</span></span></span></code></pre></div><h2 id=3-cobbler-命令行管理 class=headerLink><a href=#3-cobbler-%e5%91%bd%e4%bb%a4%e8%a1%8c%e7%ae%a1%e7%90%86 class=header-mark aria-label="Header mark for '3. cobbler 命令行管理'"></a>3. cobbler 命令行管理</h2><h3 id=31-查看命令帮助 class=headerLink><a href=#31-%e6%9f%a5%e7%9c%8b%e5%91%bd%e4%bb%a4%e5%b8%ae%e5%8a%a9 class=header-mark aria-label="Header mark for '3.1 查看命令帮助'"></a>3.1 查看命令帮助</h3><div class="code-block highlight is-closed show-line-numbers tw-group tw-my-2"><div class="code-block-title
+tw-flex
+tw-flex-row
+tw-justify-between
+tw-w-full tw-bg-bgColor-secondary"><button class="tw-select-none
+tw-mx-2
+tw-block
+group-[.is-open]:tw-rotate-90
+tw-transition-[transform]
+tw-duration-500
+tw-ease-in-out
+print:!tw-hidden" disabled aria-hidden=true><svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><path d="M285.476 272.971 91.132 467.314c-9.373 9.373-24.569 9.373-33.941.0l-22.667-22.667c-9.357-9.357-9.375-24.522-.04-33.901L188.505 256 34.484 101.255c-9.335-9.379-9.317-24.544.04-33.901l22.667-22.667c9.373-9.373 24.569-9.373 33.941.0L285.475 239.03c9.373 9.372 9.373 24.568.001 33.941z"/></svg></button><div class="code-block-title-bar tw-w-full"><p class="tw-select-none !tw-my-1">bash</p></div><div class=tw-flex><button class="line-number-button
+tw-select-none
+tw-mx-2
+tw-hidden
+group-[.is-open]:tw-block
+group-[.show-line-numbers]:tw-text-fgColor-link
+print:!tw-hidden" title="Toggle line numbers"><svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M61.77 401l17.5-20.15a19.92 19.92.0 005.07-14.19v-3.31C84.34 356 80.5 352 73 352H16a8 8 0 00-8 8v16a8 8 0 008 8h22.83a157.41 157.41.0 00-11 12.31l-5.61 7c-4 5.07-5.25 10.13-2.8 14.88l1.05 1.93c3 5.76 6.29 7.88 12.25 7.88h4.73c10.33.0 15.94 2.44 15.94 9.09.0 4.72-4.2 8.22-14.36 8.22a41.54 41.54.0 01-15.47-3.12c-6.49-3.88-11.74-3.5-15.6 3.12l-5.59 9.31c-3.72 6.13-3.19 11.72 2.63 15.94 7.71 4.69 20.38 9.44 37 9.44 34.16.0 48.5-22.75 48.5-44.12-.03-14.38-9.12-29.76-28.73-34.88zM496 224H176a16 16 0 00-16 16v32a16 16 0 0016 16h320a16 16 0 0016-16v-32a16 16 0 00-16-16zm0-160H176a16 16 0 00-16 16v32a16 16 0 0016 16h320a16 16 0 0016-16V80a16 16 0 00-16-16zm0 320H176a16 16 0 00-16 16v32a16 16 0 0016 16h320a16 16 0 0016-16v-32a16 16 0 00-16-16zM16 160h64a8 8 0 008-8v-16a8 8 0 00-8-8H64V40a8 8 0 00-8-8H32a8 8 0 00-7.14 4.42l-8 16A8 8 0 0024 64h8v64H16a8 8 0 00-8 8v16a8 8 0 008 8zm-3.91 160H80a8 8 0 008-8v-16a8 8 0 00-8-8H41.32c3.29-10.29 48.34-18.68 48.34-56.44.0-29.06-25-39.56-44.47-39.56-21.36.0-33.8 10-40.46 18.75-4.37 5.59-3 10.84 2.8 15.37l8.58 6.88c5.61 4.56 11 2.47 16.12-2.44a13.44 13.44.0 019.46-3.84c3.33.0 9.28 1.56 9.28 8.75C51 248.19.0 257.31.0 304.59v4C0 316 5.08 320 12.09 320z"/></svg></button>
+<button class="wrap-code-button
+tw-select-none
+tw-mx-2
+tw-hidden
+group-[.is-open]:tw-block
+group-[.is-wrap]:tw-text-fgColor-link
+print:!tw-hidden" title="Toggle code wrap"><svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M16 132h416c8.837.0 16-7.163 16-16V76c0-8.837-7.163-16-16-16H16C7.163 60 0 67.163.0 76v40c0 8.837 7.163 16 16 16zm0 160h416c8.837.0 16-7.163 16-16v-40c0-8.837-7.163-16-16-16H16c-8.837.0-16 7.163-16 16v40c0 8.837 7.163 16 16 16zm0 160h416c8.837.0 16-7.163 16-16v-40c0-8.837-7.163-16-16-16H16c-8.837.0-16 7.163-16 16v40c0 8.837 7.163 16 16 16z"/></svg></button>
+<button class="copy-code-button
+tw-select-none
+tw-mx-2
+tw-hidden
+group-[.is-open]:tw-block
+hover:tw-text-fgColor-link
+print:!tw-hidden" title="Copy code">
+<span class="copy-icon tw-block"><svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M433.941 65.941l-51.882-51.882A48 48 0 00348.118.0H176c-26.51.0-48 21.49-48 48v48H48c-26.51.0-48 21.49-48 48v320c0 26.51 21.49 48 48 48h224c26.51.0 48-21.49 48-48v-48h80c26.51.0 48-21.49 48-48V99.882a48 48 0 00-14.059-33.941zM266 464H54a6 6 0 01-6-6V150a6 6 0 016-6h74v224c0 26.51 21.49 48 48 48h96v42a6 6 0 01-6 6zm128-96H182a6 6 0 01-6-6V54a6 6 0 016-6h106v88c0 13.255 10.745 24 24 24h88v202a6 6 0 01-6 6zm6-256h-64V48h9.632c1.591.0 3.117.632 4.243 1.757l48.368 48.368a6 6 0 011.757 4.243V112z"/></svg></span>
+<span class="check-icon tw-hidden"><svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M173.898 439.404l-166.4-166.4c-9.997-9.997-9.997-26.206.0-36.204l36.203-36.204c9.997-9.998 26.207-9.998 36.204.0L192 312.69 432.095 72.596c9.997-9.997 26.207-9.997 36.204.0l36.203 36.204c9.997 9.997 9.997 26.206.0 36.204l-294.4 294.401c-9.998 9.997-26.207 9.997-36.204-.001z"/></svg></span>
+</button>
+<button class="tw-select-none
+tw-mx-2
+tw-block
+group-[.is-open]:tw-hidden
+print:!tw-hidden" disabled aria-hidden=true><svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M328 256c0 39.8-32.2 72-72 72s-72-32.2-72-72 32.2-72 72-72 72 32.2 72 72zm104-72c-39.8.0-72 32.2-72 72s32.2 72 72 72 72-32.2 72-72-32.2-72-72-72zm-352 0c-39.8.0-72 32.2-72 72s32.2 72 72 72 72-32.2 72-72-32.2-72-72-72z"/></svg></button></div></div><pre style=counter-reset:codeblock class="tw-block tw-m-0 tw-p-0"><code id=codeblock-id-7 class="chroma
+!tw-block
+tw-p-0
+tw-m-0
+tw-transition-[max-height]
+tw-duration-500
+tw-ease-in-out
+group-[.is-closed]:!tw-max-h-0
+group-[.is-wrap]:tw-text-wrap
+tw-overflow-y-hidden
+tw-overflow-x-auto
+tw-scrollbar-thin"><span class=line><span class=cl><span class=o>[</span>root@localhost ~<span class=o>]</span><span class=c1># cobbler</span>
+</span></span><span class=line><span class=cl><span class=nv>usage</span>
+</span></span><span class=line><span class=cl><span class=o>=====</span>
+</span></span><span class=line><span class=cl>cobbler &lt;distro<span class=p>|</span>profile<span class=p>|</span>system<span class=p>|</span>repo<span class=p>|</span>image<span class=p>|</span>mgmtclass<span class=p>|</span>package<span class=p>|</span>file&gt; ...
+</span></span><span class=line><span class=cl>        <span class=o>[</span>add<span class=p>|</span>edit<span class=p>|</span>copy<span class=p>|</span>getks*<span class=p>|</span>list<span class=p>|</span>remove<span class=p>|</span>rename<span class=p>|</span>report<span class=o>]</span> <span class=o>[</span>options<span class=p>|</span>--help<span class=o>]</span>
+</span></span><span class=line><span class=cl>cobbler &lt;aclsetup<span class=p>|</span>buildiso<span class=p>|</span>import<span class=p>|</span>list<span class=p>|</span>replicate<span class=p>|</span>report<span class=p>|</span>reposync<span class=p>|</span>sync<span class=p>|</span>validateks<span class=p>|</span>version<span class=p>|</span>signature<span class=p>|</span>get-loaders<span class=p>|</span>hardlink&gt; <span class=o>[</span>options<span class=p>|</span>--help<span class=o>]</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=o>[</span>root@linux-node1 ~<span class=o>]</span><span class=c1># cobbler import --help  # 导入镜像</span>
+</span></span><span class=line><span class=cl>Usage: cobbler <span class=o>[</span>options<span class=o>]</span>
+</span></span><span class=line><span class=cl>Options:
+</span></span><span class=line><span class=cl>  -h, --help            show this <span class=nb>help</span> message and <span class=nb>exit</span>
+</span></span><span class=line><span class=cl>  --arch<span class=o>=</span>ARCH           OS architecture being imported
+</span></span><span class=line><span class=cl>  --breed<span class=o>=</span>BREED         the breed being imported
+</span></span><span class=line><span class=cl>  --os-version<span class=o>=</span>OS_VERSION
+</span></span><span class=line><span class=cl>                        the version being imported
+</span></span><span class=line><span class=cl>  --path<span class=o>=</span>PATH           <span class=nb>local</span> path or rsync location
+</span></span><span class=line><span class=cl>  --name<span class=o>=</span>NAME           name, ex <span class=s1>&#39;RHEL-5&#39;</span>
+</span></span><span class=line><span class=cl>  --available-as<span class=o>=</span>AVAILABLE_AS
+</span></span><span class=line><span class=cl>                        tree is here, don<span class=err>&#39;</span>t mirror
+</span></span><span class=line><span class=cl>  --kickstart<span class=o>=</span>KICKSTART_FILE
+</span></span><span class=line><span class=cl>                        assign this kickstart file
+</span></span><span class=line><span class=cl>  --rsync-flags<span class=o>=</span>RSYNC_FLAGS
+</span></span><span class=line><span class=cl>                        pass additional flags to rsync
+</span></span><span class=line><span class=cl>cobbler check    核对当前设置是否有问题
+</span></span><span class=line><span class=cl>cobbler list     列出所有的cobbler元素
+</span></span><span class=line><span class=cl>cobbler report   列出元素的详细信息
+</span></span><span class=line><span class=cl>cobbler sync     同步配置到数据目录,更改配置最好都要执行下
+</span></span><span class=line><span class=cl>cobbler reposync 同步yum仓库
+</span></span><span class=line><span class=cl>cobbler distro   查看导入的发行版系统信息
+</span></span><span class=line><span class=cl>cobbler system   查看添加的系统信息
+</span></span><span class=line><span class=cl>cobbler profile  查看配置信息</span></span></code></pre></div><h3 id=32-导入镜像 class=headerLink><a href=#32-%e5%af%bc%e5%85%a5%e9%95%9c%e5%83%8f class=header-mark aria-label="Header mark for '3.2 导入镜像'"></a>3.2 导入镜像</h3><div class="code-block highlight is-closed show-line-numbers tw-group tw-my-2"><div class="code-block-title
+tw-flex
+tw-flex-row
+tw-justify-between
+tw-w-full tw-bg-bgColor-secondary"><button class="tw-select-none
+tw-mx-2
+tw-block
+group-[.is-open]:tw-rotate-90
+tw-transition-[transform]
+tw-duration-500
+tw-ease-in-out
+print:!tw-hidden" disabled aria-hidden=true><svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><path d="M285.476 272.971 91.132 467.314c-9.373 9.373-24.569 9.373-33.941.0l-22.667-22.667c-9.357-9.357-9.375-24.522-.04-33.901L188.505 256 34.484 101.255c-9.335-9.379-9.317-24.544.04-33.901l22.667-22.667c9.373-9.373 24.569-9.373 33.941.0L285.475 239.03c9.373 9.372 9.373 24.568.001 33.941z"/></svg></button><div class="code-block-title-bar tw-w-full"><p class="tw-select-none !tw-my-1">bash</p></div><div class=tw-flex><button class="line-number-button
+tw-select-none
+tw-mx-2
+tw-hidden
+group-[.is-open]:tw-block
+group-[.show-line-numbers]:tw-text-fgColor-link
+print:!tw-hidden" title="Toggle line numbers"><svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M61.77 401l17.5-20.15a19.92 19.92.0 005.07-14.19v-3.31C84.34 356 80.5 352 73 352H16a8 8 0 00-8 8v16a8 8 0 008 8h22.83a157.41 157.41.0 00-11 12.31l-5.61 7c-4 5.07-5.25 10.13-2.8 14.88l1.05 1.93c3 5.76 6.29 7.88 12.25 7.88h4.73c10.33.0 15.94 2.44 15.94 9.09.0 4.72-4.2 8.22-14.36 8.22a41.54 41.54.0 01-15.47-3.12c-6.49-3.88-11.74-3.5-15.6 3.12l-5.59 9.31c-3.72 6.13-3.19 11.72 2.63 15.94 7.71 4.69 20.38 9.44 37 9.44 34.16.0 48.5-22.75 48.5-44.12-.03-14.38-9.12-29.76-28.73-34.88zM496 224H176a16 16 0 00-16 16v32a16 16 0 0016 16h320a16 16 0 0016-16v-32a16 16 0 00-16-16zm0-160H176a16 16 0 00-16 16v32a16 16 0 0016 16h320a16 16 0 0016-16V80a16 16 0 00-16-16zm0 320H176a16 16 0 00-16 16v32a16 16 0 0016 16h320a16 16 0 0016-16v-32a16 16 0 00-16-16zM16 160h64a8 8 0 008-8v-16a8 8 0 00-8-8H64V40a8 8 0 00-8-8H32a8 8 0 00-7.14 4.42l-8 16A8 8 0 0024 64h8v64H16a8 8 0 00-8 8v16a8 8 0 008 8zm-3.91 160H80a8 8 0 008-8v-16a8 8 0 00-8-8H41.32c3.29-10.29 48.34-18.68 48.34-56.44.0-29.06-25-39.56-44.47-39.56-21.36.0-33.8 10-40.46 18.75-4.37 5.59-3 10.84 2.8 15.37l8.58 6.88c5.61 4.56 11 2.47 16.12-2.44a13.44 13.44.0 019.46-3.84c3.33.0 9.28 1.56 9.28 8.75C51 248.19.0 257.31.0 304.59v4C0 316 5.08 320 12.09 320z"/></svg></button>
+<button class="wrap-code-button
+tw-select-none
+tw-mx-2
+tw-hidden
+group-[.is-open]:tw-block
+group-[.is-wrap]:tw-text-fgColor-link
+print:!tw-hidden" title="Toggle code wrap"><svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M16 132h416c8.837.0 16-7.163 16-16V76c0-8.837-7.163-16-16-16H16C7.163 60 0 67.163.0 76v40c0 8.837 7.163 16 16 16zm0 160h416c8.837.0 16-7.163 16-16v-40c0-8.837-7.163-16-16-16H16c-8.837.0-16 7.163-16 16v40c0 8.837 7.163 16 16 16zm0 160h416c8.837.0 16-7.163 16-16v-40c0-8.837-7.163-16-16-16H16c-8.837.0-16 7.163-16 16v40c0 8.837 7.163 16 16 16z"/></svg></button>
+<button class="copy-code-button
+tw-select-none
+tw-mx-2
+tw-hidden
+group-[.is-open]:tw-block
+hover:tw-text-fgColor-link
+print:!tw-hidden" title="Copy code">
+<span class="copy-icon tw-block"><svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M433.941 65.941l-51.882-51.882A48 48 0 00348.118.0H176c-26.51.0-48 21.49-48 48v48H48c-26.51.0-48 21.49-48 48v320c0 26.51 21.49 48 48 48h224c26.51.0 48-21.49 48-48v-48h80c26.51.0 48-21.49 48-48V99.882a48 48 0 00-14.059-33.941zM266 464H54a6 6 0 01-6-6V150a6 6 0 016-6h74v224c0 26.51 21.49 48 48 48h96v42a6 6 0 01-6 6zm128-96H182a6 6 0 01-6-6V54a6 6 0 016-6h106v88c0 13.255 10.745 24 24 24h88v202a6 6 0 01-6 6zm6-256h-64V48h9.632c1.591.0 3.117.632 4.243 1.757l48.368 48.368a6 6 0 011.757 4.243V112z"/></svg></span>
+<span class="check-icon tw-hidden"><svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M173.898 439.404l-166.4-166.4c-9.997-9.997-9.997-26.206.0-36.204l36.203-36.204c9.997-9.998 26.207-9.998 36.204.0L192 312.69 432.095 72.596c9.997-9.997 26.207-9.997 36.204.0l36.203 36.204c9.997 9.997 9.997 26.206.0 36.204l-294.4 294.401c-9.998 9.997-26.207 9.997-36.204-.001z"/></svg></span>
+</button>
+<button class="tw-select-none
+tw-mx-2
+tw-block
+group-[.is-open]:tw-hidden
+print:!tw-hidden" disabled aria-hidden=true><svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M328 256c0 39.8-32.2 72-72 72s-72-32.2-72-72 32.2-72 72-72 72 32.2 72 72zm104-72c-39.8.0-72 32.2-72 72s32.2 72 72 72 72-32.2 72-72-32.2-72-72-72zm-352 0c-39.8.0-72 32.2-72 72s32.2 72 72 72 72-32.2 72-72-32.2-72-72-72z"/></svg></button></div></div><pre style=counter-reset:codeblock class="tw-block tw-m-0 tw-p-0"><code id=codeblock-id-8 class="chroma
+!tw-block
+tw-p-0
+tw-m-0
+tw-transition-[max-height]
+tw-duration-500
+tw-ease-in-out
+group-[.is-closed]:!tw-max-h-0
+group-[.is-wrap]:tw-text-wrap
+tw-overflow-y-hidden
+tw-overflow-x-auto
+tw-scrollbar-thin"><span class=line><span class=cl><span class=c1># 挂载镜像</span>
+</span></span><span class=line><span class=cl><span class=o>[</span>root@localhost ~<span class=o>]</span><span class=c1># mount /dev/cdrom /mnt</span>
+</span></span><span class=line><span class=cl>mount: /dev/sr0 is write-protected, mounting read-only
+</span></span><span class=line><span class=cl><span class=o>[</span>root@localhost ~<span class=o>]</span><span class=c1># cobbler import --path=/mnt/ --name=BClinux-7.2-x86_64 --arch=x86_64</span>
+</span></span><span class=line><span class=cl><span class=c1># --path 镜像路径</span>
+</span></span><span class=line><span class=cl><span class=c1># --name 为安装源定义一个名字</span>
+</span></span><span class=line><span class=cl><span class=c1># --arch 指定安装源是32位、64位、ia64, 目前支持的选项有: x86│x86_64│ia64</span>
+</span></span><span class=line><span class=cl><span class=c1># 安装源的唯一标示就是根据name参数来定义，本例导入成功后，安装源的唯一标示就是：BClinux-7.2-x86_64，如果重复，系统会提示导入失败。</span>
+</span></span><span class=line><span class=cl><span class=c1># 镜像存放目录，cobbler会将镜像中的所有安装文件拷贝到本地一份，放在/var/www/cobbler/ks_mirror下的BClinux-7.2-x86_64目录下。因此/var/www/cobbler目录必须具有足够容纳安装文件的空间。</span>
+</span></span><span class=line><span class=cl><span class=o>[</span>root@localhost ~<span class=o>]</span><span class=c1># cobbler distro list  # 查看镜像列表</span>
+</span></span><span class=line><span class=cl>   BClinux-7.2-x86_64</span></span></code></pre></div><h3 id=33-指定kscfg文件及调整内核参数 class=headerLink><a href=#33-%e6%8c%87%e5%ae%9akscfg%e6%96%87%e4%bb%b6%e5%8f%8a%e8%b0%83%e6%95%b4%e5%86%85%e6%a0%b8%e5%8f%82%e6%95%b0 class=header-mark aria-label="Header mark for '3.3 指定ks.cfg文件及调整内核参数'"></a>3.3 指定ks.cfg文件及调整内核参数</h3><div class="code-block highlight is-closed show-line-numbers tw-group tw-my-2"><div class="code-block-title
+tw-flex
+tw-flex-row
+tw-justify-between
+tw-w-full tw-bg-bgColor-secondary"><button class="tw-select-none
+tw-mx-2
+tw-block
+group-[.is-open]:tw-rotate-90
+tw-transition-[transform]
+tw-duration-500
+tw-ease-in-out
+print:!tw-hidden" disabled aria-hidden=true><svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><path d="M285.476 272.971 91.132 467.314c-9.373 9.373-24.569 9.373-33.941.0l-22.667-22.667c-9.357-9.357-9.375-24.522-.04-33.901L188.505 256 34.484 101.255c-9.335-9.379-9.317-24.544.04-33.901l22.667-22.667c9.373-9.373 24.569-9.373 33.941.0L285.475 239.03c9.373 9.372 9.373 24.568.001 33.941z"/></svg></button><div class="code-block-title-bar tw-w-full"><p class="tw-select-none !tw-my-1">bash</p></div><div class=tw-flex><button class="line-number-button
+tw-select-none
+tw-mx-2
+tw-hidden
+group-[.is-open]:tw-block
+group-[.show-line-numbers]:tw-text-fgColor-link
+print:!tw-hidden" title="Toggle line numbers"><svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M61.77 401l17.5-20.15a19.92 19.92.0 005.07-14.19v-3.31C84.34 356 80.5 352 73 352H16a8 8 0 00-8 8v16a8 8 0 008 8h22.83a157.41 157.41.0 00-11 12.31l-5.61 7c-4 5.07-5.25 10.13-2.8 14.88l1.05 1.93c3 5.76 6.29 7.88 12.25 7.88h4.73c10.33.0 15.94 2.44 15.94 9.09.0 4.72-4.2 8.22-14.36 8.22a41.54 41.54.0 01-15.47-3.12c-6.49-3.88-11.74-3.5-15.6 3.12l-5.59 9.31c-3.72 6.13-3.19 11.72 2.63 15.94 7.71 4.69 20.38 9.44 37 9.44 34.16.0 48.5-22.75 48.5-44.12-.03-14.38-9.12-29.76-28.73-34.88zM496 224H176a16 16 0 00-16 16v32a16 16 0 0016 16h320a16 16 0 0016-16v-32a16 16 0 00-16-16zm0-160H176a16 16 0 00-16 16v32a16 16 0 0016 16h320a16 16 0 0016-16V80a16 16 0 00-16-16zm0 320H176a16 16 0 00-16 16v32a16 16 0 0016 16h320a16 16 0 0016-16v-32a16 16 0 00-16-16zM16 160h64a8 8 0 008-8v-16a8 8 0 00-8-8H64V40a8 8 0 00-8-8H32a8 8 0 00-7.14 4.42l-8 16A8 8 0 0024 64h8v64H16a8 8 0 00-8 8v16a8 8 0 008 8zm-3.91 160H80a8 8 0 008-8v-16a8 8 0 00-8-8H41.32c3.29-10.29 48.34-18.68 48.34-56.44.0-29.06-25-39.56-44.47-39.56-21.36.0-33.8 10-40.46 18.75-4.37 5.59-3 10.84 2.8 15.37l8.58 6.88c5.61 4.56 11 2.47 16.12-2.44a13.44 13.44.0 019.46-3.84c3.33.0 9.28 1.56 9.28 8.75C51 248.19.0 257.31.0 304.59v4C0 316 5.08 320 12.09 320z"/></svg></button>
+<button class="wrap-code-button
+tw-select-none
+tw-mx-2
+tw-hidden
+group-[.is-open]:tw-block
+group-[.is-wrap]:tw-text-fgColor-link
+print:!tw-hidden" title="Toggle code wrap"><svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M16 132h416c8.837.0 16-7.163 16-16V76c0-8.837-7.163-16-16-16H16C7.163 60 0 67.163.0 76v40c0 8.837 7.163 16 16 16zm0 160h416c8.837.0 16-7.163 16-16v-40c0-8.837-7.163-16-16-16H16c-8.837.0-16 7.163-16 16v40c0 8.837 7.163 16 16 16zm0 160h416c8.837.0 16-7.163 16-16v-40c0-8.837-7.163-16-16-16H16c-8.837.0-16 7.163-16 16v40c0 8.837 7.163 16 16 16z"/></svg></button>
+<button class="copy-code-button
+tw-select-none
+tw-mx-2
+tw-hidden
+group-[.is-open]:tw-block
+hover:tw-text-fgColor-link
+print:!tw-hidden" title="Copy code">
+<span class="copy-icon tw-block"><svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M433.941 65.941l-51.882-51.882A48 48 0 00348.118.0H176c-26.51.0-48 21.49-48 48v48H48c-26.51.0-48 21.49-48 48v320c0 26.51 21.49 48 48 48h224c26.51.0 48-21.49 48-48v-48h80c26.51.0 48-21.49 48-48V99.882a48 48 0 00-14.059-33.941zM266 464H54a6 6 0 01-6-6V150a6 6 0 016-6h74v224c0 26.51 21.49 48 48 48h96v42a6 6 0 01-6 6zm128-96H182a6 6 0 01-6-6V54a6 6 0 016-6h106v88c0 13.255 10.745 24 24 24h88v202a6 6 0 01-6 6zm6-256h-64V48h9.632c1.591.0 3.117.632 4.243 1.757l48.368 48.368a6 6 0 011.757 4.243V112z"/></svg></span>
+<span class="check-icon tw-hidden"><svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M173.898 439.404l-166.4-166.4c-9.997-9.997-9.997-26.206.0-36.204l36.203-36.204c9.997-9.998 26.207-9.998 36.204.0L192 312.69 432.095 72.596c9.997-9.997 26.207-9.997 36.204.0l36.203 36.204c9.997 9.997 9.997 26.206.0 36.204l-294.4 294.401c-9.998 9.997-26.207 9.997-36.204-.001z"/></svg></span>
+</button>
+<button class="tw-select-none
+tw-mx-2
+tw-block
+group-[.is-open]:tw-hidden
+print:!tw-hidden" disabled aria-hidden=true><svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M328 256c0 39.8-32.2 72-72 72s-72-32.2-72-72 32.2-72 72-72 72 32.2 72 72zm104-72c-39.8.0-72 32.2-72 72s32.2 72 72 72 72-32.2 72-72-32.2-72-72-72zm-352 0c-39.8.0-72 32.2-72 72s32.2 72 72 72 72-32.2 72-72-32.2-72-72-72z"/></svg></button></div></div><pre style=counter-reset:codeblock class="tw-block tw-m-0 tw-p-0"><code id=codeblock-id-9 class="chroma
+!tw-block
+tw-p-0
+tw-m-0
+tw-transition-[max-height]
+tw-duration-500
+tw-ease-in-out
+group-[.is-closed]:!tw-max-h-0
+group-[.is-wrap]:tw-text-wrap
+tw-overflow-y-hidden
+tw-overflow-x-auto
+tw-scrollbar-thin"><span class=line><span class=cl><span class=o>[</span>root@localhost ~<span class=o>]</span><span class=c1># cd /var/lib/cobbler/kickstarts/ # Cobbler的ks.cfg文件存放位置</span>
+</span></span><span class=line><span class=cl><span class=o>[</span>root@localhost kickstarts<span class=o>]</span><span class=c1># ls # 自带很多</span>
+</span></span><span class=line><span class=cl>default.ks    esxi5-ks.cfg      legacy.ks     sample_autoyast.xml  sample_esx4.ks   sample_esxi5.ks  sample_old.seed
+</span></span><span class=line><span class=cl>esxi4-ks.cfg  install_profiles  pxerescue.ks  sample_end.ks        sample_esxi4.ks  sample.ks        sample.seed
+</span></span><span class=line><span class=cl><span class=c1># 上传准备好的ks文件(anaconda-ks.cfg),上传方式自己选择（sftp,U盘...)</span>
+</span></span><span class=line><span class=cl><span class=o>[</span>root@localhost kickstarts<span class=o>]</span><span class=c1># mv anaconda-ks.cfg BClinux-7.2-x86_64.cfg</span>
+</span></span><span class=line><span class=cl><span class=c1># 在第一次导入系统镜像后，Cobbler会给镜像指定一个默认的kickstart自动安装文件在/var/lib/cobbler/kickstarts下的sample_end.ks。</span>
+</span></span><span class=line><span class=cl><span class=o>[</span>root@localhost kickstarts<span class=o>]</span><span class=c1># cobbler profile report --name=BClinux-7.2-x86_64</span>
+</span></span><span class=line><span class=cl>Name                           : BClinux-7.2-x86_64
+</span></span><span class=line><span class=cl>TFTP Boot Files                : <span class=o>{}</span>
+</span></span><span class=line><span class=cl>Comment                        :
+</span></span><span class=line><span class=cl>DHCP Tag                       : default
+</span></span><span class=line><span class=cl>Distribution                   : BClinux-7.2-x86_64
+</span></span><span class=line><span class=cl>Enable gPXE?                   : <span class=m>0</span>
+</span></span><span class=line><span class=cl>Enable PXE Menu?               : <span class=m>1</span>
+</span></span><span class=line><span class=cl>Fetchable Files                : <span class=o>{}</span>
+</span></span><span class=line><span class=cl>Kernel Options                 : <span class=o>{}</span>
+</span></span><span class=line><span class=cl>Kernel Options <span class=o>(</span>Post Install<span class=o>)</span>  : <span class=o>{}</span>
+</span></span><span class=line><span class=cl>Kickstart                      : /var/lib/cobbler/kickstarts/sample_end.ks <span class=c1># 默认的ks文件</span>
+</span></span><span class=line><span class=cl>Kickstart Metadata             : <span class=o>{}</span>
+</span></span><span class=line><span class=cl>Management Classes             : <span class=o>[]</span>
+</span></span><span class=line><span class=cl>Management Parameters          : <span class=s>&lt;&lt;inherit&gt;&gt;
+</span></span></span><span class=line><span class=cl><span class=s>Name Servers                   : []
+</span></span></span><span class=line><span class=cl><span class=s>Name Servers Search Path       : []
+</span></span></span><span class=line><span class=cl><span class=s>Owners                         : [&#39;admin&#39;]
+</span></span></span><span class=line><span class=cl><span class=s>Parent Profile                 :
+</span></span></span><span class=line><span class=cl><span class=s>Internal proxy                 :
+</span></span></span><span class=line><span class=cl><span class=s>Red Hat Management Key         : &lt;&lt;inherit</span>&gt;&gt;
+</span></span><span class=line><span class=cl>Red Hat Management Server      : <span class=s>&lt;&lt;inherit&gt;&gt;
+</span></span></span><span class=line><span class=cl><span class=s>Repos                          : []
+</span></span></span><span class=line><span class=cl><span class=s>Server Override                : &lt;&lt;inherit</span>&gt;&gt;
+</span></span><span class=line><span class=cl>Template Files                 : <span class=o>{}</span>
+</span></span><span class=line><span class=cl>Virt Auto Boot                 : <span class=m>1</span>
+</span></span><span class=line><span class=cl>Virt Bridge                    : xenbr0
+</span></span><span class=line><span class=cl>Virt CPUs                      : <span class=m>1</span>
+</span></span><span class=line><span class=cl>Virt Disk Driver Type          : raw
+</span></span><span class=line><span class=cl>Virt File Size<span class=o>(</span>GB<span class=o>)</span>             : <span class=m>5</span>
+</span></span><span class=line><span class=cl>Virt Path                      :
+</span></span><span class=line><span class=cl>Virt RAM <span class=o>(</span>MB<span class=o>)</span>                  : <span class=m>512</span>
+</span></span><span class=line><span class=cl>Virt Type                      : kvm
+</span></span><span class=line><span class=cl><span class=c1># 编辑profile，修改关联的ks文件</span>
+</span></span><span class=line><span class=cl><span class=o>[</span>root@localhost kickstarts<span class=o>]</span><span class=c1># cobbler profile edit --name=BClinux-7.2-x86_64 --kickstart=/var/lib/cobbler/kickstarts/BClinux-7.2-x86_64.cfg</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># 修改安装系统的内核参数，在CentOS7系统有一个地方变了，就是网卡名变成eno16777736这种形式，但是为了运维标准化，我们需要将它变成我们常用的eth0，因此使用下面的参数。但要注意是CentOS7才需要下面的步骤，CentOS6不需要。（改之前请确认是否需要修改，如不需要请跳过）</span>
+</span></span><span class=line><span class=cl><span class=o>[</span>root@localhost kickstarts<span class=o>]</span><span class=c1># cobbler profile edit --name=BClinux-7.2-x86_64 --kopts=&#39;net.ifnames=0 biosdevname=0&#39;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=o>[</span>root@localhost kickstarts<span class=o>]</span><span class=c1># cobbler profile report CentOS-7.1-x86_64</span>
+</span></span><span class=line><span class=cl>Name                           : BClinux-7.2-x86_64
+</span></span><span class=line><span class=cl>TFTP Boot Files                : <span class=o>{}</span>
+</span></span><span class=line><span class=cl>Comment                        :
+</span></span><span class=line><span class=cl>DHCP Tag                       : default
+</span></span><span class=line><span class=cl>Distribution                   : BClinux-7.2-x86_64
+</span></span><span class=line><span class=cl>Enable gPXE?                   : <span class=m>0</span>
+</span></span><span class=line><span class=cl>Enable PXE Menu?               : <span class=m>1</span>
+</span></span><span class=line><span class=cl>Fetchable Files                : <span class=o>{}</span>
+</span></span><span class=line><span class=cl>Kernel Options                 : <span class=o>{</span><span class=s1>&#39;biosdevname&#39;</span>: <span class=s1>&#39;0&#39;</span>, <span class=s1>&#39;net.ifnames&#39;</span>: <span class=s1>&#39;0&#39;</span><span class=o>}</span>
+</span></span><span class=line><span class=cl>Kernel Options <span class=o>(</span>Post Install<span class=o>)</span>  : <span class=o>{}</span>
+</span></span><span class=line><span class=cl>Kickstart                      : /var/lib/cobbler/kickstarts/BClinux-7.2-x86_64.cfg
+</span></span><span class=line><span class=cl>Kickstart Metadata             : <span class=o>{}</span>
+</span></span><span class=line><span class=cl>Management Classes             : <span class=o>[]</span>
+</span></span><span class=line><span class=cl>Management Parameters          : <span class=s>&lt;&lt;inherit&gt;&gt;
+</span></span></span><span class=line><span class=cl><span class=s>Name Servers                   : []
+</span></span></span><span class=line><span class=cl><span class=s>Name Servers Search Path       : []
+</span></span></span><span class=line><span class=cl><span class=s>Owners                         : [&#39;admin&#39;]
+</span></span></span><span class=line><span class=cl><span class=s>Parent Profile                 :
+</span></span></span><span class=line><span class=cl><span class=s>Internal proxy                 :
+</span></span></span><span class=line><span class=cl><span class=s>Red Hat Management Key         : &lt;&lt;inherit</span>&gt;&gt;
+</span></span><span class=line><span class=cl>Red Hat Management Server      : <span class=s>&lt;&lt;inherit&gt;&gt;
+</span></span></span><span class=line><span class=cl><span class=s>Repos                          : []
+</span></span></span><span class=line><span class=cl><span class=s>Server Override                : &lt;&lt;inherit</span>&gt;&gt;
+</span></span><span class=line><span class=cl>Template Files                 : <span class=o>{}</span>
+</span></span><span class=line><span class=cl>Virt Auto Boot                 : <span class=m>1</span>
+</span></span><span class=line><span class=cl>Virt Bridge                    : xenbr0
+</span></span><span class=line><span class=cl>Virt CPUs                      : <span class=m>1</span>
+</span></span><span class=line><span class=cl>Virt Disk Driver Type          : raw
+</span></span><span class=line><span class=cl>Virt File Size<span class=o>(</span>GB<span class=o>)</span>             : <span class=m>5</span>
+</span></span><span class=line><span class=cl>Virt Path                      :
+</span></span><span class=line><span class=cl>Virt RAM <span class=o>(</span>MB<span class=o>)</span>                  : <span class=m>512</span>
+</span></span><span class=line><span class=cl>Virt Type                      : kvm
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># 每次修改完都要同步一次</span>
+</span></span><span class=line><span class=cl><span class=o>[</span>root@localhost kickstarts<span class=o>]</span><span class=c1># cobbler sync</span></span></span></code></pre></div><h3 id=34-安装系统 class=headerLink><a href=#34-%e5%ae%89%e8%a3%85%e7%b3%bb%e7%bb%9f class=header-mark aria-label="Header mark for '3.4 安装系统'"></a>3.4 安装系统</h3><p>可以很愉快的告诉你到这里就可以安装系统了！</p><p><strong>修改Cobbler提示</strong></p><blockquote><p>非必须，不想修改请跳过直接开始安装系统</p></blockquote><div class="code-block highlight is-open show-line-numbers tw-group tw-my-2"><div class="code-block-title
+tw-flex
+tw-flex-row
+tw-justify-between
+tw-w-full tw-bg-bgColor-secondary"><button class="tw-select-none
+tw-mx-2
+tw-block
+group-[.is-open]:tw-rotate-90
+tw-transition-[transform]
+tw-duration-500
+tw-ease-in-out
+print:!tw-hidden" disabled aria-hidden=true><svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><path d="M285.476 272.971 91.132 467.314c-9.373 9.373-24.569 9.373-33.941.0l-22.667-22.667c-9.357-9.357-9.375-24.522-.04-33.901L188.505 256 34.484 101.255c-9.335-9.379-9.317-24.544.04-33.901l22.667-22.667c9.373-9.373 24.569-9.373 33.941.0L285.475 239.03c9.373 9.372 9.373 24.568.001 33.941z"/></svg></button><div class="code-block-title-bar tw-w-full"><p class="tw-select-none !tw-my-1">bash</p></div><div class=tw-flex><button class="line-number-button
+tw-select-none
+tw-mx-2
+tw-hidden
+group-[.is-open]:tw-block
+group-[.show-line-numbers]:tw-text-fgColor-link
+print:!tw-hidden" title="Toggle line numbers"><svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M61.77 401l17.5-20.15a19.92 19.92.0 005.07-14.19v-3.31C84.34 356 80.5 352 73 352H16a8 8 0 00-8 8v16a8 8 0 008 8h22.83a157.41 157.41.0 00-11 12.31l-5.61 7c-4 5.07-5.25 10.13-2.8 14.88l1.05 1.93c3 5.76 6.29 7.88 12.25 7.88h4.73c10.33.0 15.94 2.44 15.94 9.09.0 4.72-4.2 8.22-14.36 8.22a41.54 41.54.0 01-15.47-3.12c-6.49-3.88-11.74-3.5-15.6 3.12l-5.59 9.31c-3.72 6.13-3.19 11.72 2.63 15.94 7.71 4.69 20.38 9.44 37 9.44 34.16.0 48.5-22.75 48.5-44.12-.03-14.38-9.12-29.76-28.73-34.88zM496 224H176a16 16 0 00-16 16v32a16 16 0 0016 16h320a16 16 0 0016-16v-32a16 16 0 00-16-16zm0-160H176a16 16 0 00-16 16v32a16 16 0 0016 16h320a16 16 0 0016-16V80a16 16 0 00-16-16zm0 320H176a16 16 0 00-16 16v32a16 16 0 0016 16h320a16 16 0 0016-16v-32a16 16 0 00-16-16zM16 160h64a8 8 0 008-8v-16a8 8 0 00-8-8H64V40a8 8 0 00-8-8H32a8 8 0 00-7.14 4.42l-8 16A8 8 0 0024 64h8v64H16a8 8 0 00-8 8v16a8 8 0 008 8zm-3.91 160H80a8 8 0 008-8v-16a8 8 0 00-8-8H41.32c3.29-10.29 48.34-18.68 48.34-56.44.0-29.06-25-39.56-44.47-39.56-21.36.0-33.8 10-40.46 18.75-4.37 5.59-3 10.84 2.8 15.37l8.58 6.88c5.61 4.56 11 2.47 16.12-2.44a13.44 13.44.0 019.46-3.84c3.33.0 9.28 1.56 9.28 8.75C51 248.19.0 257.31.0 304.59v4C0 316 5.08 320 12.09 320z"/></svg></button>
+<button class="wrap-code-button
+tw-select-none
+tw-mx-2
+tw-hidden
+group-[.is-open]:tw-block
+group-[.is-wrap]:tw-text-fgColor-link
+print:!tw-hidden" title="Toggle code wrap"><svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M16 132h416c8.837.0 16-7.163 16-16V76c0-8.837-7.163-16-16-16H16C7.163 60 0 67.163.0 76v40c0 8.837 7.163 16 16 16zm0 160h416c8.837.0 16-7.163 16-16v-40c0-8.837-7.163-16-16-16H16c-8.837.0-16 7.163-16 16v40c0 8.837 7.163 16 16 16zm0 160h416c8.837.0 16-7.163 16-16v-40c0-8.837-7.163-16-16-16H16c-8.837.0-16 7.163-16 16v40c0 8.837 7.163 16 16 16z"/></svg></button>
+<button class="copy-code-button
+tw-select-none
+tw-mx-2
+tw-hidden
+group-[.is-open]:tw-block
+hover:tw-text-fgColor-link
+print:!tw-hidden" title="Copy code">
+<span class="copy-icon tw-block"><svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M433.941 65.941l-51.882-51.882A48 48 0 00348.118.0H176c-26.51.0-48 21.49-48 48v48H48c-26.51.0-48 21.49-48 48v320c0 26.51 21.49 48 48 48h224c26.51.0 48-21.49 48-48v-48h80c26.51.0 48-21.49 48-48V99.882a48 48 0 00-14.059-33.941zM266 464H54a6 6 0 01-6-6V150a6 6 0 016-6h74v224c0 26.51 21.49 48 48 48h96v42a6 6 0 01-6 6zm128-96H182a6 6 0 01-6-6V54a6 6 0 016-6h106v88c0 13.255 10.745 24 24 24h88v202a6 6 0 01-6 6zm6-256h-64V48h9.632c1.591.0 3.117.632 4.243 1.757l48.368 48.368a6 6 0 011.757 4.243V112z"/></svg></span>
+<span class="check-icon tw-hidden"><svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M173.898 439.404l-166.4-166.4c-9.997-9.997-9.997-26.206.0-36.204l36.203-36.204c9.997-9.998 26.207-9.998 36.204.0L192 312.69 432.095 72.596c9.997-9.997 26.207-9.997 36.204.0l36.203 36.204c9.997 9.997 9.997 26.206.0 36.204l-294.4 294.401c-9.998 9.997-26.207 9.997-36.204-.001z"/></svg></span>
+</button>
+<button class="tw-select-none
+tw-mx-2
+tw-block
+group-[.is-open]:tw-hidden
+print:!tw-hidden" disabled aria-hidden=true><svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M328 256c0 39.8-32.2 72-72 72s-72-32.2-72-72 32.2-72 72-72 72 32.2 72 72zm104-72c-39.8.0-72 32.2-72 72s32.2 72 72 72 72-32.2 72-72-32.2-72-72-72zm-352 0c-39.8.0-72 32.2-72 72s32.2 72 72 72 72-32.2 72-72-32.2-72-72-72z"/></svg></button></div></div><pre style=counter-reset:codeblock class="tw-block tw-m-0 tw-p-0"><code id=codeblock-id-10 class="chroma
+!tw-block
+tw-p-0
+tw-m-0
+tw-transition-[max-height]
+tw-duration-500
+tw-ease-in-out
+group-[.is-closed]:!tw-max-h-0
+group-[.is-wrap]:tw-text-wrap
+tw-overflow-y-hidden
+tw-overflow-x-auto
+tw-scrollbar-thin"><span class=line><span class=cl><span class=o>[</span>root@localhost ~<span class=o>]</span><span class=c1># vim /etc/cobbler/pxe/pxedefault.template</span>
+</span></span><span class=line><span class=cl>MENU TITLE Cobbler <span class=p>|</span> http://wglee.org <span class=c1># 此处的网址可以修改为你公司的网址</span>
+</span></span><span class=line><span class=cl><span class=o>[</span>root@localhost ~<span class=o>]</span><span class=c1># cobbler sync # 修改配置都要同步</span></span></span></code></pre></div><p><img class=tw-inline loading=lazy src=/images/cobbler.png sizes=auto alt=cobbler></p><p>OK，选择第二项就可以开始装机了。</p><h3 id=35-kscfg-文件 class=headerLink><a href=#35-kscfg-%e6%96%87%e4%bb%b6 class=header-mark aria-label="Header mark for '3.5 ks.cfg 文件'"></a>3.5 ks.cfg 文件</h3><blockquote><p>关于ks.cfg文件详细说明请查看：<em>ks.cfg 文件配置</em> 文档</p></blockquote><div class="code-block highlight is-closed show-line-numbers tw-group tw-my-2"><div class="code-block-title
+tw-flex
+tw-flex-row
+tw-justify-between
+tw-w-full tw-bg-bgColor-secondary"><button class="tw-select-none
+tw-mx-2
+tw-block
+group-[.is-open]:tw-rotate-90
+tw-transition-[transform]
+tw-duration-500
+tw-ease-in-out
+print:!tw-hidden" disabled aria-hidden=true><svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><path d="M285.476 272.971 91.132 467.314c-9.373 9.373-24.569 9.373-33.941.0l-22.667-22.667c-9.357-9.357-9.375-24.522-.04-33.901L188.505 256 34.484 101.255c-9.335-9.379-9.317-24.544.04-33.901l22.667-22.667c9.373-9.373 24.569-9.373 33.941.0L285.475 239.03c9.373 9.372 9.373 24.568.001 33.941z"/></svg></button><div class="code-block-title-bar tw-w-full"><p class="tw-select-none !tw-my-1">bash</p></div><div class=tw-flex><button class="line-number-button
+tw-select-none
+tw-mx-2
+tw-hidden
+group-[.is-open]:tw-block
+group-[.show-line-numbers]:tw-text-fgColor-link
+print:!tw-hidden" title="Toggle line numbers"><svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M61.77 401l17.5-20.15a19.92 19.92.0 005.07-14.19v-3.31C84.34 356 80.5 352 73 352H16a8 8 0 00-8 8v16a8 8 0 008 8h22.83a157.41 157.41.0 00-11 12.31l-5.61 7c-4 5.07-5.25 10.13-2.8 14.88l1.05 1.93c3 5.76 6.29 7.88 12.25 7.88h4.73c10.33.0 15.94 2.44 15.94 9.09.0 4.72-4.2 8.22-14.36 8.22a41.54 41.54.0 01-15.47-3.12c-6.49-3.88-11.74-3.5-15.6 3.12l-5.59 9.31c-3.72 6.13-3.19 11.72 2.63 15.94 7.71 4.69 20.38 9.44 37 9.44 34.16.0 48.5-22.75 48.5-44.12-.03-14.38-9.12-29.76-28.73-34.88zM496 224H176a16 16 0 00-16 16v32a16 16 0 0016 16h320a16 16 0 0016-16v-32a16 16 0 00-16-16zm0-160H176a16 16 0 00-16 16v32a16 16 0 0016 16h320a16 16 0 0016-16V80a16 16 0 00-16-16zm0 320H176a16 16 0 00-16 16v32a16 16 0 0016 16h320a16 16 0 0016-16v-32a16 16 0 00-16-16zM16 160h64a8 8 0 008-8v-16a8 8 0 00-8-8H64V40a8 8 0 00-8-8H32a8 8 0 00-7.14 4.42l-8 16A8 8 0 0024 64h8v64H16a8 8 0 00-8 8v16a8 8 0 008 8zm-3.91 160H80a8 8 0 008-8v-16a8 8 0 00-8-8H41.32c3.29-10.29 48.34-18.68 48.34-56.44.0-29.06-25-39.56-44.47-39.56-21.36.0-33.8 10-40.46 18.75-4.37 5.59-3 10.84 2.8 15.37l8.58 6.88c5.61 4.56 11 2.47 16.12-2.44a13.44 13.44.0 019.46-3.84c3.33.0 9.28 1.56 9.28 8.75C51 248.19.0 257.31.0 304.59v4C0 316 5.08 320 12.09 320z"/></svg></button>
+<button class="wrap-code-button
+tw-select-none
+tw-mx-2
+tw-hidden
+group-[.is-open]:tw-block
+group-[.is-wrap]:tw-text-fgColor-link
+print:!tw-hidden" title="Toggle code wrap"><svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M16 132h416c8.837.0 16-7.163 16-16V76c0-8.837-7.163-16-16-16H16C7.163 60 0 67.163.0 76v40c0 8.837 7.163 16 16 16zm0 160h416c8.837.0 16-7.163 16-16v-40c0-8.837-7.163-16-16-16H16c-8.837.0-16 7.163-16 16v40c0 8.837 7.163 16 16 16zm0 160h416c8.837.0 16-7.163 16-16v-40c0-8.837-7.163-16-16-16H16c-8.837.0-16 7.163-16 16v40c0 8.837 7.163 16 16 16z"/></svg></button>
+<button class="copy-code-button
+tw-select-none
+tw-mx-2
+tw-hidden
+group-[.is-open]:tw-block
+hover:tw-text-fgColor-link
+print:!tw-hidden" title="Copy code">
+<span class="copy-icon tw-block"><svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M433.941 65.941l-51.882-51.882A48 48 0 00348.118.0H176c-26.51.0-48 21.49-48 48v48H48c-26.51.0-48 21.49-48 48v320c0 26.51 21.49 48 48 48h224c26.51.0 48-21.49 48-48v-48h80c26.51.0 48-21.49 48-48V99.882a48 48 0 00-14.059-33.941zM266 464H54a6 6 0 01-6-6V150a6 6 0 016-6h74v224c0 26.51 21.49 48 48 48h96v42a6 6 0 01-6 6zm128-96H182a6 6 0 01-6-6V54a6 6 0 016-6h106v88c0 13.255 10.745 24 24 24h88v202a6 6 0 01-6 6zm6-256h-64V48h9.632c1.591.0 3.117.632 4.243 1.757l48.368 48.368a6 6 0 011.757 4.243V112z"/></svg></span>
+<span class="check-icon tw-hidden"><svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M173.898 439.404l-166.4-166.4c-9.997-9.997-9.997-26.206.0-36.204l36.203-36.204c9.997-9.998 26.207-9.998 36.204.0L192 312.69 432.095 72.596c9.997-9.997 26.207-9.997 36.204.0l36.203 36.204c9.997 9.997 9.997 26.206.0 36.204l-294.4 294.401c-9.998 9.997-26.207 9.997-36.204-.001z"/></svg></span>
+</button>
+<button class="tw-select-none
+tw-mx-2
+tw-block
+group-[.is-open]:tw-hidden
+print:!tw-hidden" disabled aria-hidden=true><svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M328 256c0 39.8-32.2 72-72 72s-72-32.2-72-72 32.2-72 72-72 72 32.2 72 72zm104-72c-39.8.0-72 32.2-72 72s32.2 72 72 72 72-32.2 72-72-32.2-72-72-72zm-352 0c-39.8.0-72 32.2-72 72s32.2 72 72 72 72-32.2 72-72-32.2-72-72-72z"/></svg></button></div></div><pre style=counter-reset:codeblock class="tw-block tw-m-0 tw-p-0"><code id=codeblock-id-11 class="chroma
+!tw-block
+tw-p-0
+tw-m-0
+tw-transition-[max-height]
+tw-duration-500
+tw-ease-in-out
+group-[.is-closed]:!tw-max-h-0
+group-[.is-wrap]:tw-text-wrap
+tw-overflow-y-hidden
+tw-overflow-x-auto
+tw-scrollbar-thin"><span class=line><span class=cl><span class=o>[</span>root@localhost kickstarts<span class=o>]</span><span class=c1># cat BClinux-7.2-x86_64.cfg</span>
+</span></span><span class=line><span class=cl><span class=c1>#version=DEVEL</span>
+</span></span><span class=line><span class=cl>install
+</span></span><span class=line><span class=cl><span class=c1># System authorization information</span>
+</span></span><span class=line><span class=cl>auth --enableshadow --passalgo<span class=o>=</span>sha512
+</span></span><span class=line><span class=cl><span class=c1># Use Network installation</span>
+</span></span><span class=line><span class=cl>url --url<span class=o>=</span><span class=nv>$tree</span> <span class=c1># 这些$开头的变量都是调用配置文件里的值。</span>
+</span></span><span class=line><span class=cl><span class=c1># Run the Setup Agent on first boot</span>
+</span></span><span class=line><span class=cl>firstboot --enable
+</span></span><span class=line><span class=cl>ignoredisk --only-use<span class=o>=</span>sda
+</span></span><span class=line><span class=cl><span class=c1># Keyboard layouts</span>
+</span></span><span class=line><span class=cl>keyboard --vckeymap<span class=o>=</span>us --xlayouts<span class=o>=</span><span class=s1>&#39;us&#39;</span>
+</span></span><span class=line><span class=cl><span class=c1># System language</span>
+</span></span><span class=line><span class=cl>lang en_US.UTF-8
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># Network information</span>
+</span></span><span class=line><span class=cl>network  --bootproto<span class=o>=</span>dhcp --onboot<span class=o>=</span>on
+</span></span><span class=line><span class=cl>network  --hostname<span class=o>=</span>localhost.localdomain
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># Root password</span>
+</span></span><span class=line><span class=cl>rootpw  --iscrypted <span class=nv>$default_password_crypted</span> <span class=c1># $开头的变量，调用配置文件里的值。</span>
+</span></span><span class=line><span class=cl><span class=c1># System services</span>
+</span></span><span class=line><span class=cl>services --disabled<span class=o>=</span><span class=s2>&#34;chronyd&#34;</span>
+</span></span><span class=line><span class=cl>firewall --disabled
+</span></span><span class=line><span class=cl>selinux --disabled
+</span></span><span class=line><span class=cl><span class=c1># Reboot after installation</span>
+</span></span><span class=line><span class=cl>reboot
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># System timezone</span>
+</span></span><span class=line><span class=cl>timezone Asia/Shanghai --isUtc
+</span></span><span class=line><span class=cl><span class=c1># System bootloader configuration</span>
+</span></span><span class=line><span class=cl>bootloader --append<span class=o>=</span><span class=s2>&#34; crashkernel=auto&#34;</span> --location<span class=o>=</span>mbr --boot-drive<span class=o>=</span>sda
+</span></span><span class=line><span class=cl><span class=c1># Partition clearing information</span>
+</span></span><span class=line><span class=cl>clearpart --none --initlabel
+</span></span><span class=line><span class=cl><span class=c1># Disk partitioning information</span>
+</span></span><span class=line><span class=cl>part /boot --fstype<span class=o>=</span><span class=s2>&#34;ext4&#34;</span> --ondisk<span class=o>=</span>sda --size<span class=o>=</span><span class=m>500</span>
+</span></span><span class=line><span class=cl>part pv.01 --fstype<span class=o>=</span><span class=s2>&#34;lvmpv&#34;</span> --ondisk<span class=o>=</span>sda --grow --size<span class=o>=</span><span class=m>1</span>
+</span></span><span class=line><span class=cl>volgroup bclinux pv.01
+</span></span><span class=line><span class=cl>logvol /  --fstype<span class=o>=</span><span class=s2>&#34;xfs&#34;</span> --size<span class=o>=</span><span class=m>10240</span> --name<span class=o>=</span>root --vgname<span class=o>=</span>bclinux
+</span></span><span class=line><span class=cl>logvol swap  --fstype<span class=o>=</span><span class=s2>&#34;swap&#34;</span> --size<span class=o>=</span><span class=m>1024</span> --name<span class=o>=</span>swap --vgname<span class=o>=</span>bclinux
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>%packages
+</span></span><span class=line><span class=cl>@^minimal
+</span></span><span class=line><span class=cl>@core
+</span></span><span class=line><span class=cl>@security-tools
+</span></span><span class=line><span class=cl>kexec-tools
+</span></span><span class=line><span class=cl>vim
+</span></span><span class=line><span class=cl>wget
+</span></span><span class=line><span class=cl>%end
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>%addon com_redhat_kdump --enable --reserve-mb<span class=o>=</span><span class=s1>&#39;auto&#39;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>%end
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>%post
+</span></span><span class=line><span class=cl>wget -O /etc/yum.repos.d/epel.repo http://mirrors.aliyun.com/repo/epel-7.repo
+</span></span><span class=line><span class=cl>%end</span></span></code></pre></div></div><div class=post-footer id=post-footer><div class=post-info><div class=post-info-line><div class=post-info-mod><span>更新于 2021-06-12</span></div><div class=post-info-license></div></div><div class="post-info-line print:!tw-hidden"><div class=post-info-md><span><a class=link-to-mardown href=/posts/cobbler/index.md target=_blank rel="noopener noreferrer">阅读原始文档</a></span></div><div class=post-info-share><button title="分享到 Twitter" data-sharer=twitter data-url=https://liwanggui.com/posts/cobbler/ data-title="使用 cobbler 批量部署 bclinux7.2" data-hashtags=cobbler><svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M459.37 151.716c.325 4.548.325 9.097.325 13.645.0 138.72-105.583 298.558-298.558 298.558-59.452.0-114.68-17.219-161.137-47.106 8.447.974 16.568 1.299 25.34 1.299 49.055.0 94.213-16.568 130.274-44.832-46.132-.975-84.792-31.188-98.112-72.772 6.498.974 12.995 1.624 19.818 1.624 9.421.0 18.843-1.3 27.614-3.573-48.081-9.747-84.143-51.98-84.143-102.985v-1.299c13.969 7.797 30.214 12.67 47.431 13.319-28.264-18.843-46.781-51.005-46.781-87.391.0-19.492 5.197-37.36 14.294-52.954 51.655 63.675 129.3 105.258 216.365 109.807-1.624-7.797-2.599-15.918-2.599-24.04.0-57.828 46.782-104.934 104.934-104.934 30.213.0 57.502 12.67 76.67 33.137 23.715-4.548 46.456-13.32 66.599-25.34-7.798 24.366-24.366 44.833-46.132 57.827 21.117-2.273 41.584-8.122 60.426-16.243-14.292 20.791-32.161 39.308-52.628 54.253z"/></svg></button><button title="分享到 Facebook" data-sharer=facebook data-url=https://liwanggui.com/posts/cobbler/ data-hashtag=cobbler><svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M504 256C504 119 393 8 256 8S8 119 8 256c0 123.78 90.69 226.38 209.25 245V327.69h-63V256h63v-54.64c0-62.15 37-96.48 93.67-96.48 27.14.0 55.52 4.84 55.52 4.84v61h-31.28c-30.8.0-40.41 19.12-40.41 38.73V256h68.78l-11 71.69h-57.78V501C413.31 482.38 504 379.78 504 256z"/></svg></button><button title="分享到 WhatsApp" data-sharer=whatsapp data-url=https://liwanggui.com/posts/cobbler/ data-title="使用 cobbler 批量部署 bclinux7.2" data-web><svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M380.9 97.1C339 55.1 283.2 32 223.9 32c-122.4.0-222 99.6-222 222 0 39.1 10.2 77.3 29.6 111L0 480l117.7-30.9c32.4 17.7 68.9 27 106.1 27h.1c122.3.0 224.1-99.6 224.1-222 0-59.3-25.2-115-67.1-157zm-157 341.6c-33.2.0-65.7-8.9-94-25.7l-6.7-4-69.8 18.3L72 359.2l-4.4-7c-18.5-29.4-28.2-63.3-28.2-98.2.0-101.7 82.8-184.5 184.6-184.5 49.3.0 95.6 19.2 130.4 54.1 34.8 34.9 56.2 81.2 56.1 130.5.0 101.8-84.9 184.6-186.6 184.6zm101.2-138.2c-5.5-2.8-32.8-16.2-37.9-18-5.1-1.9-8.8-2.8-12.5 2.8s-14.3 18-17.6 21.8c-3.2 3.7-6.5 4.2-12 1.4-32.6-16.3-54-29.1-75.5-66-5.7-9.8 5.7-9.1 16.3-30.3 1.8-3.7.9-6.9-.5-9.7-1.4-2.8-12.5-30.1-17.1-41.2-4.5-10.8-9.1-9.3-12.5-9.5-3.2-.2-6.9-.2-10.6-.2s-9.7 1.4-14.8 6.9c-5.1 5.6-19.4 19-19.4 46.3.0 27.3 19.9 53.7 22.6 57.4 2.8 3.7 39.1 59.7 94.8 83.8 35.2 15.2 49 16.5 66.6 13.9 10.7-1.6 32.8-13.4 37.4-26.4 4.6-13 4.6-24.1 3.2-26.4-1.3-2.5-5-3.9-10.5-6.6z"/></svg></button><button title="分享到 Line" data-sharer=line data-url=https://liwanggui.com/posts/cobbler/ data-title="使用 cobbler 批量部署 bclinux7.2"><svg class="icon" role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><title>LINE</title><path d="M19.365 9.863c.349.0.63.285.63.631.0.345-.281.63-.63.63H17.61v1.125h1.755c.349.0.63.283.63.63.0.344-.281.629-.63.629h-2.386c-.345.0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63h2.386c.346.0.627.285.627.63.0.349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211.0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346.0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195.0.375.104.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345.0.63.285.63.63v4.771zm-5.741.0c0 .344-.282.629-.631.629-.345.0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63.346.0.628.285.628.63v4.771zm-2.466.629H4.917c-.345.0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348.0.63.285.63.63v4.141h1.756c.348.0.629.283.629.63.0.344-.282.629-.629.629M24 10.314C24 4.943 18.615.572 12 .572S0 4.943.0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.082.923.258 1.058.59.12.301.079.766.038 1.08l-.164 1.02c-.045.301-.24 1.186 1.049.645 1.291-.539 6.916-4.078 9.436-6.975C23.176 14.393 24 12.458 24 10.314"/></svg></button><button title="分享到 微博" data-sharer=weibo data-url=https://liwanggui.com/posts/cobbler/ data-title="使用 cobbler 批量部署 bclinux7.2"><svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M407 177.6c7.6-24-13.4-46.8-37.4-41.7-22 4.8-28.8-28.1-7.1-32.8 50.1-10.9 92.3 37.1 76.5 84.8-6.8 21.2-38.8 10.8-32-10.3zM214.8 446.7C108.5 446.7.0 395.3.0 310.4c0-44.3 28-95.4 76.3-143.7C176 67 279.5 65.8 249.9 161c-4 13.1 12.3 5.7 12.3 6 79.5-33.6 140.5-16.8 114 51.4-3.7 9.4 1.1 10.9 8.3 13.1 135.7 42.3 34.8 215.2-169.7 215.2zm143.7-146.3c-5.4-55.7-78.5-94-163.4-85.7-84.8 8.6-148.8 60.3-143.4 116s78.5 94 163.4 85.7c84.8-8.6 148.8-60.3 143.4-116zM347.9 35.1c-25.9 5.6-16.8 43.7 8.3 38.3 72.3-15.2 134.8 52.8 111.7 124-7.4 24.2 29.1 37 37.4 12 31.9-99.8-55.1-195.9-157.4-174.3zm-78.5 311c-17.1 38.8-66.8 60-109.1 46.3-40.8-13.1-58-53.4-40.3-89.7 17.7-35.4 63.1-55.4 103.4-45.1 42 10.8 63.1 50.2 46 88.5zm-86.3-30c-12.9-5.4-30 .3-38 12.9-8.3 12.9-4.3 28 8.6 34 13.1 6 30.8.3 39.1-12.9 8-13.1 3.7-28.3-9.7-34zm32.6-13.4c-5.1-1.7-11.4.6-14.3 5.4-2.9 5.1-1.4 10.6 3.7 12.9 5.1 2 11.7-.3 14.6-5.4 2.8-5.2 1.1-10.9-4-12.9z"/></svg></button><button title="分享到 Myspace" data-sharer=myspace data-url=https://liwanggui.com/posts/cobbler/ data-title="使用 cobbler 批量部署 bclinux7.2" data-description><svg class="icon" role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><title>Myspace</title><path d="M19.802 12.274A3.811 3.811.0 0023.62 8.47c0-2.101-1.71-3.795-3.818-3.795a3.816 3.816.0 00-3.818 3.81 3.817 3.817.0 003.818 3.811zm-8.602.705a3.43 3.43.0 003.435-3.424A3.43 3.43.0 0011.2 6.13 3.44 3.44.0 007.764 9.566 3.436 3.436.0 0011.2 13zm-7.8.635c1.71.0 3.093-1.38 3.093-3.081.0-1.704-1.395-3.084-3.105-3.084A3.086 3.086.0 00.3 10.539c0 1.7 1.387 3.078 3.095 3.078zm0 .705c-1.96.0-3.4 1.717-3.4 3.495v1.196c0 .17.138.31.31.31h6.18a.31.31.0 00.309-.31v-1.196c0-1.779-1.437-3.5-3.398-3.5zm7.8-.56c-2.18.0-3.78 1.915-3.78 3.891v1.331c0 .188.156.344.345.344h6.87a.344.344.0 00.342-.344V17.65c0-1.976-1.598-3.891-3.777-3.891zm8.602-.617c-2.422.0-4.197 2.126-4.197 4.323v1.477c0 .21.172.381.382.381h7.63c.21.0.383-.171.383-.381v-1.477c-.001-2.197-1.776-4.323-4.198-4.323z"/></svg></button><button title="分享到 Blogger" data-sharer=blogger data-url=https://liwanggui.com/posts/cobbler/ data-title="使用 cobbler 批量部署 bclinux7.2" data-description><svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M162.4 196c4.8-4.9 6.2-5.1 36.4-5.1 27.2.0 28.1.1 32.1 2.1 5.8 2.9 8.3 7 8.3 13.6.0 5.9-2.4 10-7.6 13.4-2.8 1.8-4.5 1.9-31.1 2.1-16.4.1-29.5-.2-31.5-.8-10.3-2.9-14.1-17.7-6.6-25.3zm61.4 94.5c-53.9.0-55.8.2-60.2 4.1-3.5 3.1-5.7 9.4-5.1 13.9.7 4.7 4.8 10.1 9.2 12 2.2 1 14.1 1.7 56.3 1.2l47.9-.6 9.2-1.5c9-5.1 10.5-17.4 3.1-24.4-5.3-4.7-5-4.7-60.4-4.7zm223.4 130.1c-3.5 28.4-23 50.4-51.1 57.5-7.2 1.8-9.7 1.9-172.9 1.8-157.8.0-165.9-.1-172-1.8-8.4-2.2-15.6-5.5-22.3-10-5.6-3.8-13.9-11.8-17-16.4-3.8-5.6-8.2-15.3-10-22C.1 423 0 420.3.0 256.3.0 93.2.0 89.7 1.8 82.6 8.1 57.9 27.7 39 53 33.4c7.3-1.6 332.1-1.9 340-.3 21.2 4.3 37.9 17.1 47.6 36.4 7.7 15.3 7-1.5 7.3 180.6.2 115.8.0 164.5-.7 170.5zm-85.4-185.2c-1.1-5-4.2-9.6-7.7-11.5-1.1-.6-8-1.3-15.5-1.7-12.4-.6-13.8-.8-17.8-3.1-6.2-3.6-7.9-7.6-8-18.3.0-20.4-8.5-39.4-25.3-56.5-12-12.2-25.3-20.5-40.6-25.1-3.6-1.1-11.8-1.5-39.2-1.8-42.9-.5-52.5.4-67.1 6.2-27 10.7-46.3 33.4-53.4 62.4-1.3 5.4-1.6 14.2-1.9 64.3-.4 62.8.0 72.1 4 84.5 9.7 30.7 37.1 53.4 64.6 58.4 9.2 1.7 122.2 2.1 133.7.5 20.1-2.7 35.9-10.8 50.7-25.9 10.7-10.9 17.4-22.8 21.8-38.5 3.2-10.9 2.9-88.4 1.7-93.9z"/></svg></button><button title="分享到 百度" data-sharer=baidu data-url=https://liwanggui.com/posts/cobbler/ data-title="使用 cobbler 批量部署 bclinux7.2"><svg class="icon" role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><title>Baidu</title><path d="M9.154.0C7.71.0 6.54 1.658 6.54 3.707c0 2.051 1.171 3.71 2.615 3.71 1.446.0 2.614-1.659 2.614-3.71C11.768 1.658 10.6.0 9.154.0zm7.025.594C14.86.58 13.347 2.589 13.2 3.927c-.187 1.745.25 3.487 2.179 3.735 1.933.25 3.175-1.806 3.422-3.364.252-1.555-.995-3.364-2.362-3.674a1.218 1.218.0 00-.261-.03zM3.582 5.535a2.811 2.811.0 00-.156.008c-2.118.19-2.428 3.24-2.428 3.24-.287 1.41.686 4.425 3.297 3.864 2.617-.561 2.262-3.68 2.183-4.362-.125-1.018-1.292-2.773-2.896-2.75zm16.534 1.753c-2.308.0-2.617 2.119-2.617 3.616.0 1.43.121 3.425 2.988 3.362s2.553-3.238 2.553-3.988c0-.745-.62-2.99-2.924-2.99zm-8.264 2.478c-1.424.014-2.708.925-3.323 1.947-1.118 1.868-2.863 3.05-3.112 3.363-.25.309-3.61 2.116-2.864 5.42.746 3.301 3.365 3.237 3.365 3.237s1.93.19 4.171-.31c2.24-.495 4.17.123 4.17.123s5.233 1.748 6.665-1.616c1.43-3.364-.808-5.109-.808-5.109s-2.99-2.306-4.736-4.798c-1.072-1.665-2.348-2.268-3.528-2.257zm-2.234 3.84 1.542.024v8.197H7.758c-1.47-.291-2.055-1.292-2.13-1.462-.072-.173-.488-.976-.268-2.343.635-2.049 2.447-2.196 2.447-2.196h1.81zm3.964 2.39v3.881c.096.413.612.488.612.488h1.614v-4.343h1.689v5.782h-3.915c-1.517-.39-1.59-1.465-1.59-1.465v-4.317zm-5.458 1.147c-.66.197-.978.708-1.05.928-.076.22-.247.78-.1 1.269.294 1.095 1.248 1.144 1.248 1.144h1.37v-3.34z"/></svg></button><button title="分享到 Evernote" data-sharer=evernote data-url=https://liwanggui.com/posts/cobbler/ data-title="使用 cobbler 批量部署 bclinux7.2"><svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path d="M120.82 132.21c1.6 22.31-17.55 21.59-21.61 21.59-68.93.0-73.64-1-83.58 3.34-.56.22-.74.0-.37-.37L123.79 46.45c.38-.37.6-.22.38.37-4.35 9.99-3.35 15.09-3.35 85.39zm79 308c-14.68-37.08 13-76.93 52.52-76.62 17.49.0 22.6 23.21 7.95 31.42-6.19 3.3-24.95 1.74-25.14 19.2-.05 17.09 19.67 25 31.2 24.89A45.64 45.64.0 00312 393.45v-.08c0-11.63-7.79-47.22-47.54-55.34-7.72-1.54-65-6.35-68.35-50.52-3.74 16.93-17.4 63.49-43.11 69.09-8.74 1.94-69.68 7.64-112.92-36.77.0.0-18.57-15.23-28.23-57.95-3.38-15.75-9.28-39.7-11.14-62 0-18 11.14-30.45 25.07-32.2 81 0 90 2.32 101-7.8 9.82-9.24 7.8-15.5 7.8-102.78 1-8.3 7.79-30.81 53.41-24.14 6 .86 31.91 4.18 37.48 30.64l64.26 11.15c20.43 3.71 70.94 7 80.6 57.94 22.66 121.09 8.91 238.46 7.8 238.46C362.15 485.53 267.06 480 267.06 480c-18.95-.23-54.25-9.4-67.27-39.83zm80.94-204.84c-1 1.92-2.2 6 .85 7 14.09 4.93 39.75 6.84 45.88 5.53 3.11-.25 3.05-4.43 2.48-6.65-3.53-21.85-40.83-26.5-49.24-5.92z"/></svg></button></div></div></div><div class=post-info-more><section class=post-tags><svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><path d="M497.941 225.941 286.059 14.059A48 48 0 00252.118.0H48C21.49.0.0 21.49.0 48v204.118a48 48 0 0014.059 33.941l211.882 211.882c18.744 18.745 49.136 18.746 67.882.0l204.118-204.118c18.745-18.745 18.745-49.137.0-67.882zM112 160c-26.51.0-48-21.49-48-48s21.49-48 48-48 48 21.49 48 48-21.49 48-48 48zm513.941 133.823L421.823 497.941c-18.745 18.745-49.137 18.745-67.882.0l-.36-.36L527.64 323.522c16.999-16.999 26.36-39.6 26.36-63.64s-9.362-46.641-26.36-63.64L331.397.0h48.721a48 48 0 0133.941 14.059l211.882 211.882c18.745 18.745 18.745 49.137.0 67.882z"/></svg>&nbsp;<a href=/tags/cobbler/>Cobbler</a></section><section class=print:!tw-hidden><span><button class="tw-text-fgColor-link-muted hover:tw-text-fgColor-link-muted-hover" onclick=window.history.back()>返回</button></span>&nbsp;|&nbsp;<span><a href=/>主页</a></span></section></div><div class="post-nav print:tw-hidden"><a href=/posts/ansible-playbook/ class=prev rel=prev title="Ansible Playbook 示例"><svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 512"><path d="M31.7 239l136-136c9.4-9.4 24.6-9.4 33.9.0l22.6 22.6c9.4 9.4 9.4 24.6.0 33.9L127.9 256l96.4 96.4c9.4 9.4 9.4 24.6.0 33.9L201.7 409c-9.4 9.4-24.6 9.4-33.9.0l-136-136c-9.5-9.4-9.5-24.6-.1-34z"/></svg>Ansible Playbook 示例</a>
+<a href=/posts/windows-cmd/ class=next rel=next title="Windows 常用 CMD 命令">Windows 常用 CMD 命令<svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 512"><path d="M224.3 273l-136 136c-9.4 9.4-24.6 9.4-33.9.0l-22.6-22.6c-9.4-9.4-9.4-24.6.0-33.9l96.4-96.4-96.4-96.4c-9.4-9.4-9.4-24.6.0-33.9L54.3 103c9.4-9.4 24.6-9.4 33.9.0l136 136c9.5 9.4 9.5 24.6.1 34z"/></svg></a></div></div><div id=comments class="print:!tw-hidden tw-pt-32 tw-pb-8"><div id=giscus></div><noscript>Please enable JavaScript to view the comments powered by <a href=https://giscus.app/>giscus</a>.</noscript></div></article></div></main><footer class=footer><div class=footer-container><div class=footer-line>由 <a href=https://gohugo.io/ target=_blank rel="noopener noreferrer" title="Hugo 0.127.0">Hugo</a> 强力驱动&nbsp;|&nbsp;主题 - <a href=https://github.com/HEIGE-PCloud/DoIt target=_blank rel="noopener noreferrer" title="DoIt 0.4.0"><svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><path d="M402.3 344.9l32-32c5-5 13.7-1.5 13.7 5.7V464c0 26.5-21.5 48-48 48H48c-26.5.0-48-21.5-48-48V112c0-26.5 21.5-48 48-48h273.5c7.1.0 10.7 8.6 5.7 13.7l-32 32c-1.5 1.5-3.5 2.3-5.7 2.3H48v352h352V350.5c0-2.1.8-4.1 2.3-5.6zm156.6-201.8L296.3 405.7l-90.4 10c-26.2 2.9-48.5-19.2-45.6-45.6l10-90.4L432.9 17.1c22.9-22.9 59.9-22.9 82.7.0l43.2 43.2c22.9 22.9 22.9 60 .1 82.8zM460.1 174 402 115.9 216.2 301.8l-7.3 65.3 65.3-7.3L460.1 174zm64.8-79.7-43.2-43.2c-4.1-4.1-10.8-4.1-14.8.0L436 82l58.1 58.1 30.9-30.9c4-4.2 4-10.8-.1-14.9z"/></svg> DoIt</a></div><div class=footer-line><svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M256 8C119.033 8 8 119.033 8 256s111.033 248 248 248 248-111.033 248-248S392.967 8 256 8zm0 448c-110.532.0-2e2-89.451-2e2-2e2.0-110.531 89.451-2e2 2e2-2e2 110.532.0 2e2 89.451 2e2 2e2.0 110.532-89.451 2e2-2e2 2e2zm107.351-101.064c-9.614 9.712-45.53 41.396-104.065 41.396-82.43.0-140.484-61.425-140.484-141.567.0-79.152 60.275-139.401 139.762-139.401 55.531.0 88.738 26.62 97.593 34.779a11.965 11.965.0 011.936 15.322l-18.155 28.113c-3.841 5.95-11.966 7.282-17.499 2.921-8.595-6.776-31.814-22.538-61.708-22.538-48.303.0-77.916 35.33-77.916 80.082.0 41.589 26.888 83.692 78.277 83.692 32.657.0 56.843-19.039 65.726-27.225 5.27-4.857 13.596-4.039 17.82 1.738l19.865 27.17a11.947 11.947.0 01-1.152 15.518z"/></svg>2017 - 2025<span class=author>&nbsp;<a href=/about/ target=_blank rel="noopener noreferrer">李王贵</a></span><span class=icp-splitter>&nbsp;|&nbsp;</span><br class=icp-br><span class=icp><a href=https://beian.miit.gov.cn target=_blank>赣ICP备2023001395号</a></span></div><div class=footer-line></div><div class=footer-line></div></div></footer></div><div id=fixed-buttons class=print:!tw-hidden><a href=#back-to-top id=back-to-top-button class="fixed-button tw-transition-opacity tw-opacity-0" title=回到顶部><svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M34.9 289.5l-22.2-22.2c-9.4-9.4-9.4-24.6.0-33.9L207 39c9.4-9.4 24.6-9.4 33.9.0l194.3 194.3c9.4 9.4 9.4 24.6.0 33.9L413 289.4c-9.5 9.5-25 9.3-34.3-.4L264 168.6V456c0 13.3-10.7 24-24 24h-32c-13.3.0-24-10.7-24-24V168.6L69.2 289.1c-9.3 9.8-24.8 10-34.3.4z"/></svg>
+</a><a href=#comments id=view-comments class=fixed-button title=查看评论><svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M256 32C114.6 32 0 125.1.0 240c0 49.6 21.4 95 57 130.7C44.5 421.1 2.7 466 2.2 466.5c-2.2 2.3-2.8 5.7-1.5 8.7S4.8 480 8 480c66.3.0 116-31.8 140.6-51.4 32.7 12.3 69 19.4 107.4 19.4 141.4.0 256-93.1 256-208S397.4 32 256 32z"/></svg></a></div><div id=cookieconsent-container></div><link rel=stylesheet href=/lib/lightgallery/lightgallery.min.css><link rel=stylesheet href=/lib/katex/katex.min.css><link rel=preload as=style onload='this.onload=null,this.rel="stylesheet"' href=/lib/katex/copy-tex.min.css><noscript><link rel=stylesheet href=/lib/katex/copy-tex.min.css></noscript><link rel=stylesheet href=/lib/cookieconsent/cookieconsent.min.css><script>window.config={"autocomplete.min.js":"/lib/autocomplete/autocomplete.min.js",comment:{giscus:{darkTheme:"dark",dataCategory:"Announcements",dataCategoryId:"DIC_kwDOE7mEQ84CY9pq",dataEmitMetadata:"1",dataInputPosition:"top",dataLang:"zh-CN",dataLoading:"lazy",dataMapping:"pathname",dataReactionsEnabled:"1",dataRepo:"liwanggui/liwanggui.github.io",dataRepoId:"MDEwOlJlcG9zaXRvcnkzMzA5MjUxMjM=",dataStrict:"0",lightTheme:"light"}},cookieconsent:{content:{dismiss:"同意",link:"了解更多",message:"本网站使用 Cookies 来改善您的浏览体验."},enable:!0,palette:{button:{background:"#f0f0f0"},popup:{background:"#1aa3ff"}},theme:"edgeless"},"fuse.min.js":"/lib/fuse/fuse.min.js",lightGallery:{actualSize:!1,exThumbImage:"data-thumbnail",hideBarsDelay:2e3,selector:".lightgallery",speed:400,thumbContHeight:80,thumbWidth:80,thumbnail:!0},math:{delimiters:[{display:!0,left:"$$",right:"$$"},{display:!0,left:"\\[",right:"\\]"},{display:!1,left:"$",right:"$"},{display:!1,left:"\\(",right:"\\)"}],strict:!1},search:{distance:100,findAllMatches:!1,fuseIndexURL:"/index.json",highlightTag:"em",ignoreFieldNorm:!1,ignoreLocation:!1,isCaseSensitive:!1,location:0,maxResultLength:10,minMatchCharLength:2,noResultsFound:"没有找到结果",snippetLength:50,threshold:.3,type:"fuse",useExtendedSearch:!1},sharerjs:!0,twemoji:!0}</script><script src=/lib/twemoji/twemoji.min.js defer></script><script src=/js/twemoji.min.js defer></script><script src=/lib/lightgallery/lightgallery.min.js></script><script src=/lib/lightgallery/lg-thumbnail.min.js></script><script src=/lib/lightgallery/lg-zoom.min.js></script><script src=/lib/sharer/sharer.min.js></script><script src=/lib/katex/katex.min.js defer></script><script src=/lib/katex/auto-render.min.js defer></script><script src=/lib/katex/copy-tex.min.js defer></script><script src=/lib/katex/mhchem.min.js defer></script><script src=/js/katex.min.js defer></script><script src=/lib/cookieconsent/cookieconsent.min.js defer></script><script src=/js/cookieconsent.min.js defer></script><script src=/js/theme.min.js defer></script><script src=/js/giscus.min.js defer></script><script type=speculationrules>
+        {
+          "prerender": [
+            {
+              "where": { "href_matches": "/*" },
+              "eagerness": "moderate"
+            }
+          ]
+        }
+    </script></body></html>
