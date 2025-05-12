@@ -239,19 +239,15 @@ sr0               11:0    1  906M  0 rom
 现在将 VG 剩余所有空间分配给 root lv
 
 ```bash
-[root@localhost ~]# lvextend -L +15G /dev/centos/root
-  Insufficient free space: 3840 extents needed, but only 3839 available
-```
-
-> 直接使用容量大小时提示可分配空间不足，此我们可以使用 -l 参数通过分配 PE 个数完成扩容操作
-
-```bash
-[root@localhost ~]# lvextend -l +3839 /dev/centos/root
+[root@localhost ~]# lvextend -l +100%FREE /dev/centos/root
   Size of logical volume centos/root changed from <17.00 GiB (4351 extents) to 31.99 GiB (8190 extents).
   Logical volume centos/root successfully resized.
 ```
 
-> 通过 PE 个数分配成功
+- `-l +100%FREE` 表示使用卷组中所有剩余的自由空间。
+- `/dev/centos/root` 是逻辑卷的路径，确保使用正确的路径
+
+> 提示: 如果想分配后刷新分表区信息，需要加入 `-r` 参数
 
 查看 root lv 信息
 
