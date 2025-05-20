@@ -1,9 +1,18 @@
 # my blog
 
+## 克隆仓库
+
 1. 安装 hugo 扩展版
-2. 克隆仓库 `git clone https://gitee.com/liwanggui/liwanggui.com.git`
-3. 拉取主题 `git submodule update --init --recursive`
-4. 开始写作
+2. 克隆仓库 `git clone https://gitee.com/liwanggui/liwanggui.com.git --recurse-submodules`
+3. 开始写作
+
+**提示: ** 如果在克隆仓库时没有加 `--recurse-submodules` 选项，需要单独执行拉取主题子模块命令，命令如下
+
+```bash
+git submodule update --init --recursive
+```
+
+## 开始写文章
 
 ```bash
 # 创建新文章

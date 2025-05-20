@@ -8,7 +8,7 @@ tags:
 - macOS
 ---
 
-## XCode
+## 安装开发组件 - XCode
 
 从 `App store` 或苹果开发者网站安装 [Xcode](https://developer.apple.com/xcode/)
 
@@ -24,9 +24,11 @@ xcode-select --install
 
 > 如果你想了解 `Xcode command line tools` 包含多少可用的命令，可以到 `/Library/Developer/CommandLineTools/` 查看。
 
-## 配置 git
+## 配置源码管理工具 - Git
 
 *GitHub git 帮助文档:*  https://docs.github.com/en/get-started/quickstart/set-up-git
+
+### Git 全局配置
 
 ```bash
 # 配置 github 加速, 仅适用于 https 
@@ -40,7 +42,21 @@ git config --global user.email "your_email@youremail.com"
 git config --global credential.helper osxkeychain
 ```
 
-> 这些配置信息将会添加进 `~/.gitconfig` 文件中.
+> 提示: Git 全局配置文件 `~/.gitconfig`
+
+### 配置 github ssh 加速
+
+```bash
+cat >> ~/.ssh/config <<EOF
+Host github.com
+    Hostname ssh.github.com
+    Port 443
+    User git
+    IdentityFile ~/.ssh/id_rsa
+EOF
+```
+
+### Git 全局忽略文件
 
 创建一个新文件 `~/.gitignore` ，并将以下内容添加进去，这样全部 git 仓库将会忽略以下内容所提及的文件。
 
@@ -75,31 +91,21 @@ node_modules
 ```
 
 
-## 安装 Homebrew
+## 软件管理工具 - Homebrew
 
 > 官网地址: https://brew.sh/
 
-在安装 Homebrew 之前，需要将 Xcode Command Line Tools 安装完成
+在安装 `Homebrew` 之前，需要将 `Xcode Command Line Tools` 安装完成
 
 ```bash
 /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
 ```
 
-安装完成后执行以下命令
-
-```bash
-brew doctor
-```
-
 > 安装完成后，Homebrew 会将本地 /usr/local 初始化为 git 的工作树，并将目录所有者变更为当前所操作的用户，将来 brew 的相关操作不需要 sudo
 
-## iTerm2 
+## 终端管理工具 - iTerm2
 
 > iTerm2 下载地址： https://iterm2.com/downloads.html
-
-> 终端配色仓库:  https://github.com/altercation/solarized/tree/master/iterm2-colors-solarized
-
-下载后，解压将 `iTerm` 拖拽进入 `Application` 文件夹中。 然后，你可以在 `Launchpad` 中启动 `iTerm`
 
 ### 配置 zmodem（lrzsz）
 
@@ -135,6 +141,49 @@ Regular expression: \*\*B00000000000000
 > Tips: 正常连接服务器就可以使用 `sz` `rz` 命令了
 > 通过添加 profile 配置主机列表
 
+
+> 注意: 需要在服务器上安装 lrzsz 软件包
+
+### 配置 trzsz-iterm2 (trzsz)
+
+trzsz-iterm2 是 trzsz 在 iTerm2 上使用的客户端。
+
+- 官方文档: https://trzsz.github.io/cn/iterm2
+
+安装 trzsz-iterm2 
+
+```bash
+brew install trzsz
+```
+
+以安装路径 `/usr/local/bin/trzsz-iterm2` 为例, 配置步骤如下
+
+打开 iTerm2 -> Preferences... / Settings... -> Profiles -> ( 在左边选中一个 Profile ) -> Advanced -> Triggers -> Edit -> [+]，如下配置：
+
+|Name	| Value	| Note |
+|:-|-|:-|
+|Regular Expression	|:(:TRZSZ:TRANSFER:[SRD]:\d+\.\d+\.\d+:\d+)	|前后无空格|
+|Action | Run Silent Coprocess...	||
+|Parameters | /usr/local/bin/trzsz-iterm2 -p text \1	|前后无空格|
+|Enabled |	✅	|选中|
+
+- 不要选中最下面的 Use interpolated strings for parameters。
+- 注意 /usr/local/bin/trzsz-iterm2 要替换成真实的 trzsz-iterm2 绝对路径。
+- 不同 Profile 的 Trigger 是互相独立的，也就是每个用到的 Profile 都要进行配置。
+- Trigger 的配置是允许输入多行的，但只会显示一行，注意不要多复制了一个换行符进去。
+
+{{< figure src="/images/iterm2_config.png" title="iterm2 Config" >}}
+
+打开 iTerm2 -> Preferences... / Settings... -> General -> Magic，选中 Enable Python API
+
+{{< figure src="/images/iterm2_enable_python.png" title="iterm2 Enable Python API" >}}
+
+设置 ITERM2_COOKIE 环境变量可以使启动速度更快。
+
+打开 iTerm2 -> Preferences... / Settings... -> Advanced，筛选 COOKIE，选择 Yes
+
+{{< figure src="/images/iterm2_cookie.png" title="iterm2 cookie" >}}
+
 ### 常用快捷键
 
 - `command + d` 横向分屏
@@ -144,15 +193,7 @@ Regular expression: \*\*B00000000000000
 - `command + f` 打开搜索框
 - `option + command + i` 分屏时同时操作多个窗口，重复取消
 
-## oh-my-zsh
-
-### 安装 zsh zsh-completions
-
-```bash
-brew install zsh zsh-completions
-```
-
-> 注: 如果 zsh 已安装可以跳过
+## 终端 zsh 工具 - "Oh My ZSH"
 
 ### 安装 ohmyzsh
 
@@ -164,7 +205,9 @@ sh -c "$(curl -fsSL https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/mas
 
 > zsh 主题配置项: `ZSH_THEME="ys"`
 
-### 配置从当前位置删除到行首， ctrl + u
+### 快捷键配置
+
+配置从当前位置删除到行首 `Ctrl + U`
 
 ```bash
 cat >> ~/.zshrc <<EOF
@@ -177,13 +220,19 @@ EOF
 source  ~/.zshrc
 ```
 
-## 新增命令无法自动识别解决方法
+### 新增命令无法自动识别解决方法
+
+在使用 zsh 时，某些命令安装后会找不到，必须手动执行 rehash 才能更新 hash table。这和 zsh 的命令缓存机制有关。
+
+由于 zsh 会将命令路径缓存，以加快命令查找速度。
+
+这个缓存不会自动更新，导致： 安装新命令后，如果之前尝试过运行该命令但未成功，zsh 会认为它 “还是不存在”。
 
 ```bash
-rehash  # 执行 rehash 后就可以了
+rehash  # 或者 hash -r
 ```
 
-## 配置 vim
+## 配置 VIM 编辑器
 
 创建 `~/.vimrc` 配置文件
 
@@ -223,7 +272,6 @@ Host *
     PubkeyAcceptedAlgorithms +ssh-rsa
 ```
 
-
 ## macOS 英文目录显示为中文
 
 > 以目录名为 `Code` 进行讲解
@@ -244,6 +292,5 @@ cat Code/.localized/zh_CN.strings
 ```bash
 mv Code Code.localized
 ```
-
 
 > 参考文档:  https://www.bookstack.cn/read/Mac-dev-setup/README.md
