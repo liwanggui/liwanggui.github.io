@@ -15,6 +15,8 @@ tags:
 - [Mouse Without Borders](https://www.microsoft.com/en-us/download/details.aspx?id=35460) 只适用于 Windows 系统
 - [Synergy](https://symless.com/synergy)  是一款收费软件
 - [sharemouse](https://www.sharemouse.com/) 同样是款收费软件，可以免费使用，但功能有限制
+- [Deskflow](https://github.com/deskflow/deskflow) 免费开源
+- [input-leap](https://github.com/input-leap/input-leap) 免费开源
 
 [Barrier](https://github.com/debauchee/barrier) 是和 Synergy 同源的一款软件。最初 Synergy 是基于 Chris Schoeneman 编写的 CosmoSynergy 开发的一个免费软件，Synergy 在迭代数个版本后开始收费，于是有团队开始基于 Synergy 的开源内核再次开发出了免费版的 barrier。
 
