@@ -3,8 +3,9 @@ title: "解决 VNC 远程桌面黑屏 - 虚拟显示器驱动"
 date: 2024-10-24T10:52:31+08:00
 draft: false
 categories: 
-- devops
+- vmware
 tags:
+- vmware
 - Virtual-Display-Driver
 ---
 

@@ -3,7 +3,6 @@ title: 部署 ElasticSearch 集群
 date: "2021-04-10T17:11:24+08:00"
 draft: false
 categories:
-- devops
 - elasticstack
 tags:
 - elasticsearch

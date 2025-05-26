@@ -3,7 +3,7 @@ title: "跨平台简易文件共享工具"
 date: 2022-08-07T08:22:27+08:00
 draft: false
 categories: 
-- devops
+- fileserver
 tags:
 - chfs
 ---

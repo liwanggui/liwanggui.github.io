@@ -3,9 +3,10 @@ title: "部署 CoreDNS 为内部 DNS 服务器"
 date: 2023-11-06T14:08:21+08:00
 draft: false
 categories: 
-- coredns
+- network
 tags:
 - dns
+- coredns
 ---
 
 本例使用 CoreDNS + ETCD 为内部主机提供 DNS 解析服务

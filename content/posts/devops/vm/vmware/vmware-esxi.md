@@ -3,7 +3,7 @@ title: "ESXi 集成网卡驱动"
 date: 2024-03-04T16:02:17+08:00
 draft: false
 categories: 
-- devops
+- vmware
 tags:
 - vmware
 - esxi

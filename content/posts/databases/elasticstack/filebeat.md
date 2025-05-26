@@ -3,7 +3,6 @@ title: 使用 Filebeat 收集 nginx 日志
 date: "2021-04-14T20:04:07+08:00"
 draft: false
 categories:
-- devops
 - elasticstack
 tags:
 - filebeat

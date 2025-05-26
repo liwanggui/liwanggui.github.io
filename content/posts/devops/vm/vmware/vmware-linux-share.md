@@ -3,7 +3,7 @@ title: "VMware - Linux 客户机中装载共享文件夹"
 date: 2021-06-13T17:05:05+08:00
 draft: false
 categories: 
-- devops
+- vmware
 tags:
 - vmware
 ---

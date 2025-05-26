@@ -3,7 +3,7 @@ title: "使用 phpMyAdmin 登录任意数据库服务器"
 date: 2019-09-24T21:18:45+08:00
 draft: false
 categories: 
-- devops
+- mysql
 tags:
 - phpMyAdmin
 ---

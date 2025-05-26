@@ -3,7 +3,7 @@ title: "Caddy 一个简单的 Web 服务"
 date: 2021-08-23T15:50:36+08:00
 draft: false
 categories: 
-- devops
+- webserver
 tags:
 - caddy
 ---

@@ -3,7 +3,7 @@ title: "部署 etcd 集群"
 date: 2023-10-07T16:32:16+08:00
 draft: false
 categories: 
-- etcd
+- kvdb
 tags:
 - etcd
 ---

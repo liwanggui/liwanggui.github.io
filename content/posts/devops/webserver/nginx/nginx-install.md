@@ -3,7 +3,6 @@ title: "nginx - 源码编译安装"
 date: 2021-04-01T13:56:42+08:00
 draft: false
 categories: 
-- devops
 - nginx
 tags:
 - nginx

@@ -3,7 +3,6 @@ title: "nginx - 常用指令语法"
 date: "2021-04-01T16:26:44+08:00"
 draft: false
 categories:
-- devops
 - nginx
 tags:
 - nginx

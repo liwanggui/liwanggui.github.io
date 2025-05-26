@@ -2,8 +2,7 @@
 title: "nginx - 日志轮转"
 date: 2021-04-01T18:24:00+08:00
 draft: false
-categories: 
-- devops
+categories:
 - nginx
 tags:
 - nginx

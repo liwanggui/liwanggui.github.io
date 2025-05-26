@@ -3,7 +3,7 @@ title: 网络文件系统（NFS）
 date: "2021-04-24T11:04:36+08:00"
 draft: false
 categories:
-- devops
+- fileserver
 tags:
 - nfs
 ---

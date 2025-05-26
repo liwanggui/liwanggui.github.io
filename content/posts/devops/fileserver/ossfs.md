@@ -3,7 +3,7 @@ title: "使用 ossfs 挂载阿里云 OSS 至本地文件系统"
 date: 2023-11-13T11:33:11+08:00
 draft: false
 categories: 
-- devops
+- fileserver
 tags:
 - ossfs
 ---

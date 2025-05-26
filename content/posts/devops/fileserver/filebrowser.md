@@ -3,7 +3,7 @@ title: "Filebrowser 一个简单的在线文件服务"
 date: 2021-08-23T16:16:21+08:00
 draft: false
 categories: 
-- devops
+- fileserver
 tags:
 - filebrowser
 ---

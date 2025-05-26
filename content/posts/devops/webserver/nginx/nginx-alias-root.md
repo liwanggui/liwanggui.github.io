@@ -3,7 +3,6 @@ title: "nginx - alias 与 root 区别"
 date: "2021-04-01T17:16:15+08:00"
 draft: false
 categories:
-- devops
 - nginx
 tags:
 - nginx

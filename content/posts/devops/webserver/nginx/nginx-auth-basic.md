@@ -2,8 +2,7 @@
 title: "nginx - 基础身份验证 (auth_basic)"
 date: 2021-04-02T13:56:42+08:00
 draft: false
-categories: 
-- devops
+categories:
 - nginx
 tags:
 - nginx

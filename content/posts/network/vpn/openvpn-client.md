@@ -3,9 +3,9 @@ title: "OpenVPN 客户端添加路由配置（流量分流）"
 date: 2022-11-18T16:20:00+08:00
 draft: false
 categories: 
-- devops
-- vpn
+- network
 tags:
+- vpn
 - openvpn
 ---
 

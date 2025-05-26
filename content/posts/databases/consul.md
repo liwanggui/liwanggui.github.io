@@ -3,7 +3,7 @@ title: "Consul 单机部署"
 date: 2022-07-29T09:31:14+08:00
 draft: false
 categories: 
-- devops
+- kvdb
 tags:
 - consul
 ---

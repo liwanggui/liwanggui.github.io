@@ -3,9 +3,9 @@ title: "sshuttle 轻量级全局代理工具"
 date: 2021-06-13T17:07:48+08:00
 draft: false
 categories: 
-- devops
-- vpn
+- network
 tags:
+- vpn
 - sshuttle
 ---
 

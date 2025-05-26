@@ -3,7 +3,7 @@ title: "Minio 高性能对象存储"
 date: 2023-03-09T12:00:30+08:00
 draft: false
 categories: 
-- minio
+- fileserver
 tags:
 - minio
 ---

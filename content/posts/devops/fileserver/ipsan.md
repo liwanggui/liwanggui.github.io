@@ -3,7 +3,7 @@ title: "部署 iSCSI 存储区域网络（SAN）"
 date: 2024-08-15T14:18:13+08:00
 draft: false
 categories: 
-- devops
+- fileserver
 tags:
 - san
 ---

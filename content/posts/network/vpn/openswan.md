@@ -3,9 +3,9 @@ title: "配置 openswan ipsecvpn"
 date: 2015-09-24T16:33:21+08:00
 draft: false
 categories: 
-- devops
-- vpn
+- network
 tags:
+- vpn
 - openswan
 ---
 
